@@ -1,27 +1,37 @@
-import { register, init, getLocaleFromNavigator } from 'svelte-i18n'
+import { register, init, getLocaleFromNavigator, locale } from 'svelte-i18n'
+import { browser } from '$app/environment'
+import {
+  SUPPORTED_LOCALES,
+  FALLBACK_LOCALE,
+  isSupportedLocale,
+  type LocaleCode,
+  type LocaleCodeMaybe
+} from './types'
 
-// registrera språkfiler
+// Explicit lazy registration (statiska imports för Vite treeshaking)
 register('sv', () => import('./sv.json'))
 register('en', () => import('./en.json'))
 register('de', () => import('./de.json'))
 
-// hämta systemets språk
-// const systemLocale = getLocaleFromNavigator()
-const systemLocale = 'de'
+// Resolve initial locale: saved -> system base -> fallback
+const saved = (browser ? localStorage.getItem('locale') : null) as LocaleCodeMaybe
+const systemBase = (browser ? getLocaleFromNavigator()?.split('-')[0] : null) as LocaleCodeMaybe
+
+const initial: LocaleCode =
+  (isSupportedLocale(saved) && saved) ||
+  (isSupportedLocale(systemBase) && systemBase) ||
+  FALLBACK_LOCALE
 
 init({
-  fallbackLocale: 'de',        // alltid fallback på tyska
-  initialLocale: systemLocale, // försök använda systeminställningar
+  fallbackLocale: FALLBACK_LOCALE,
+  initialLocale: initial
 })
-// sedan när appen körs:
-// locale.set('en')
 
-// exportera locale om du vill växla språk manuellt
-// export { locale }
+// Persist future changes (client only)
+if (browser) {
+  locale.subscribe((val) => {
+    if (isSupportedLocale(val)) localStorage.setItem('locale', val)
+  })
+}
 
-// // Initiera med fallback och standardval
-// init({
-//   fallbackLocale: 'de',
-//   initialLocale: getLocaleFromNavigator() || 'sv'
-// })
-
+export * from './types'
