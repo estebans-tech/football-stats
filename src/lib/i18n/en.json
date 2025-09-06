@@ -52,6 +52,15 @@
         "db": "Could not save. Please try again.",
         "duplicate_date": "A matchday for this date already exists."
       }
+    },
+    "status": { "locked": "Locked" },
+    "list": {
+      "title": "Matchdays",
+      "empty": "No matchdays yet.",
+      "lock": "Lock",
+      "unlock": "Unlock",
+      "open": "Open",
+      "delete": "Delete"
     }
   }
 }

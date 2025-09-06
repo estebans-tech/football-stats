@@ -1,37 +1,40 @@
 import { assertDb } from '$lib/db/dexie'
-import { uid, isoDate, isValidYMD } from '$lib/utils/utils'
+import { uid, isValidYMD } from '$lib/utils/utils'
+import { readable } from 'svelte/store'
+import { liveQuery } from 'dexie'
 // import { queueGames } from '$lib/sync/auto'
-import type { SessionLocal, MatchLocal, SessionStatus } from '$lib/types/domain'
 
-export const getSessionByDate = async (date = isoDate()) => {
-  const db = assertDb()
-  return await db.sessions_local.where('date').equals(date).first()
-}
+import type { SessionLocal, SessionStatus } from '$lib/types/domain'
 
-export const createSession = async (date = isoDate()) => {
-  const db = assertDb()
-  const now = Date.now()
-  const existing = await getSessionByDate(date)
+// export const getSessionByDate = async (date = isoDate()) => {
+//   const db = assertDb()
+//   return await db.sessions_local.where('date').equals(date).first()
+// }
 
-  if (existing) return existing
-  const session = { id: uid(), date, status: 'open' as const, createdAt: now, updatedAtLocal: now } as SessionLocal
-  await db.sessions_local.add(session)
-  return session
-}
+// export const createSession = async (date = isoDate()) => {
+//   const db = assertDb()
+//   const now = Date.now()
+//   const existing = await getSessionByDate(date)
 
-export const createSessionIfMissing = async (date: string) => {
-  const existing = await getSessionByDate(date)
-  if (existing) return existing
+//   if (existing) return existing
+//   const session = { id: uid(), date, status: 'open' as const, createdAt: now, updatedAtLocal: now } as SessionLocal
+//   await db.sessions_local.add(session)
+//   return session
+// }
+
+// export const createSessionIfMissing = async (date: string) => {
+//   const existing = await getSessionByDate(date)
+//   if (existing) return existing
   
-  const now = Date.now()
-  const row = { id: uid(), date, status: 'open' as const, createdAt: now, updatedAtLocal: now, deletedAtLocal: undefined }
-  const db = assertDb()
-  await db.sessions_local.put(row)
+//   const now = Date.now()
+//   const row = { id: uid(), date, status: 'open' as const, createdAt: now, updatedAtLocal: now, deletedAtLocal: undefined }
+//   const db = assertDb()
+//   await db.sessions_local.put(row)
 
-  // queueGames()
+//   // queueGames()
 
-  return row
-}
+//   return row
+// }
 
 // If you already have a create function, export an alias to keep the component import stable.
 export async function createLocalSession(input: { date: string; status?: SessionStatus }): Promise<SessionLocal> {
@@ -65,6 +68,65 @@ export async function createLocalSession(input: { date: string; status?: Session
   await db.sessions_local.add(session)
 
   return session
+}
+
+// Live observable store of non-deleted sessions, newest first (by date)
+export function observeLocalSessions() {
+  const db = assertDb()
+  return readable<SessionLocal[]>([], (set) => {
+    const sub = liveQuery(() =>
+      db.sessions_local.orderBy('date').reverse().toArray()
+    ).subscribe({
+      next: (rows) => set(rows.filter((r) => !r.deletedAtLocal)),
+      error: (err) => {
+        console.error('observeLocalSessions', err)
+        set([])
+      }
+    })
+    return () => sub.unsubscribe()
+  })
+}
+
+// One-shot fetch if you need it elsewhere
+export async function listLocalSessions(): Promise<SessionLocal[]> {
+  const db = assertDb()
+  const rows = await db.sessions_local.orderBy('date').reverse().toArray()
+  return rows.filter((r) => !r.deletedAtLocal)
+}
+
+// Soft delete (marks deletedAtLocal, keeps record)
+export async function softDeleteLocalSession(id: string) {
+  const db = assertDb()
+  const now = Date.now()
+  await db.sessions_local.update(id, {
+    deletedAtLocal: now,
+    updatedAtLocal: now
+  })
+}
+
+export async function lockLocalSession(id: string) {
+  const db = assertDb()
+  const now = Date.now()
+  await db.sessions_local.update(id, {
+    status: 'locked',
+    updatedAtLocal: now
+  })
+}
+
+export async function toggleLocalSessionStatus(id: string): Promise<'locked' | 'open'> {
+  const db = assertDb()
+  const row = await db.sessions_local.get(id) as SessionLocal | undefined
+  if (!row || row.deletedAtLocal) throw new Error('NOT_FOUND')
+
+  const next = row.status === 'locked' ? 'open' : 'locked'
+  const now = Date.now()
+
+  await db.sessions_local.update(id, {
+    status: next,
+    updatedAtLocal: now
+  })
+
+  return next
 }
 
 // export const listRecentSessions = async (limit = 5) => {

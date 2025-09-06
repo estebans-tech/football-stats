@@ -52,6 +52,15 @@
         "db": "Kunde inte spara. Försök igen.",
         "duplicate_date": "Matchdag för det här datumet är redan skapad."
       }
+    },
+    "status": { "locked": "Låst" },
+    "list": {
+      "title": "Matchdagar",
+      "empty": "Inga matchdagar ännu.",
+      "open": "Öppna",
+      "delete": "Ta bort",
+      "lock": "Lås",
+      "unlock": "Lås upp"
     }
   }
 }

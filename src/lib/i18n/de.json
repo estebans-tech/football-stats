@@ -52,6 +52,15 @@
         "db": "Speichern fehlgeschlagen. Bitte erneut versuchen.",
         "duplicate_date": "Für dieses Datum existiert bereits ein Spieltag."
       }
+    },
+    "status": { "locked": "Gesperrt" },
+    "list": {
+      "title": "Spieltage",
+      "empty": "Noch keine Spieltage.",
+      "open": "Öffnen",
+      "delete": "Löschen",
+      "lock": "Sperren",
+      "unlock": "Entsperren"
     }
   }
 }
