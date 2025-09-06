@@ -4,13 +4,16 @@
   "header": {
     "nav": {
       "home": "Home",
-      "invite": "Invite",
+      "invite": "Redeem",
       "backup": "Backup",
       "admin": "Admin",
       "settings": "Settings",
       "language": "Language"
     },
-    "actions": { "sync": "Sync" },
+    "actions": {
+      "sync": "Sync",
+      "logout": "Log out"
+    },
     "a11y": {
       "menu_button": "Open menu",
       "language_button": "Open language menu",
@@ -18,9 +21,9 @@
     }
   },
  "invite": {
-    "title": "Invitation",
-    "intro": "Enter your invitation code to gain access.",
-    "label_code": "Invitation code",
+    "title": "Redeem",
+    "intro": "Enter your redeem code to gain access.",
+    "label_code": "Redeem code",
     "placeholder": "e.g. ADMIN-2024 or EDITOR-2024",
     "submit": "Sign in",
     "submitting": "Signing in…",
@@ -29,7 +32,7 @@
     "redirecting": "Redirecting…",
     "errors": {
       "empty": "Please enter a code.",
-      "invalid_code": "Invalid invitation code.",
+      "invalid_code": "Invalid redeem code.",
       "generic": "Something went wrong. Please try again."
     }
   }

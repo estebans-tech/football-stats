@@ -4,13 +4,16 @@
   "header": {
     "nav": {
       "home": "Hem",
-      "invite": "Bjud in",
+      "invite": "Inbjudan",
       "backup": "Backup",
       "admin": "Admin",
       "settings": "Inställningar",
       "language": "Språk"
     },
-    "actions": { "sync": "Synka" },
+    "actions": {
+      "sync": "Synka",
+      "logout": "Logga ut"
+    },
     "a11y": {
       "menu_button": "Öppna meny",
       "language_button": "Öppna språkmeny",

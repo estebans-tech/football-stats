@@ -4,7 +4,8 @@
   import LanguageSwitcher from './LanguageSwitcher.svelte'
   import { page } from '$app/stores'
   import { t } from 'svelte-i18n'
-  import { isAdmin, canEdit, profile } from '$lib/auth/auth' 
+  import { isAdmin, canEdit, signOut } from '$lib/auth/auth'
+  import { goto } from '$app/navigation'
 
   // Svelte 5: use callback prop instead of createEventDispatcher
   export let onSync: (() => void) | undefined = undefined
@@ -25,6 +26,12 @@
   )
 
   $: showSyncButton = $isAdmin || $canEdit
+  $: showLogout = $isAdmin || $canEdit
+
+  async function handleLogout() {
+    await signOut()
+    await goto('/')  // tillbaka till start
+  }
 </script>
 
 <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b">
@@ -49,6 +56,12 @@
           {$t('header.actions.sync')}
         </button>
       {/if}
+      {#if showLogout}
+        <button class="btn btn-danger w-full" aria-label={$t('header.actions.sync')} on:click={handleLogout}>
+          {$t('header.actions.logout')}
+        </button>
+      {/if}
+
       <LanguageSwitcher />
     </div>
 
@@ -77,9 +90,11 @@
               {$t('header.actions.sync')}
             </button>
             {/if}
-            <button class="btn w-full" aria-label={$t('header.actions.sync')} on:click={() => onSync?.()}>
-              {$t('header.actions.sync')}
-            </button>
+            {#if showLogout}
+              <button class="btn btn-danger w-full" aria-label={$t('header.actions.sync')} on:click={handleLogout}>
+                {$t('header.actions.logout')}
+              </button>
+            {/if}    
           <LanguageSwitcher />
         </div>
       </nav>

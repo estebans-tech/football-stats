@@ -4,13 +4,16 @@
   "header": {
     "nav": {
       "home": "Startseite",
-      "invite": "Einladen",
+      "invite": "Einladung",
       "backup": "Backup",
       "admin": "Admin",
       "settings": "Einstellungen",
       "language": "Sprache"
     },
-    "actions": { "sync": "Sync" },
+    "actions": {
+      "sync": "Sync",
+      "logout": "Abmelden"
+    },
     "a11y": {
       "menu_button": "Menü öffnen",
       "language_button": "Sprachauswahl öffnen",
