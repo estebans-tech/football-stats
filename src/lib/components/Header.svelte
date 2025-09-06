@@ -57,7 +57,9 @@
         </button>
       {/if}
       {#if showLogout}
-        <button class="btn btn-danger w-full" aria-label={$t('header.actions.sync')} on:click={handleLogout}>
+        <button class="btn btn-danger w-full active:translate-y-[1px]
+         focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/60 focus-visible:ring-offset-2
+         transition-colors disabled:opacity-50 disabled:pointer-events-none" aria-label={$t('header.actions.sync')} on:click={handleLogout}>
           {$t('header.actions.logout')}
         </button>
       {/if}
