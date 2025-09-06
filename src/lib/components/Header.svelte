@@ -4,8 +4,7 @@
   import LanguageSwitcher from './LanguageSwitcher.svelte'
   import { page } from '$app/stores'
   import { t } from 'svelte-i18n'
-  import { role } from '$lib/auth/store'
-  import type { Role } from '$lib/auth/types'
+  import { isAdmin, canEdit, profile } from '$lib/auth/auth' 
 
   // Svelte 5: use callback prop instead of createEventDispatcher
   export let onSync: (() => void) | undefined
@@ -13,26 +12,20 @@
   let open = false
   $: $page.url, (open = false)
 
-  function navFor(r: Role) {
-    if (r === 'anon') {
-      return [
-        { href: '/invite', labelKey: 'header.nav.invite' }
-      ] as const
-    }
-    if (r === 'editor') {
-      return [
-        { href: '/backup', labelKey: 'header.nav.backup' }
-      ] as const
-    }
-    // admin
-    return [
+  $: items = (
+    $isAdmin ? [
       { href: '/admin', labelKey: 'header.nav.admin' },
       { href: '/settings', labelKey: 'header.nav.settings' }
-    ] as const
-  }
+    ]
+    : $canEdit ? [
+      { href: '/backup', labelKey: 'header.nav.backup' }
+    ]
+    : [
+      { href: '/invite', labelKey: 'header.nav.invite' }
+    ]
+  )
 
-  $: items = navFor($role)
-  $: showSync = $role === 'editor' || $role === 'admin'
+  $: showSyncButton = $isAdmin || $canEdit
 </script>
 
 <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b">
@@ -51,7 +44,7 @@
     </nav>
 
     <div class="hidden md:flex items-center gap-2">
-      {#if showSync}
+      {#if showSyncButton}
         <!-- Uses your .btn class from app.css -->
         <button class="btn" aria-label={$t('header.actions.sync')} on:click={() => onSync?.()}>
           {$t('header.actions.sync')}
@@ -80,11 +73,14 @@
           <NavLink href={n.href} labelKey={n.labelKey} />
         {/each}
         <div class="pt-2 flex items-center gap-2">
-          {#if showSync}
+          {#if showSyncButton}
             <button class="btn w-full" aria-label={$t('header.actions.sync')} on:click={() => onSync?.()}>
               {$t('header.actions.sync')}
             </button>
-          {/if}
+            {/if}
+            <button class="btn w-full" aria-label={$t('header.actions.sync')} on:click={() => onSync?.()}>
+              {$t('header.actions.sync')}
+            </button>
           <LanguageSwitcher />
         </div>
       </nav>

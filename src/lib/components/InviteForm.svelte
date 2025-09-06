@@ -3,6 +3,8 @@
   import { t } from 'svelte-i18n'
   import { acceptInvite } from '$lib/auth/auth'
   import { goto } from '$app/navigation'
+  import { redeemInvite } from '$lib/auth/auth'
+
   import type { Role } from '$lib/auth/types'
 
   let code = ''
@@ -14,19 +16,15 @@
     errorMsg = ''
     successRole = null
     const trimmed = code.trim()
-    if (!trimmed) {
-      errorMsg = $t('invite.errors.empty')
-      return
-    }
+    if (!trimmed) { errorMsg = $t('invite.errors.empty'); return }
+
     busy = true
     try {
-      const role = await acceptInvite(trimmed)
-      successRole = role
-      // Short visual confirmation then redirect based on role
+      const res = await redeemInvite(trimmed)
+      successRole = res.role as Role
       await new Promise((r) => setTimeout(r, 600))
-      if (role === 'admin') await goto('/admin')
-      else if (role === 'editor') await goto('/backup')
-      else await goto('/')
+
+      await goto('/')
     } catch (e: any) {
       errorMsg =
         e?.message === 'INVALID_INVITE'
@@ -47,7 +45,7 @@
   <h1 class="text-xl font-semibold mb-2">{$t('invite.title')}</h1>
   <p class="text-sm text-gray-600 mb-6">{$t('invite.intro')}</p>
 
-  <form class="space-y-3" on:submit={onSubmit} novalidate>
+  <form class="space-y-3" on:submit|preventDefault={onSubmit} novalidate>
     <div>
       <label class="block text-sm font-medium mb-1" for="invite-code">
         {$t('invite.label_code')}
@@ -66,12 +64,6 @@
         aria-describedby={errorMsg ? 'invite-error' : undefined}
       />
     </div>
-
-    {#if errorMsg}
-      <div id="invite-error" class="text-sm text-red-600" role="alert" aria-live="assertive">
-        {errorMsg}
-      </div>
-    {/if}
 
     {#if successRole}
       <div class="text-sm text-green-700" role="status" aria-live="polite">
@@ -98,4 +90,11 @@
       {/if}
     </button>
   </form>
+
+  {#if errorMsg}
+    <div id="invite-error" class="my-4 mx-auto text-sm text-red-600" role="alert" aria-live="assertive">
+      {errorMsg}
+    </div>
+  {/if}
+
 </section>
