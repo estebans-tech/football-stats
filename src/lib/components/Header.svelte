@@ -7,8 +7,7 @@
   import { isAdmin, canEdit, profile } from '$lib/auth/auth' 
 
   // Svelte 5: use callback prop instead of createEventDispatcher
-  export let onSync: (() => void) | undefined
-
+  export let onSync: (() => void) | undefined = undefined
   let open = false
   $: $page.url, (open = false)
 
