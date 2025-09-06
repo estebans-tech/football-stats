@@ -35,5 +35,23 @@
         "invalid_code": "Ogiltig inbjudningskod.",
         "generic": "Något gick fel. Försök igen."
       }
+    },
+  "session": {
+    "create": {
+      "title": "Ny matchdag",
+      "intro": "Välj ett datum och skapa en matchdag i den lokala databasen.",
+      "label_date": "Datum",
+      "label_status": "Status",
+      "status_open": "Öppen",
+      "status_locked": "Låst",
+      "submit": "Skapa matchdag",
+      "submitting": "Skapar…",
+      "success": "Matchdag skapad.",
+      "errors": {
+        "date_required": "Välj ett datum.",
+        "db": "Kunde inte spara. Försök igen.",
+        "duplicate_date": "Matchdag för det här datumet är redan skapad."
+      }
     }
+  }
 }

@@ -35,5 +35,23 @@
       "invalid_code": "Ungültiger Einladungscode.",
       "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
     }
+  },
+  "session": {
+    "create": {
+      "title": "Neuer Spieltag",
+      "intro": "Wähle ein Datum und erstelle einen Spieltag in der lokalen Datenbank.",
+      "label_date": "Datum",
+      "label_status": "Status",
+      "status_open": "Offen",
+      "status_locked": "Gesperrt",
+      "submit": "Spieltag erstellen",
+      "submitting": "Erstelle…",
+      "success": "Spieltag erstellt.",
+      "errors": {
+        "date_required": "Bitte wähle ein Datum.",
+        "db": "Speichern fehlgeschlagen. Bitte erneut versuchen.",
+        "duplicate_date": "Für dieses Datum existiert bereits ein Spieltag."
+      }
+    }
   }
 }

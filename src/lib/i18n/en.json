@@ -35,5 +35,23 @@
       "invalid_code": "Invalid redeem code.",
       "generic": "Something went wrong. Please try again."
     }
+  },
+  "session": {
+    "create": {
+      "title": "New matchday",
+      "intro": "Pick a date and create a matchday in the local database.",
+      "label_date": "Date",
+      "label_status": "Status",
+      "status_open": "Open",
+      "status_locked": "Locked",
+      "submit": "Create matchday",
+      "submitting": "Creating…",
+      "success": "Matchday created.",
+      "errors": {
+        "date_required": "Please choose a date.",
+        "db": "Could not save. Please try again.",
+        "duplicate_date": "A matchday for this date already exists."
+      }
+    }
   }
 }
