@@ -2,6 +2,7 @@
     import { t } from 'svelte-i18n'
     import { observeLocalSessions, softDeleteLocalSession, toggleLocalSessionStatus } from '$lib/data/sessions'
     import { canEdit } from '$lib/auth/auth'
+    import { toasts as toast } from '$lib/ui/toast/store'
 
     const sessions = observeLocalSessions()
     let busyId: string | null = null
@@ -21,11 +22,17 @@
       }
     }
 
-    async function toggleStatus(id: string) {
+    async function toggleStatus(id: string, date: string) {
       toggleBusyId = id
       try {
-        await toggleLocalSessionStatus(id)
-        // optionally toast based on new status if you want (not required)
+        const next = await toggleLocalSessionStatus(id)
+        if (next === 'locked') {
+          toast.success($t('session.toast.locked', { values: {date} }))
+        } else {
+          toast.success($t('session.toast.unlocked', { values: {date} }))
+        }
+      } catch (e) {
+        toast.danger($t('session.toast.error'))
       } finally {
         toggleBusyId = null
       }
@@ -63,7 +70,7 @@
                 <button
                 class="btn {s.status === 'locked' ? 'btn-warning' : 'btn-soft'}"
                 disabled={toggleBusyId === s.id}
-                on:click={() => toggleStatus(s.id)}
+                on:click={() => toggleStatus(s.id, s.date)}
                 aria-busy={toggleBusyId === s.id ? 'true' : 'false'}
               >
                 {#if toggleBusyId === s.id}

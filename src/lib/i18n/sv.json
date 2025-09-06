@@ -1,6 +1,7 @@
 {
   "brand": { "title": "Käfigkicker - Stats" },
   "lang": { "en": "Engelska", "de": "Tyska", "sv": "Svenska" },
+  "a11y": { "close": "Stäng" },
   "header": {
     "nav": {
       "home": "Hem",
@@ -61,6 +62,11 @@
       "delete": "Ta bort",
       "lock": "Lås",
       "unlock": "Lås upp"
+    },
+    "toast": {
+      "locked": "Matchdag {date} låst.",
+      "unlocked": "Matchdag {date} upplåst.",
+      "error": "Kunde inte ändra status. Försök igen."
     }
   }
 }

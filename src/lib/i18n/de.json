@@ -1,6 +1,7 @@
 {
   "brand": { "title": "Käfigkicker - Stats" },
   "lang": { "en": "Englisch", "de": "Deutsch", "sv": "Schwedisch" },
+  "a11y": { "close": "Schließen" },
   "header": {
     "nav": {
       "home": "Startseite",
@@ -61,6 +62,11 @@
       "delete": "Löschen",
       "lock": "Sperren",
       "unlock": "Entsperren"
+    },
+    "toast": {
+      "locked": "Spieltag am {date} gesperrt.",
+      "unlocked": "Spieltag am {date} entsperrt.",
+      "error": "Status konnte nicht geändert werden. Bitte erneut versuchen."
     }
   }
 }
