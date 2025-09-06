@@ -1,58 +1,18 @@
 {
-  "common": {
-    "lock": "Lås",
-    "unlock": "Lås upp",
-    "delete": "Ta bort",
-    "edit": "Redigera",
-    "view": "Visa",
-    "error_generic": "Något gick fel",
-    "not_authorised": "Inte tillåtet",
-    "loading": "Laddar…"
-  },
-  "session_create": {
-    "session": {
-      "label": "Datum",
-      "create": "Skapa matchdag",
-      "creating": "Skapar...",
-      "exists": "Det finns redan en matchdag för det valda datumet",
-      "error": "Kunde inte skapa matchdag",
-      "exists_with_date": "Matchdag {date} finns redan",
-      "created_with_date": "Matchdag {date} skapad"
+  "brand": { "title": "Käfigkicker - Stats" },
+  "header": {
+    "nav": {
+      "home": "Hem",
+      "sessions": "Matchdagar",
+      "reports": "Rapporter",
+      "settings": "Inställningar",
+      "language": "Språk"
     },
-    "match": {
-      "create4": "4 matcher",
-      "addOne": "+ Lägg till match",
-      "report": "Visa dagsrapport",
-      "status": {
-        "locked": "Låst",
-        "open": "Öppen"
-      },
-      "delete": "Ta bort matchdag"
+    "a11y": {
+      "menu_button": "Öppna meny",
+      "language_button": "Öppna språkmeny",
+      "primary_navigation": "Primär navigering"
     }
   },
-  "match_day": {
-    "match": {
-      "ensure_four_ready": "4 matcher är redo",
-      "create_failed": "Kunde inte skapa matcher",
-      "added_one": "Match tillagd",
-      "add_failed": "Kunde inte lägga till match",
-      "locked": "Matchdag låst",
-      "unlocked": "Matchdag upplåst",
-      "lock_change_failed": "Kunde inte ändra lås",
-      "delete_confirm_with_date": "Radera matchdagen {date}? Detta går inte att ångra.",
-      "ensure_four_title": "Skapar upp till #4 om inga matcher finns än",
-      "create4": "Skapa 4 matcher",
-      "addOne": "+ Lägg till match",
-      "noSession": "Ingen matchdag vald",
-      "noMatches": "Inga matcher än",
-      "numbered": "Match #{num}",
-      "report": "Matchrapport"
-    }
-  },
-  "home": {
-    "title": "Dagens matchdag",
-    "noSessions": "Inga matchdagar ännu",
-    "load_failed": "Kunde inte ladda matchdagar",
-    "no_sessions": "Inga matchdagar ännu"
-  }
+  "lang": { "en": "Engelska", "de": "Tyska", "sv": "Svenska" }
 }

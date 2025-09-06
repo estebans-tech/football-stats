@@ -1,59 +1,18 @@
 {
-  "common": {
-    "lock": "Sperren",
-    "unlock": "Entsperren",
-    "delete": "Löschen",
-    "edit": "Bearbeiten",
-    "view": "Anzeigen",
-    "error_generic": "Etwas ist schiefgelaufen",
-    "not_authorised": "Nicht erlaubt",
-    "loading": "Lädt…"
-  },
-  "session_create": {
-    "session": {
-      "label": "Datum",
-      "create": "Spieltag erstellen",
-      "creating": "Wird erstellt…",
-      "exists": "Ein Spieltag für dieses Datum existiert bereits",
-      "error": "Spieltag konnte nicht erstellt werden",
-      "missingDate": "Bitte ein Datum auswählen",
-      "exists_with_date": "Spieltag {date} existiert bereits",
-      "created_with_date": "Spieltag {date} erstellt"
+  "brand": { "title": "Käfigkicker - Stats" },
+  "header": {
+    "nav": {
+      "home": "Startseite",
+      "sessions": "Spieltage",
+      "reports": "Berichte",
+      "settings": "Einstellungen",
+      "language": "Sprache"
     },
-    "match": {
-      "create4": "4 Spiele erstellen",
-      "addOne": "+ Spiel hinzufügen",
-      "report": "Spielbericht anzeigen",
-      "status": {
-        "locked": "Gesperrt",
-        "open": "Offen"
-      },
-      "delete": "Spieltag löschen"
+    "a11y": {
+      "menu_button": "Menü öffnen",
+      "language_button": "Sprachauswahl öffnen",
+      "primary_navigation": "Hauptnavigation"
     }
   },
-  "match_day": {
-    "match": {
-      "ensure_four_ready": "4 Spiele sind bereit",
-      "create_failed": "Konnte Spiele nicht erstellen",
-      "added_one": "Spiel hinzugefügt",
-      "add_failed": "Konnte Spiel nicht hinzufügen",
-      "locked": "Spieltag gesperrt",
-      "unlocked": "Spieltag entsperrt",
-      "lock_change_failed": "Konnte Sperre nicht ändern",
-      "delete_confirm_with_date": "Spieltag {date} löschen? Dies kann nicht rückgängig gemacht werden.",
-      "ensure_four_title": "Erstellt bis #4, falls noch keine Spiele existieren",
-      "create4": "4 Spiele erstellen",
-      "addOne": "+ Spiel hinzufügen",
-      "noSession": "Kein Spieltag ausgewählt",
-      "noMatches": "Noch keine Spiele",
-      "numbered": "Spiel #{num}",
-      "report": "Spielbericht"
-    }
-  },
-  "home": {
-    "title": "Spiel des Tages",
-    "noSessions": "Noch keine Spieltage",
-    "load_failed": "Spieltage konnten nicht geladen werden",
-    "no_sessions": "Noch keine Spieltage"
-  }
+  "lang": { "en": "Englisch", "de": "Deutsch", "sv": "Schwedisch" }
 }

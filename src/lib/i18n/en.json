@@ -1,60 +1,18 @@
 {
-  "common": {
-    "lock": "Lock",
-    "unlock": "Unlock",
-    "delete": "Delete",
-    "edit": "Edit",
-    "view": "View",
-    "error_generic": "Something went wrong",
-    "not_authorised": "Not allowed",
-    "loading": "Loading…"
-
-  },
-  "session_create": {
-    "session": {
-        "label": "Date",
-        "create": "Create match day",
-        "creating": "Creating…",
-        "exists": "A match day already exists for the selected date",
-        "error": "Could not create match day",
-        "missingDate": "Please select a date",
-        "exists_with_date": "Match day {date} already exists",
-        "created_with_date": "Match day {date} created"
-      },
-      "match": {
-        "create4": "Create 4 matches",
-        "addOne": "+ Add match",
-        "report": "Show match day report",
-        "status": {
-          "locked": "Locked",
-          "open": "Open"
-        },
-        "delete": "Delete match day"
-      }
-  },
-  "match_day": {
-    "match": {
-      "ensure_four_ready": "4 matches are ready",
-      "create_failed": "Could not create matches",
-      "added_one": "Match added",
-      "add_failed": "Could not add match",
-      "locked": "Match day locked",
-      "unlocked": "Match day unlocked",
-      "lock_change_failed": "Could not change lock",
-      "delete_confirm_with_date": "Delete match day {date}? This cannot be undone.",
-      "ensure_four_title": "Creates up to #4 if none exist yet",
-      "create4": "Create 4 matches",
-      "addOne": "+ Add match",
-      "noSession": "No match day selected",
-      "noMatches": "No matches yet",
-      "numbered": "Match #{num}",
-      "report": "Match day report"
+  "brand": { "title": "Käfigkicker - Stats" },
+  "header": {
+    "nav": {
+      "home": "Home",
+      "sessions": "Matchdays",
+      "reports": "Reports",
+      "settings": "Settings",
+      "language": "Language"
+    },
+    "a11y": {
+      "menu_button": "Open menu",
+      "language_button": "Open language menu",
+      "primary_navigation": "Primary navigation"  
     }
   },
-  "home": {
-    "title": "Game of the day",
-    "noSessions": "No match days yet",
-    "load_failed": "Could not load match days",
-    "no_sessions": "No match days yet"
-  }
+  "lang": { "en": "English", "de": "German", "sv": "Swedish" }
 }
