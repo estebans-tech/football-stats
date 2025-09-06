@@ -4,7 +4,8 @@
     import {
       observeLocalMatchCounts,
       createLocalMatch,
-      createLocalMatches
+      createLocalMatches,
+      softDeleteLastLocalMatch
   } from '$lib/data/matches'
     import { canEdit } from '$lib/auth/auth'
     import { toasts as toast } from '$lib/ui/toast/store'
@@ -17,6 +18,7 @@
     let addBusyId: string | null = null
     let addBusy = false
     let counts: Record<string, number> = {}
+    let removeOneBusyId: string | null = null
 
     async function remove(id: string, date: string) {
       const ok = confirm($t('session.delete_confirm'))
@@ -72,6 +74,19 @@
       }
     }
     
+    async function removeOne(sessionId: string) {
+      removeOneBusyId = sessionId
+      try {
+        const res = await softDeleteLastLocalMatch(sessionId)
+        if (res) toast.warning($t('session.match.toast.removed_one'))
+        else toast.info($t('session.match.toast.nothing_to_remove'))
+      } catch {
+        toast.danger($t('session.match.toast.error'))
+      } finally {
+        removeOneBusyId = null
+      }
+    }
+
     $: canEditMatch = $canEdit
     $: counts = $matchCounts
   </script>
@@ -111,7 +126,7 @@
                 disabled={count > 0 || addBusyId === s.id}
                 aria-busy={addBusyId === s.id ? 'true' : 'false'}
                 on:click={() => addFour(s.id)}
-                title={count > 0 ? $t('match.hint.add_four_disabled') : ''}
+                title={count > 0 ? $t('sesssion.match.hint.add_four_disabled') : ''}
                 >
                 {#if addBusyId === s.id}
                   <span class="spinner mr-1"></span>
@@ -119,16 +134,27 @@
                 +4
               </button>
                 <!-- add 1: always enabled -->
-              <button
-                class="btn btn-primary"
-                disabled={addBusyId === s.id}
-                aria-busy={addBusyId === s.id ? 'true' : 'false'}
-                on:click={() => addOne(s.id)}
+                <button
+                  class="btn btn-primary"
+                  disabled={addBusyId === s.id}
+                  aria-busy={addBusyId === s.id ? 'true' : 'false'}
+                  on:click={() => addOne(s.id)}
+                  >
+                  {#if addBusyId === s.id}
+                    <span class="spinner mr-1"></span>
+                  {/if}
+                  +1
+                </button>
+                <!-- -1 (delete last match) -->
+                <button
+                  class="btn btn-danger"
+                  disabled={count === 0 || removeOneBusyId === s.id}
+                  aria-busy={removeOneBusyId === s.id ? 'true' : 'false'}
+                  on:click={() => removeOne(s.id)}
+                  title={count === 0 ? $t('session.match.hint.remove_one_disabled') : ''}
                 >
-                {#if addBusyId === s.id}
-                  <span class="spinner mr-1"></span>
-                {/if}
-                +1
+                  {#if removeOneBusyId === s.id}<span class="spinner mr-1"></span>{/if}
+                  −1
                 </button>
                 <button
                 class="btn {s.status === 'locked' ? 'btn-warning' : 'btn-soft'}"

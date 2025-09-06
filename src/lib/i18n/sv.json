@@ -73,10 +73,13 @@
         "toast": {
           "added_one": "La till 1 match.",
           "added_four": "La till 4 matcher.",
-          "error": "Kunde inte lägga till matcher. Försök igen."
+          "error": "Kunde inte lägga till matcher. Försök igen.",
+          "removed_one": "Tog bort 1 match.",
+          "nothing_to_remove": "Det finns inga matcher att ta bort."
         },
         "hint": {
-          "add_four_disabled": "Du kan bara lägga till fyra när det inte finns några matcher."
+          "add_four_disabled": "Du kan bara lägga till fyra när det inte finns några matcher.",
+          "remove_one_disabled": "Det finns inga matcher att ta bort."
         }
       }
   }

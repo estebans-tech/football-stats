@@ -73,10 +73,13 @@
       "toast": {
         "added_one": "Added 1 match.",
         "added_four": "Added 4 matches.",
-        "error": "Could not add matches. Please try again."
+        "error": "Could not add matches. Please try again.",
+        "removed_one": "Removed 1 match.",
+        "nothing_to_remove": "No matches to remove."
       },
       "hint": {
-        "add_four_disabled": "You can only add 4 when there are no matches yet."
+        "add_four_disabled": "You can only add 4 when there are no matches yet.",
+        "remove_one_disabled": "There are no matches to remove."
       }
     }
   }

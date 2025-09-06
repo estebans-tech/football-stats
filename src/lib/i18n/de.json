@@ -73,10 +73,13 @@
         "toast": {
           "added_one": "1 Spiel hinzugefügt.",
           "added_four": "4 Spiele hinzugefügt.",
-          "error": "Spiele konnten nicht hinzugefügt werden. Bitte erneut versuchen."
+          "error": "Spiele konnten nicht hinzugefügt werden. Bitte erneut versuchen.",
+          "removed_one": "1 Spiel entfernt.",
+          "nothing_to_remove": "Keine Spiele zum Entfernen."
         },
         "hint": {
-          "add_four_disabled": "Vier Spiele sind nur möglich, wenn noch keine existieren."
+          "add_four_disabled": "Vier Spiele sind nur möglich, wenn noch keine existieren.",
+          "remove_one_disabled": "Es gibt keine Spiele zum Entfernen."
         }
       }
   }

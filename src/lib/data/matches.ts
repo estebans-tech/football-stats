@@ -79,3 +79,18 @@ export function observeLocalMatchCounts() {
     return () => sub.unsubscribe()
   })
 }
+
+// Soft-delete the most recently added (highest orderNo) non-deleted match for a session
+export async function softDeleteLastLocalMatch(sessionId: string): Promise<MatchLocal | null> {
+  const db = assertDb()
+  const arr = await db.matches_local
+    .where('sessionId').equals(sessionId)
+    .filter((m: MatchLocal) => !m.deletedAtLocal)
+    .sortBy('orderNo') // Collection.sortBy is valid; we aren't using orderBy here
+  const last = arr[arr.length - 1]
+  if (!last) return null
+
+  const now = Date.now()
+  await db.matches_local.update(last.id, { deletedAtLocal: now, updatedAtLocal: now })
+  return { ...last, deletedAtLocal: now, updatedAtLocal: now }
+}
