@@ -82,5 +82,14 @@
         "remove_one_disabled": "There are no matches to remove."
       }
     }
+  },
+  "match_day": {
+    "match": {
+      "numbered": "Match {num}"
+    }
+  },
+  "common": {
+    "edit": "Edit",
+    "view": "View"
   }
 }

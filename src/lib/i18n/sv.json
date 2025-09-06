@@ -82,5 +82,14 @@
           "remove_one_disabled": "Det finns inga matcher att ta bort."
         }
       }
+  },
+  "match_day": {
+    "match": {
+      "numbered": "Match {num}"
+    }
+  },
+  "common": {
+    "edit": "Redigera",
+    "view": "Visa"
   }
 }

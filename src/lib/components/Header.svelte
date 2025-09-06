@@ -1,7 +1,6 @@
 <script lang="ts">
-  // Comments in English
-  import NavLink from './NavLink.svelte'
-  import LanguageSwitcher from './LanguageSwitcher.svelte'
+  import NavLink from '$lib/components/NavLink.svelte'
+  import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte'
   import { page } from '$app/stores'
   import { t } from 'svelte-i18n'
   import { isAdmin, canEdit, signOut } from '$lib/auth/auth'

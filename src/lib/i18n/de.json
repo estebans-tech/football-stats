@@ -82,5 +82,14 @@
           "remove_one_disabled": "Es gibt keine Spiele zum Entfernen."
         }
       }
+  },
+  "match_day": {
+    "match": {
+      "numbered": "Spiel {num}"
+    }
+  },
+  "common": {
+    "edit": "Bearbeiten",
+    "view": "Ansehen"
   }
 }

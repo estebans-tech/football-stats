@@ -108,3 +108,24 @@ export async function softDeleteLastLocalMatch(sessionId: string): Promise<Match
   await db.matches_local.update(last.id, { deletedAtLocal: now, updatedAtLocal: now })
   return { ...last, deletedAtLocal: now, updatedAtLocal: now }
 }
+
+/** Live map: sessionId -> matches[] (sorted by orderNo, non-deleted) */
+export function observeLocalMatchesMap() {
+  const db = assertDb()
+  return readable<Record<string, MatchLocal[]>>({}, (set) => {
+    const sub = liveQuery(async () => {
+      // Table.orderBy is fine here; we’re not on a Collection
+      const rows = await db.matches_local.orderBy('orderNo').toArray()
+      const map: Record<string, MatchLocal[]> = {}
+      for (const m of rows) {
+        if (m.deletedAtLocal) continue
+        ;(map[m.sessionId] ||= []).push(m)
+      }
+      return map
+    }).subscribe({
+      next: (map) => set(map),
+      error: () => set({})
+    })
+    return () => sub.unsubscribe()
+  })
+}
