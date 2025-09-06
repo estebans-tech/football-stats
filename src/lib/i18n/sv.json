@@ -4,19 +4,33 @@
   "header": {
     "nav": {
       "home": "Hem",
-      "sessions": "Matchdagar",
-      "reports": "Rapporter",
-      "invite": "Inbjudan",
+      "invite": "Bjud in",
+      "backup": "Backup",
+      "admin": "Admin",
       "settings": "Inställningar",
       "language": "Språk"
     },
-    "actions": {
-      "sync": "Synka"
-    },
+    "actions": { "sync": "Synka" },
     "a11y": {
       "menu_button": "Öppna meny",
       "language_button": "Öppna språkmeny",
       "primary_navigation": "Primär navigering"
     }
-  }
+  },
+  "invite": {
+      "title": "Inbjudan",
+      "intro": "Ange din inbjudningskod för att få åtkomst.",
+      "label_code": "Inbjudningskod",
+      "placeholder": "t.ex. ADMIN-2024 eller EDITOR-2024",
+      "submit": "Logga in",
+      "submitting": "Loggar in…",
+      "success_admin": "Välkommen! Admin-behörighet aktiverad.",
+      "success_editor": "Välkommen! Editor-behörighet aktiverad.",
+      "redirecting": "Omdirigerar…",
+      "errors": {
+        "empty": "Fyll i en kod.",
+        "invalid_code": "Ogiltig inbjudningskod.",
+        "generic": "Något gick fel. Försök igen."
+      }
+    }
 }

@@ -16,5 +16,21 @@
       "language_button": "Sprachauswahl öffnen",
       "primary_navigation": "Hauptnavigation"
     }
+  },
+  "invite": {
+    "title": "Einladung",
+    "intro": "Gib deinen Einladungscode ein, um Zugriff zu erhalten.",
+    "label_code": "Einladungscode",
+    "placeholder": "z. B. ADMIN-2024 oder EDITOR-2024",
+    "submit": "Einloggen",
+    "submitting": "Anmelden…",
+    "success_admin": "Willkommen! Admin-Rechte aktiviert.",
+    "success_editor": "Willkommen! Editor-Rechte aktiviert.",
+    "redirecting": "Leite weiter…",
+    "errors": {
+      "empty": "Bitte gib einen Code ein.",
+      "invalid_code": "Ungültiger Einladungscode.",
+      "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+    }
   }
 }

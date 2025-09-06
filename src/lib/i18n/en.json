@@ -16,5 +16,21 @@
       "language_button": "Sprachauswahl öffnen",
       "primary_navigation": "Hauptnavigation"
     }
+  },
+  "invite": {
+    "title": "Invitation",
+    "intro": "Enter your invitation code to gain access.",
+    "label_code": "Invitation code",
+    "placeholder": "e.g. ADMIN-2024 or EDITOR-2024",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "success_admin": "Welcome! Admin privileges enabled.",
+    "success_editor": "Welcome! Editor privileges enabled.",
+    "redirecting": "Redirecting…",
+    "errors": {
+      "empty": "Please enter a code.",
+      "invalid_code": "Invalid invitation code.",
+      "generic": "Something went wrong. Please try again."
+    }
   }
 }
