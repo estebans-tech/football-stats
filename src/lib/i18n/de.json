@@ -67,6 +67,17 @@
       "locked": "Spieltag am {date} gesperrt.",
       "unlocked": "Spieltag am {date} entsperrt.",
       "error": "Status konnte nicht geändert werden. Bitte erneut versuchen."
-    }
+    },
+    "match": {
+        "count": "{n} Spiele",
+        "toast": {
+          "added_one": "1 Spiel hinzugefügt.",
+          "added_four": "4 Spiele hinzugefügt.",
+          "error": "Spiele konnten nicht hinzugefügt werden. Bitte erneut versuchen."
+        },
+        "hint": {
+          "add_four_disabled": "Vier Spiele sind nur möglich, wenn noch keine existieren."
+        }
+      }
   }
 }

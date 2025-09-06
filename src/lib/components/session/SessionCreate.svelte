@@ -4,7 +4,7 @@
     import type { SessionStatus } from '$lib/types/domain'
     import { createLocalSession } from '$lib/data/sessions' // helper i sessions.ts
     import { isoDate } from '$lib/utils/utils'
-  
+
     let date = ''                // yyyy-mm-dd
     let status: SessionStatus = 'open'
     let busy = false

@@ -67,6 +67,17 @@
       "locked": "Matchday on {date} locked.",
       "unlocked": "Matchday on {date} unlocked.",
       "error": "Could not change status. Please try again."
+    },
+    "match": {
+      "count": "{n} matches",
+      "toast": {
+        "added_one": "Added 1 match.",
+        "added_four": "Added 4 matches.",
+        "error": "Could not add matches. Please try again."
+      },
+      "hint": {
+        "add_four_disabled": "You can only add 4 when there are no matches yet."
+      }
     }
   }
 }

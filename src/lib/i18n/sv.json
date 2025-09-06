@@ -67,6 +67,17 @@
       "locked": "Matchdag {date} låst.",
       "unlocked": "Matchdag {date} upplåst.",
       "error": "Kunde inte ändra status. Försök igen."
-    }
+    },
+    "match": {
+        "count": "{n} matcher",
+        "toast": {
+          "added_one": "La till 1 match.",
+          "added_four": "La till 4 matcher.",
+          "error": "Kunde inte lägga till matcher. Försök igen."
+        },
+        "hint": {
+          "add_four_disabled": "Du kan bara lägga till fyra när det inte finns några matcher."
+        }
+      }
   }
 }

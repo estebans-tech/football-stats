@@ -1,12 +1,22 @@
 <script lang="ts">
     import { t } from 'svelte-i18n'
     import { observeLocalSessions, softDeleteLocalSession, toggleLocalSessionStatus } from '$lib/data/sessions'
+    import {
+      observeLocalMatchCounts,
+      createLocalMatch,
+      createLocalMatches
+  } from '$lib/data/matches'
     import { canEdit } from '$lib/auth/auth'
     import { toasts as toast } from '$lib/ui/toast/store'
 
     const sessions = observeLocalSessions()
+    const matchCounts = observeLocalMatchCounts()
+
     let busyId: string | null = null
     let toggleBusyId: string | null = null
+    let addBusyId: string | null = null
+    let addBusy = false
+    let counts: Record<string, number> = {}
 
     async function remove(id: string, date: string) {
       const ok = confirm($t('session.delete_confirm'))
@@ -37,7 +47,33 @@
         toggleBusyId = null
       }
     }
+
+    async function addOne(sessionId: string) {
+      addBusyId = sessionId
+      try {
+        await createLocalMatch(sessionId)
+        toast.success($t('session.match.toast.added_one'))
+      } catch {
+        toast.danger($t('session.match.toast.error'))
+      } finally {
+        addBusyId = null
+      }
+    }
+
+    async function addFour(sessionId: string) {
+    addBusy = true
+      try {
+        await createLocalMatches(sessionId, 4)
+        toast.success($t('session.match.toast.added_four'))
+      } catch {
+        toast.danger($t('session.match.toast.error'))
+      } finally {
+        addBusy = false
+      }
+    }
+    
     $: canEditMatch = $canEdit
+    $: counts = $matchCounts
   </script>
   
   <section class="mx-auto max-w-2xl w-full">
@@ -50,6 +86,8 @@
     {:else}
       <div class="space-y-2">
           {#each $sessions as s (s.id)}
+          <!-- per-row match count store -->
+          {@const count = counts[s.id] ?? 0}
           <div
           class={`rounded-xl border bg-white px-4 py-3 flex items-center justify-between p-4 mb-6 
                 ${(s.status === 'locked' && canEditMatch)
@@ -59,14 +97,39 @@
             <div class="flex items-center gap-2">
               <!-- date -->
               <div class="font-medium">{s.date}</div>
-              {#if s.status !== 'locked' && canEditMatch}
-                <span class="text-xs px-2 py-0.5 rounded-full border">
-                  {$t('session.status.locked')}
-                </span>
-              {/if}
-            </div>
+                {#if s.status !== 'locked' && canEditMatch}
+                  <span class="text-xs px-2 py-0.5 rounded-full border">
+                    {$t('session.status.locked')}
+                  </span>
+                {/if}
+              </div>
   
             <div class="flex items-center gap-2">
+              <!-- add 4: only when there are NO matches yet -->
+              <button
+                class="btn btn-primary"
+                disabled={count > 0 || addBusyId === s.id}
+                aria-busy={addBusyId === s.id ? 'true' : 'false'}
+                on:click={() => addFour(s.id)}
+                title={count > 0 ? $t('match.hint.add_four_disabled') : ''}
+                >
+                {#if addBusyId === s.id}
+                  <span class="spinner mr-1"></span>
+                {/if}
+                +4
+              </button>
+                <!-- add 1: always enabled -->
+              <button
+                class="btn btn-primary"
+                disabled={addBusyId === s.id}
+                aria-busy={addBusyId === s.id ? 'true' : 'false'}
+                on:click={() => addOne(s.id)}
+                >
+                {#if addBusyId === s.id}
+                  <span class="spinner mr-1"></span>
+                {/if}
+                +1
+                </button>
                 <button
                 class="btn {s.status === 'locked' ? 'btn-warning' : 'btn-soft'}"
                 disabled={toggleBusyId === s.id}
