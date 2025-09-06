@@ -3,21 +3,21 @@
   "lang": { "en": "Englisch", "de": "Deutsch", "sv": "Schwedisch" },
   "header": {
     "nav": {
-      "home": "Startseite",
-      "invite": "Einladen",
+      "home": "Home",
+      "invite": "Invite",
       "backup": "Backup",
       "admin": "Admin",
-      "settings": "Einstellungen",
-      "language": "Sprache"
+      "settings": "Settings",
+      "language": "Language"
     },
     "actions": { "sync": "Sync" },
     "a11y": {
-      "menu_button": "Menü öffnen",
-      "language_button": "Sprachauswahl öffnen",
-      "primary_navigation": "Hauptnavigation"
+      "menu_button": "Open menu",
+      "language_button": "Open language menu",
+      "primary_navigation": "Primary navigation"
     }
   },
-  "invite": {
+ "invite": {
     "title": "Invitation",
     "intro": "Enter your invitation code to gain access.",
     "label_code": "Invitation code",
