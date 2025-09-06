@@ -1,18 +1,22 @@
 {
   "brand": { "title": "Käfigkicker - Stats" },
+  "lang": { "en": "Engelska", "de": "Tyska", "sv": "Svenska" },
   "header": {
     "nav": {
       "home": "Hem",
       "sessions": "Matchdagar",
       "reports": "Rapporter",
+      "invite": "Inbjudan",
       "settings": "Inställningar",
       "language": "Språk"
+    },
+    "actions": {
+      "sync": "Synka"
     },
     "a11y": {
       "menu_button": "Öppna meny",
       "language_button": "Öppna språkmeny",
       "primary_navigation": "Primär navigering"
     }
-  },
-  "lang": { "en": "Engelska", "de": "Tyska", "sv": "Svenska" }
+  }
 }

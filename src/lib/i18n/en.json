@@ -1,18 +1,20 @@
 {
   "brand": { "title": "Käfigkicker - Stats" },
+  "lang": { "en": "Englisch", "de": "Deutsch", "sv": "Schwedisch" },
   "header": {
     "nav": {
-      "home": "Home",
-      "sessions": "Matchdays",
-      "reports": "Reports",
-      "settings": "Settings",
-      "language": "Language"
+      "home": "Startseite",
+      "invite": "Einladen",
+      "backup": "Backup",
+      "admin": "Admin",
+      "settings": "Einstellungen",
+      "language": "Sprache"
     },
+    "actions": { "sync": "Sync" },
     "a11y": {
-      "menu_button": "Open menu",
-      "language_button": "Open language menu",
-      "primary_navigation": "Primary navigation"  
+      "menu_button": "Menü öffnen",
+      "language_button": "Sprachauswahl öffnen",
+      "primary_navigation": "Hauptnavigation"
     }
-  },
-  "lang": { "en": "English", "de": "German", "sv": "Swedish" }
+  }
 }
