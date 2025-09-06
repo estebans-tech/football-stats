@@ -3,7 +3,9 @@
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
-	"engines": { "node": ">=20.11" },
+	"engines": {
+		"node": ">=20.11"
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -14,7 +16,7 @@
 		"format": "prettier --write .",
 		"typecheck": "svelte-kit sync && tsc --noEmit",
 		"lint": "prettier --check . && eslint .",
-  		"lint:fix": "eslint . --fix"
+		"lint:fix": "eslint . --fix"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",

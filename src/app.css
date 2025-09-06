@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition cursor-pointer disabled:opacity-50;
+}
+
+.btn-outline {
+  @apply border hover:bg-gray-100 text-black border-gray-100;
+}
+
+.btn-primary {
+  @apply bg-black text-white hover:bg-gray-800;
+}
+
+.btn-danger {
+  @apply border border-amber-100 text-red-600 hover:bg-red-100;
+}
+
+.btn-success {
+  @apply text-white  hover:bg-gray-600 bg-green-700;
+}
+
+.btn-report {
+  @apply border border-blue-300 text-blue-600 hover:bg-blue-50;
+}
+
+.btn-icon {
+  @apply inline-flex items-center gap-2;
+}
