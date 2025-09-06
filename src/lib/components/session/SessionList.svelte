@@ -123,7 +123,7 @@
               <!-- add 4: only when there are NO matches yet -->
               <button
                 class="btn btn-primary"
-                disabled={count > 0 || addBusyId === s.id}
+                disabled={count > 0 || addBusyId === s.id || s.status === 'locked'}
                 aria-busy={addBusyId === s.id ? 'true' : 'false'}
                 on:click={() => addFour(s.id)}
                 title={count > 0 ? $t('sesssion.match.hint.add_four_disabled') : ''}
@@ -136,7 +136,7 @@
                 <!-- add 1: always enabled -->
                 <button
                   class="btn btn-primary"
-                  disabled={addBusyId === s.id}
+                  disabled={addBusyId === s.id || s.status === 'locked'}
                   aria-busy={addBusyId === s.id ? 'true' : 'false'}
                   on:click={() => addOne(s.id)}
                   >
@@ -148,7 +148,7 @@
                 <!-- -1 (delete last match) -->
                 <button
                   class="btn btn-danger"
-                  disabled={count === 0 || removeOneBusyId === s.id}
+                  disabled={count === 0 || removeOneBusyId === s.id || s.status === 'locked'}
                   aria-busy={removeOneBusyId === s.id ? 'true' : 'false'}
                   on:click={() => removeOne(s.id)}
                   title={count === 0 ? $t('session.match.hint.remove_one_disabled') : ''}

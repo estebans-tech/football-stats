@@ -2,9 +2,17 @@ import { readable } from 'svelte/store'
 import { liveQuery } from 'dexie'
 import { assertDb } from '$lib/db/dexie'
 import { uid } from '$lib/utils/utils'             // your existing uid
-import type { MatchLocal } from '$lib/types/domain'
+import type { MatchLocal, SessionLocal } from '$lib/types/domain'
 
 function now() { return Date.now() }
+
+// Guard: throw if session is missing or locked
+async function ensureUnlocked(sessionId: string) {
+  const db = assertDb()
+  const s = (await db.sessions_local.get(sessionId)) as SessionLocal | undefined
+  if (!s || s.deletedAtLocal) throw new Error('SESSION_NOT_FOUND')
+  if (s.status === 'locked') throw new Error('SESSION_LOCKED')
+}
 
 // Live count per sessionId
 export function observeLocalMatchCount(sessionId: string) {
@@ -34,6 +42,8 @@ async function nextOrderNo(sessionId: string) {
 }
 
 export async function createLocalMatch(sessionId: string): Promise<MatchLocal> {
+  await ensureUnlocked(sessionId)  // ⬅️ guard
+
   const db = assertDb()
   const orderNo = await nextOrderNo(sessionId)
   const match: MatchLocal = {
@@ -48,6 +58,8 @@ export async function createLocalMatch(sessionId: string): Promise<MatchLocal> {
 }
 
 export async function createLocalMatches(sessionId: string, count: number): Promise<MatchLocal[]> {
+  await ensureUnlocked(sessionId)  // ⬅️ guard
+
   if (count <= 0) return []
   const db = assertDb()
   const start = await nextOrderNo(sessionId)
@@ -82,6 +94,8 @@ export function observeLocalMatchCounts() {
 
 // Soft-delete the most recently added (highest orderNo) non-deleted match for a session
 export async function softDeleteLastLocalMatch(sessionId: string): Promise<MatchLocal | null> {
+  await ensureUnlocked(sessionId)  // ⬅️ guard
+
   const db = assertDb()
   const arr = await db.matches_local
     .where('sessionId').equals(sessionId)
