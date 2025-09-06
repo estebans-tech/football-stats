@@ -1,19 +1,9 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
-  import SessionCreate from '$lib/components/SessionCreate.svelte'
+  import SessionCreate from '$lib/components/session/SessionCreate.svelte'
   import SessionList from '$lib/components/session/SessionList.svelte'
-  import { isAdmin, canEdit, signOut } from '$lib/auth/auth'
-
-  let message = ''
-
-  const load = async () => {
-    message = 'Loaded'
-  }
+  import { isAdmin, canEdit } from '$lib/auth/auth'
 
   $: canAddMatch = $isAdmin || $canEdit
-
-
-  onMount(load)
 </script>
 
 
@@ -24,6 +14,4 @@
   {/if}
 
   <SessionList />
-
-  Page {{ message }}
 </section>
