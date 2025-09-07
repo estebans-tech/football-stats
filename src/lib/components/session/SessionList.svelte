@@ -198,7 +198,7 @@
                 <li class="rounded-xl border border-gray-300 p-4 flex items-center justify-between">
                   <div class="font-medium">{$t('match_day.match.numbered', { values: { num: m.orderNo } })}</div>
                   <a
-                    href={`/matches/${m.id}`}
+                    href={`/matches/${m.id}/edit/`}
                     class="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50"
                   >{canEdit ? $t('common.edit') : $t('common.view')}</a>
                 </li>

@@ -86,9 +86,11 @@
   "match_day": {
     "match": {
       "numbered": "Match {num}",
-      "lineups": { "title": "Lineups", "empty": "No lineups yet." },
-      "goals": { "title": "Goals", "empty": "No goals yet.", "assist": "assist: {name}" },
-      "team": { "home": "Home", "away": "Away" },
+      "lineups": { "title": "Lineups", "empty": "No lineups yet.", "available": "Available players" },
+      "half_label": "Half",
+      "select_player": "Select player",
+      "goals": { "scorer": "Scorer", "assist": "Assist", "minute": "Minute", "title": "Goals", "empty": "No goals yet." },
+      "team": { "label": "Team", "home": "Home", "away": "Away" },
       "half": "H{n}"
     }
   },
@@ -97,7 +99,7 @@
     "view": "View",
     "loading": "Loading…",
     "not_found": "Not found.", 
-    "back": "Back" 
+    "toggle": "Toggle", "add": "Add", "remove": "Remove", "delete": "Delete", "none": "None", "back": "Back" 
   },
   "sync": {
     "players": {

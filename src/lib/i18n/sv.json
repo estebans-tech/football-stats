@@ -96,7 +96,8 @@
     "edit": "Redigera",
     "loading": "Laddar…",
     "not_found": "Hittades inte.",
-    "back": "Tillbaka" 
+    "toggle": "Toggle", "add": "Add", "remove": "Remove", "delete": "Delete", "none": "None", "back": "Tillbaka" 
+
   },
   "sync": {
     "players": {
