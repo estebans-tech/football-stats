@@ -1,4 +1,9 @@
 export type ULID = string;
+export type SessionStatus = 'open' | 'locked'
+export type Half = 1 | 2
+export type TeamColor= 'red' | 'black'
+export type TeamAB = 'A' | 'B'
+export type DedupeMode = 'keep-recent' | 'keep-A' | 'keep-B'
 
 export interface BaseLocal {
   id: ULID;
@@ -11,6 +16,7 @@ export interface PlayerLocal extends BaseLocal {
   createdAt: number;
   name: string;
   nickname?: string;
+  archivedAtLocal?: number
 }
 
 export interface SessionLocal extends BaseLocal {
@@ -25,23 +31,23 @@ export interface MatchLocal extends BaseLocal {
 
 export interface LineupLocal extends BaseLocal {
   matchId: ULID;
-  half: 1|2;
-  team: 'A'|'B';
+  half: Half;
+  team: TeamAB;
   playerId: ULID;
+  createdAt?: number
 }
 
 export interface GoalLocal extends BaseLocal {
   matchId: ULID;
-  half: 1|2;
-  team: 'A'|'B';
+  half: Half;
+  team: TeamAB;
   scorerId: ULID;
   assistId?: ULID;
   minute?: number;
+  createdAt?: number
 }
 
 export interface KeyValLocal {
   key: 'clubId' | 'role' | 'schemaVersion' | 'lastOpenedSessionId' | string;
   value: any;
 }
-
-export type SessionStatus = 'open' | 'locked'

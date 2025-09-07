@@ -4,6 +4,7 @@
   import { readable, type Readable } from 'svelte/store'
   import { t } from 'svelte-i18n'
   import { canEdit } from '$lib/auth/auth'
+  import type { PageLoad } from './$types'
 
   import type {
     MatchLocal,
@@ -13,10 +14,15 @@
   } from '$lib/types/domain'
 
   // live data
-  import { observeLocalMatch } from '$lib/data/matches'
+  import { observeLocalMatch, migrateTeamsToAB } from '$lib/data/matches'
   import { observeLocalGoalsForMatch } from '$lib/data/goals'
   import { observeLocalLineupsForMatch } from '$lib/data/lineups'
-  import { observeLocalPlayersMap } from '$lib/data/players'
+  import { observeLocalActivePlayersMap } from '$lib/data/players'
+	import { onMount } from 'svelte'
+
+  export const load: PageLoad = ({ params }) => {
+    return { id: params.id }; // <-- makes PageData = { id: string }
+  }
 
   export let data: PageData
 
@@ -30,10 +36,13 @@
   const lineupsStore: Readable<LineupLocal[]> =
     browser ? observeLocalLineupsForMatch(data.id) : readable<LineupLocal[]>([])
   const playersMap: Readable<Record<string, PlayerLocal>> =
-    browser ? observeLocalPlayersMap() : readable<Record<string, PlayerLocal>>({})
+    browser ? observeLocalActivePlayersMap() : readable<Record<string, PlayerLocal>>({})
 
   // små helpers
   const nameOf = (id: string) => ($playersMap[id]?.name) ?? id
+
+  onMount(() => migrateTeamsToAB())
+
 </script>
 
 <section class="mx-auto max-w-3xl w-full space-y-4">
@@ -59,7 +68,7 @@
       {:else}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <div class="text-sm font-medium mb-1">{$t('match_day.match.team.home')}</div>
+            <div class="text-sm font-medium mb-1">{$t('match_day.match.team.red')}</div>
             <ul class="list-disc ml-5 space-y-1">
               {#each $lineupsStore.filter(l => l.team === 'A') as l (l.id)}
                 <li>{nameOf(l.playerId)} <span class="text-xs text-gray-500">({$t('match_day.match.half', { values: { n: l.half } })})</span></li>
@@ -67,7 +76,7 @@
             </ul>
           </div>
           <div>
-            <div class="text-sm font-medium mb-1">{$t('match_day.match.team.away')}</div>
+            <div class="text-sm font-medium mb-1">{$t('match_day.match.team.black')}</div>
             <ul class="list-disc ml-5 space-y-1">
               {#each $lineupsStore.filter(l => l.team === 'B') as l (l.id)}
                 <li>{nameOf(l.playerId)} <span class="text-xs text-gray-500">({$t('match_day.match.half', { values: { n: l.half } })})</span></li>

@@ -137,3 +137,17 @@ export function observeLocalMatch(id: string) {
     return () => sub.unsubscribe()
   })
 }
+
+export async function migrateTeamsToAB() {
+  const db = assertDb()
+  await db.transaction('rw', db.lineups_local, db.goals_local, async () => {
+    await db.lineups_local.where('team').equals('red' as any).modify({ team: 'A' })
+    await db.lineups_local.where('team').equals('black' as any).modify({ team: 'B' })
+    await db.lineups_local.where('team').equals('home' as any).modify({ team: 'A' })
+    await db.lineups_local.where('team').equals('away' as any).modify({ team: 'B' })
+    await db.goals_local.where('team').equals('red' as any).modify({ team: 'A' })
+    await db.goals_local.where('team').equals('black' as any).modify({ team: 'B' })
+    await db.goals_local.where('team').equals('home' as any).modify({ team: 'A' })
+    await db.goals_local.where('team').equals('away' as any).modify({ team: 'B' })
+  })
+}

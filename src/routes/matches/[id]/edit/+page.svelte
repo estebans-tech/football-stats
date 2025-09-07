@@ -1,98 +1,127 @@
 <script lang="ts">
-  import type { PageData } from './$types'
   import { browser } from '$app/environment'
-  import { readable, type Readable } from 'svelte/store'
+  import { readable, writable, type Readable } from 'svelte/store'
   import { t } from 'svelte-i18n'
+  import type { PageData } from './$types'
 
-  // Live-data (lokalt)
+  // ✅ Your Dexie instance (keep your existing path)
+  import { db } from '$lib/db/dexie'
+
+  // ✅ Correct sources for each observer
   import { observeLocalMatch } from '$lib/data/matches'
-  import { observeLocalGoalsForMatch } from '$lib/data/goals'
-  import { observeLocalLineupsForMatch } from '$lib/data/lineups'
-  import { observeLocalPlayersMap } from '$lib/data/players'
+  import {
+    observeLocalLineupsForMatch,
+    setTeamForPlayer,
+    removePlayer,
+    copyHalf,
+    swapTeamsForHalf
+  } from '$lib/data/lineups'
+  import {
+    observeLocalGoalsForMatch,
+    addGoalQuick,
+    updateGoal,
+    deleteGoal
+  } from '$lib/data/goals'
+  import { observeLocalActivePlayersMap } from '$lib/data/players'
 
-  // Writes (lokalt) – anpassa om dina helpers har annan signatur
-  import { setTeamForPlayer, removePlayer } from '$lib/data/lineups'
-  import { addGoal, deleteGoal, updateGoal } from '$lib/data/goals'
+  import type {
+    MatchLocal,
+    GoalLocal,
+    LineupLocal,
+    PlayerLocal,
+    Half,
+    TeamAB
+  } from '$lib/types/domain'
 
-  import type { MatchLocal, GoalLocal, LineupLocal, PlayerLocal } from '$lib/types/domain'
+  // ---------- props (runes mode)
+  type Props = { data: PageData }
+  let { data } = $props<Props>()
+  const matchId = $derived(data.id)
 
-  export let data: PageData
-  const matchId = data.id
+  // ---------- local snapshot writables used by UI helpers
+  const match$   = writable<MatchLocal | undefined>(undefined)
+  const goals$   = writable<GoalLocal[]>([])
+  const lineups$ = writable<LineupLocal[]>([])
+  const players$ = writable<Record<string, PlayerLocal>>({})
 
-  // SSR-säkra stores (typer behövs för TS)
-  const matchStore: Readable<MatchLocal | undefined> =
-    browser ? observeLocalMatch(matchId) : readable<MatchLocal | undefined>(undefined)
+  // ---------- live query readables
+  const matchStore:   Readable<MatchLocal | undefined>      =
+    browser ? observeLocalMatch(matchId) : readable(undefined)
+  const goalsStore:   Readable<GoalLocal[]>                 =
+    browser ? observeLocalGoalsForMatch(matchId) : readable([])
+  const lineupsStore: Readable<LineupLocal[]>               =
+    browser ? observeLocalLineupsForMatch(matchId) : readable([])
+  const playersMap:   Readable<Record<string, PlayerLocal>> =
+    browser ? observeLocalActivePlayersMap() : readable({})
 
-  const lineupsStore: Readable<LineupLocal[]> =
-    browser ? observeLocalLineupsForMatch(matchId) : readable<LineupLocal[]>([])
+  // ---------- UI state
+  let teamForAdd = $state<TeamAB>('A') // default Red / Team A
+    let half = $state<Half>(1)      // default H1
 
-  const goalsStore: Readable<GoalLocal[]> =
-    browser ? observeLocalGoalsForMatch(matchId) : readable<GoalLocal[]>([])
+  // keep if you use {#await ready} in markup
+  let ready = $state<Promise<void>>(Promise.resolve())
 
-  const playersMap: Readable<Record<string, PlayerLocal>> =
-    browser ? observeLocalPlayersMap() : readable<Record<string, PlayerLocal>>({})
+  // ---------- helpers (read from the snapshot writables)
+  const nameOf = (id: string) => ($players$[id]?.name) ?? id
 
-  // UI-state
-  let team: 'home' | 'away' = 'home'
-  let half: 1 | 2 = 1
-  let scorerId: string | null = null
-  let assistId: string | null = null
-  let minute: number | '' = ''
+  const teamPlayers = (team: TeamAB, h: Half) =>
+    $lineups$
+      .filter(l => l.team === team && l.half === h && !l.deletedAtLocal)
+      .map(l => l.playerId)
 
-  // Helpers
-  const nameOf = (id: string) => ($playersMap[id]?.name) ?? id
-  const teamPlayers = (which: 'A'|'B', h: 1|2) =>
-    $lineupsStore.filter(l => l.team === which && l.half === h).map(l => l.playerId)
-
-  const availablePlayers = (which: 'A'|'B', h: 1|2) => {
-    const used = new Set(teamPlayers(which, h))
-    return Object.values($playersMap).filter(p => !used.has(p.id))
+  const availablePlayers = (team: TeamAB, h: Half) => {
+    const used = new Set(teamPlayers(team, h))
+    return Object.values($players$).filter(p => !used.has(p.id))
   }
 
-  async function onAddToTeam(pid: string) {
-    try {
-      await setTeamForPlayer(matchId, pid, team, half)
-    } catch (e) {
-      console.error(e)
-    }
+  function lineupFor(goal: GoalLocal) {
+    return teamPlayers(goal.team, goal.half).map(id => ({ id, name: nameOf(id) }))
   }
 
-  async function onRemoveFromTeam(pid: string, which: 'A'|'B', h: 1|2) {
-    try {
-      await removePlayer(matchId, pid, which, h)  // justera om din helper tar annan signatur
-    } catch (e) {
-      console.error(e)
-    }
+  // ---------- actions
+  async function addToTeam(pid: string) {
+    await setTeamForPlayer(matchId, pid, teamForAdd, half)
+  }
+  async function removeFromTeam(pid: string, team: TeamAB, h: Half) {
+    await removePlayer(matchId, pid, team, h)
+  }
+  async function copyH1toH2()      { await copyHalf(matchId, 1, 2) }
+  async function copyH2toH1()      { await copyHalf(matchId, 2, 1) }
+  async function swapTeams()       { await swapTeamsForHalf(matchId, half) }
+
+  async function quickAdd(team: TeamAB) {
+    const pool = teamPlayers(team, half)
+    const scorer = pool[0] ?? null
+    await addGoalQuick({ matchId, team, half, scorerId: scorer })
+  }
+  async function saveGoal(g: GoalLocal) { await updateGoal(g) }
+  async function removeGoal(id: string) { await deleteGoal(id) }
+
+  // ---------- 1) Seed a snapshot so first render has data
+  if (browser) {
+    ready = (async () => {
+      const [m, g, l, p] = await Promise.all([
+        db.matches_local.get(matchId),
+        db.goals_local.where('matchId').equals(matchId).toArray(),
+        db.lineups_local.where('matchId').equals(matchId).toArray(),
+        db.players_local.toArray()
+      ])
+      match$.set(m)
+      goals$.set(g)
+      lineups$.set(l)
+      players$.set(Object.fromEntries(p.map(x => [x.id, x])))
+    })()
   }
 
-  async function onAddGoal() {
-    if (!scorerId) return
-    try {
-      await addGoal({
-        matchId,
-        team,
-        half,
-        scorerId,
-        assistId: assistId || undefined,
-        minute: typeof minute === 'number' ? minute : undefined
-      })
-      // reset form
-      scorerId = null
-      assistId = null
-      minute = ''
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
-  async function onDeleteGoal(id: string) {
-    try { await deleteGoal(id) } catch (e) { console.error(e) }
-  }
-
-  async function onToggleHalf(g: GoalLocal) {
-    const next: 1 | 2 = g.half === 1 ? 2 : 1
-    try { await updateGoal(g.id, { half: next }) } catch (e) { console.error(e) }
-  }
+  // ---------- 2) Keep snapshot in sync with live queries
+  $effect(() => {
+    if (!browser) return
+    const u1 = matchStore.subscribe(match$.set)
+    const u2 = goalsStore.subscribe(goals$.set)
+    const u3 = lineupsStore.subscribe(lineups$.set)
+    const u4 = playersMap.subscribe(players$.set)
+    return () => { u1(); u2(); u3(); u4() }
+  })
 </script>
 
 <section class="mx-auto max-w-4xl w-full space-y-6">
@@ -100,89 +129,69 @@
     <h1 class="text-xl font-semibold">
       {$t('match_day.match.numbered', { values: { num: $matchStore?.orderNo ?? '?' } })}
     </h1>
-    <a href={`/matches/${matchId}`} class="text-sm underline hover:no-underline">
-      {$t('common.back')}
-    </a>
+    <!-- <a href={`/matches/${matchId}`} class="text-sm underline hover:no-underline">{$t('common.back')}</a> -->
+    <a href="/" class="text-sm underline hover:no-underline">{$t('common.back')}</a>
   </header>
 
-  <!-- Lineups -->
-  <div class="rounded-xl border bg-white p-4">
-    <div class="flex items-center gap-3 mb-3">
-      <label class="text-sm">{$t('match_day.match.team.home')}</label>
-      <input type="radio" name="team" value="home" bind:group={team} />
-      <label class="text-sm ml-4">{$t('match_day.match.team.away')}</label>
-      <input type="radio" name="team" value="away" bind:group={team} />
-      <span class="ml-6 text-sm">{$t('match_day.match.half', { values: { n: half } })}</span>
-      <button type="button" class="btn btn-secondary ml-2" on:click={() => half = half === 1 ? 2 : 1}>
-        {$t('common.toggle')}
-      </button>
+  {#await ready}{:then}
+  <!-- Team builder -->
+  <div class="rounded-xl border bg-white p-4 space-y-3">
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="flex items-center gap-2">
+        <span class="text-sm">{$t('match_day.match.team.label')}</span>
+        <label class="flex items-center gap-1"><input type="radio" value="A" bind:group={teamForAdd}/> {$t('match_day.match.team.red')}</label>
+        <label class="flex items-center gap-1"><input type="radio" value="B" bind:group={teamForAdd}/> {$t('match_day.match.team.black')}</label>
+      </div>
+      <div class="flex items-center gap-2 ml-4">
+        <span class="text-sm">{$t('match_day.match.half_label')}</span>
+        <label class="flex items-center gap-1"><input type="radio" value={1} bind:group={half}/> H1</label>
+        <label class="flex items-center gap-1"><input type="radio" value={2} bind:group={half}/> H2</label>
+      </div>
+      <div class="ml-auto flex flex-wrap gap-2">
+        <button class="btn btn-secondary" onclick={copyH1toH2}>{$t('match_day.match.actions.copy_h1_h2', { values: { from: 1, to: 2 } })}</button>
+        <button class="btn btn-secondary" onclick={copyH2toH1}>{$t('match_day.match.actions.copy_h1_h2', { values: { from: 2, to: 1 } })}</button>
+
+        <button onclick={swapTeams}>
+          {$t('match_day.match.actions.swap_teams')}
+        </button>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <!-- Available players -->
+      <!-- Available -->
       <div>
         <div class="font-medium mb-2">{$t('match_day.match.lineups.available')}</div>
         <ul class="space-y-1 max-h-72 overflow-auto pr-1">
-          {#each availablePlayers(team, half) as p (p.id)}
+          {#each availablePlayers(teamForAdd, half) as p (p.id)}
             <li class="flex items-center justify-between rounded border px-2 py-1">
-              <span>{nameOf(p.id)}</span>
-              <button class="btn btn-primary" on:click={() => onAddToTeam(p.id)}>
-                {$t('common.add')}
-              </button>
+              <span>{p.name}</span>
+              <button class="btn btn-primary" onclick={() => addToTeam(p.id)}>{$t('common.add')}</button>
             </li>
           {/each}
         </ul>
       </div>
 
-      <!-- Home -->
+      <!-- Red -->
       <div>
-        <div class="font-medium mb-2">{$t('match_day.match.team.home')} · {$t('match_day.match.half', { values: { n: 1 } })}</div>
+        <div class="font-medium mb-2">{$t('match_day.match.team.red')} · {$t('match_day.match.half', { values: { n: half } })}</div>
         <ul class="space-y-1">
-          {#each teamPlayers('A', 1) as pid (pid)}
+          {#each teamPlayers('A', half) as pid (pid)}
             <li class="flex items-center justify-between rounded border px-2 py-1">
               <span>{nameOf(pid)}</span>
-              <button class="btn btn-danger" on:click={() => onRemoveFromTeam(pid, 'A', 1)}>
-                {$t('common.remove')}
-              </button>
-            </li>
-          {/each}
-        </ul>
-
-        <div class="font-medium mt-4 mb-2">{$t('match_day.match.team.home')} · {$t('match_day.match.half', { values: { n: 2 } })}</div>
-        <ul class="space-y-1">
-          {#each teamPlayers('A', 2) as pid (pid)}
-            <li class="flex items-center justify-between rounded border px-2 py-1">
-              <span>{nameOf(pid)}</span>
-              <button class="btn btn-danger" on:click={() => onRemoveFromTeam(pid, 'A', 2)}>
-                {$t('common.remove')}
-              </button>
+              <button class="btn btn-danger" onclick={() => removeFromTeam(pid, 'A', half)}>{$t('common.remove')}</button>
             </li>
           {/each}
         </ul>
       </div>
 
-      <!-- Away -->
+      <!-- Black -->
       <div>
-        <div class="font-medium mb-2">{$t('match_day.match.team.away')} · {$t('match_day.match.half', { values: { n: 1 } })}</div>
+        <div class="font-medium mb-2">{$t('match_day.match.team.black')} · {$t('match_day.match.half', { values: { n: half } })}</div>
         <ul class="space-y-1">
-          {#each teamPlayers('B', 1) as pid (pid)}
+          {#each teamPlayers('B', half) as pid (pid)}
             <li class="flex items-center justify-between rounded border px-2 py-1">
               <span>{nameOf(pid)}</span>
-              <button class="btn btn-danger" on:click={() => onRemoveFromTeam(pid, 'B', 1)}>
-                {$t('common.remove')}
-              </button>
-            </li>
-          {/each}
-        </ul>
-
-        <div class="font-medium mt-4 mb-2">{$t('match_day.match.team.away')} · {$t('match_day.match.half', { values: { n: 2 } })}</div>
-        <ul class="space-y-1">
-          {#each teamPlayers('B', 2) as pid (pid)}
-            <li class="flex items-center justify-between rounded border px-2 py-1">
-              <span>{nameOf(pid)}</span>
-              <button class="btn btn-danger" on:click={() => onRemoveFromTeam(pid, 'B', 2)}>
-                {$t('common.remove')}
-              </button>
+              <button class="btn btn-danger" onclick={() => removeFromTeam(pid, 'B', half)}>{$t('common.remove')}</button>
             </li>
           {/each}
         </ul>
@@ -191,71 +200,59 @@
   </div>
 
   <!-- Goals -->
-  <div class="rounded-xl border bg-white p-4">
-    <h2 class="text-base font-semibold mb-3">{$t('match_day.match.goals.title')}</h2>
-
-    <div class="flex flex-wrap items-end gap-3 mb-4">
-      <div>
-        <label class="block text-xs mb-1">{$t('match_day.match.team.label')}</label>
-        <select class="rounded border px-2 py-1" bind:value={team}>
-          <option value="home">{$t('match_day.match.team.home')}</option>
-          <option value="away">{$t('match_day.match.team.away')}</option>
-        </select>
+  <div class="rounded-xl border bg-white p-4 space-y-3">
+    <div class="flex items-center justify-between">
+      <h2 class="text-base font-semibold">{$t('match_day.match.goals.title')}</h2>
+      <div class="flex gap-2">
+        <button class="btn btn-danger" onclick={() => quickAdd('A')}>+ {$t('match_day.match.team.red')}</button>
+        <button class="btn" style="background:#000;color:#fff" onclick={() => quickAdd('B')}>+ {$t('match_day.match.team.black')}</button>
       </div>
-      <div>
-        <label class="block text-xs mb-1">{$t('match_day.match.half_label')}</label>
-        <select class="rounded border px-2 py-1" bind:value={half}>
-          <option value={1}>H1</option>
-          <option value={2}>H2</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-xs mb-1">{$t('match_day.match.goals.scorer')}</label>
-        <select class="rounded border px-2 py-1" bind:value={scorerId}>
-          <option value={null} disabled>{$t('match_day.match.select_player')}</option>
-          {#each teamPlayers(team, half) as pid (pid)}
-            <option value={pid}>{nameOf(pid)}</option>
-          {/each}
-        </select>
-      </div>
-      <div>
-        <label class="block text-xs mb-1">{$t('match_day.match.goals.assist')}</label>
-        <select class="rounded border px-2 py-1" bind:value={assistId}>
-          <option value={null}>{$t('common.none')}</option>
-          {#each teamPlayers(team, half) as pid (pid)}
-            <option value={pid}>{nameOf(pid)}</option>
-          {/each}
-        </select>
-      </div>
-      <div>
-        <label class="block text-xs mb-1">{$t('match_day.match.goals.minute')}</label>
-        <input class="rounded border px-2 py-1 w-20" type="number" min="0" max="200" bind:value={minute} />
-      </div>
-      <button class="btn btn-primary" on:click={onAddGoal} disabled={!scorerId}>
-        {$t('common.add')}
-      </button>
     </div>
 
     {#if $goalsStore.length === 0}
       <div class="text-sm text-gray-600">{$t('match_day.match.goals.empty')}</div>
     {:else}
-      <ul class="space-y-1">
+      <ul class="space-y-2">
         {#each $goalsStore as g (g.id)}
-          <li class="flex items-center justify-between rounded border px-2 py-1">
-            <div class="text-sm">
-              {#if g.team === 'A'} 🟦 {:else} 🟥 {/if}
-              {#if g.minute}{g.minute}' · {/if}
-              {nameOf(g.scorerId)}
-              {#if g.assistId} <span class="text-gray-600">({$t('match_day.match.goals.assist')}: {nameOf(g.assistId)})</span>{/if}
-              <span class="text-xs text-gray-500 ml-2">({$t('match_day.match.half', { values: { n: g.half } })})</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <button class="btn btn-secondary" on:click={() => onToggleHalf(g)}>H↔︎</button>
-              <button class="btn btn-danger" on:click={() => onDeleteGoal(g.id)}>{$t('common.delete')}</button>
+          <li class="rounded border px-2 py-2">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-xs px-2 py-0.5 rounded border">{g.team === 'A' ? $t('match_day.match.team.red') : $t('match_day.match.team.black')} · {$t('match_day.match.half', { values: { n: g.half } })}</span>
+
+              <!-- scorer -->
+              <select
+                class="rounded border px-2 py-1"
+                onchange={(e) => updateGoal(g.id, { scorerId: (e.currentTarget as HTMLSelectElement).value || undefined })}
+                >
+                {#each lineupFor(g) as p (p.id)}
+                  <option value={p.id} selected={p.id === g.scorerId}>{p.name}</option>
+                {/each}
+              </select>
+
+              <!-- assist -->
+              <select
+                class="rounded border px-2 py-1"
+                onchange={(e) => updateGoal(g.id, { assistId: (e.currentTarget as HTMLSelectElement).value || undefined })}
+              >
+                <option value="">{ $t('common.none') }</option>
+                {#each lineupFor(g) as p (p.id)}
+                  <option value={p.id} selected={p.id === g.assistId}>{p.name}</option>
+                {/each}
+              </select>
+
+              <!-- minute -->
+              <input
+                class="rounded border px-2 py-1 w-20"
+                type="number" min="0" max="200"
+                value={g.minute ?? ''}
+                onchange={(e) => updateGoal(g.id, { minute: Number((e.currentTarget as HTMLInputElement).value) || undefined })}
+              />
+
+              <button class="ml-auto btn btn-danger" onclick={() => deleteGoal(g.id)}>{$t('common.delete')}</button>
             </div>
           </li>
         {/each}
       </ul>
     {/if}
   </div>
+  {/await}
 </section>

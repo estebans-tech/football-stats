@@ -1,8 +1,8 @@
 import { readable } from 'svelte/store'
 import { liveQuery } from 'dexie'
 import { assertDb } from '$lib/db/dexie'
-import type { GoalLocal } from '$lib/types/domain'
-import { uid } from '$lib/utils/utils'             // your existing uid
+import { uid } from '$lib/utils/utils'
+import type { TeamAB, Half, GoalLocal } from '$lib/types/domain'
 
 export function observeLocalGoalsForMatch(matchId: string) {
     const db = assertDb()
@@ -29,7 +29,7 @@ export const listGoals = async (matchId: string, half: 1 | 2) => {
   }
   
   export const addGoal = async (g: {
-    matchId: string, half: 1|2, team: 'A'|'B',
+    matchId: string, half: 1|2, team: TeamAB,
     scorerId: string, assistId?: string | null, minute?: number | null
   }) => {
     const now = Date.now()
@@ -47,12 +47,9 @@ export const listGoals = async (matchId: string, half: 1 | 2) => {
     })
   }
   
-  export const updateGoal = async (id: string, patch: Partial<{
-    team:'A'|'B', scorerId:string, assistId:string|null, minute:number|null
-  }>) => {
+  export const updateGoal = async (id: string, patch: Partial<GoalLocal>) => {
     await assertDb().goals_local.update(id, { ...patch, updatedAtLocal: Date.now() })
   }
-  
   /** Arkivera (soft delete) – synkas korrekt. */
   export const archiveGoal = async (id: string) => {
     const now = Date.now()
@@ -115,4 +112,27 @@ export const listGoals = async (matchId: string, half: 1 | 2) => {
       .sort((a, b) => b.goals - a.goals || b.assists - a.assists)
   
     return { byTeam, byHalf, byPlayer }
+  }
+
+  export async function addGoalQuick(opts: {
+    matchId: string
+    team: TeamAB
+    half: Half
+    scorerId?: string | null
+    assistId?: string | null
+    minute?: number | null
+  }) {
+    const db = assertDb()
+    const row: GoalLocal = {
+      id: uid(),
+      matchId: opts.matchId,
+      team: opts.team,
+      half: opts.half,
+      scorerId: opts.scorerId ?? '',     // you can require later editing if empty
+      assistId: opts.assistId ?? undefined,
+      minute: opts.minute ?? undefined,
+      updatedAtLocal: Date.now()
+    }
+    await db.goals_local.add(row)
+    return row
   }

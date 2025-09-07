@@ -87,17 +87,12 @@
     "match": {
       "numbered": "Spiel {num}",
       "lineups": { "title": "Aufstellungen", "empty": "Noch keine Aufstellungen.", "available": "Verfügbare Spieler" },
-      "select_player": "Spieler auswählen",
-      "goals": {
-        "title": "Tore",
-        "empty": "Noch keine Tore.",
-        "assist": "Assist: {name}", "scorer": "Torschütze", "minute": "Minute", 
-      "assist_label": "Vorlage",
-      "assist_inline": "Vorlage: {name}"
-    },
-      "team": { "label": "Team", "home": "Heim", "away": "Auswärts" },
       "half_label": "Halbzeit",
-      "half": "H{n}"
+      "select_player": "Spieler auswählen",
+      "goals": { "scorer": "Torschütze", "assist": "Vorlage", "minute": "Minute", "title": "Tore", "empty": "Noch keine Tore." },
+      "team": { "label": "Team", "home": "Heim", "away": "Auswärts", "red": "Rot", "black": "Schwarz" },
+      "half": "H{n}",
+      "actions": { "copy_h1_h2": "Kopiere H{from} → H{to}", "copy_team": "Kopiere {from} → {to}", "swap_teams": "Rot ↔ Schwarz" }
     }
   },
   "common": {
