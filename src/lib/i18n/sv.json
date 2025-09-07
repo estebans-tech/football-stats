@@ -81,7 +81,32 @@
           "add_four_disabled": "Du kan bara lägga till fyra när det inte finns några matcher.",
           "remove_one_disabled": "Det finns inga matcher att ta bort."
         }
-      }
+    },
+    "statistics": {
+        "title": "Matchdag – statistik",
+        "match_numbered": "Match {num}",
+        "cards": {
+          "matches": "Matcher",
+          "goals_total": "Mål (totalt)",
+          "red": "Röd",
+          "black": "Svart",
+          "avg_per_match": "Snitt / match"
+        },
+        "results": "Resultat",
+        "boards": {
+          "top_scorers": "Skytteliga",
+          "top_assists": "Assists",
+          "goal_involvements": "Målbidrag (M+A)",
+          "appearances": "Matcher spelade"
+        },
+        "empty": {
+          "matches": "Inga matcher ännu.",
+          "goals": "Inga mål ännu.",
+          "assists": "Inga assists ännu.",
+          "data": "Inga data ännu.",
+          "lineups": "Inga lineups ännu."
+          }
+    }
   },
   "match_day": {
     "match": {
@@ -93,7 +118,8 @@
       "team": { "label": "Lag", "home": "Hemma", "away": "Borta", "red": "Röd", "black": "Svart" },
       "half": "H{n}",
       "actions": { "copy_h1_h2": "Kopiera H{from} → H{to}", "copy_team": "Kopiera {from} → {to}", "swap_teams": "Byt lag (Röd ↔ Svart)" }
-    }
+    },
+    "common": { "stats": "Statistik" }
   },
   "common": {
     "edit": "Redigera",

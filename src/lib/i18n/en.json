@@ -81,6 +81,32 @@
         "add_four_disabled": "You can only add 4 when there are no matches yet.",
         "remove_one_disabled": "There are no matches to remove."
       }
+    },
+    "common": { "stats": "Stats" },
+    "statistics": {
+      "title": "Matchday stats",
+      "match_numbered": "Match {num}",
+      "cards": {
+        "matches": "Matches",
+        "goals_total": "Goals (total)",
+        "red": "Red",
+        "black": "Black",
+        "avg_per_match": "Avg / match"
+      },
+      "results": "Results",
+      "boards": {
+        "top_scorers": "Top scorers",
+        "top_assists": "Top assists",
+        "goal_involvements": "Goal involvements (G+A)",
+        "appearances": "Appearances"
+      },
+      "empty": {
+        "matches": "No matches yet.",
+        "goals": "No goals yet.",
+        "assists": "No assists yet.",
+        "data": "No data yet.",
+        "lineups": "No lineups yet."
+      }
     }
   },
   "match_day": {

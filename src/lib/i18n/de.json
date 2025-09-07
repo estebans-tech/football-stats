@@ -81,7 +81,33 @@
           "add_four_disabled": "Vier Spiele sind nur möglich, wenn noch keine existieren.",
           "remove_one_disabled": "Es gibt keine Spiele zum Entfernen."
         }
+    },
+    "common": { "stats": "Statistiken" },
+    "statistics": {
+      "title": "Spieltag – Statistiken",
+      "match_numbered": "Spiel {num}",
+      "cards": {
+        "matches": "Spiele",
+        "goals_total": "Tore (gesamt)",
+        "red": "Rot",
+        "black": "Schwarz",
+        "avg_per_match": "Schnitt / Spiel"
+      },
+      "results": "Ergebnisse",
+      "boards": {
+        "top_scorers": "Torschützen",
+        "top_assists": "Vorlagen",
+        "goal_involvements": "Torbeteiligungen (T+V)",
+        "appearances": "Einsätze"
+      },
+      "empty": {
+        "matches": "Noch keine Spiele.",
+        "goals": "Noch keine Tore.",
+        "assists": "Noch keine Vorlagen.",
+        "data": "Noch keine Daten.",
+        "lineups": "Noch keine Aufstellungen."
       }
+    }
   },
   "match_day": {
     "match": {

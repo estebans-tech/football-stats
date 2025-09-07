@@ -204,10 +204,22 @@
                 </li>
             {/each}
           </ul>
-          {/if}
+
+          <div class="flex my-3 justify-center">
+            <!-- 📊 Statistik-länk -->
+            <a
+            class="btn btn-secondary"
+            href={`/sessions/${s.id}/stats`}
+            data-sveltekit-preload-data
+            aria-label={`${$t('session.common.stats')}: ${s.date ?? s.date ?? s.id}`}
+            title={$t('session.common.stats')}
+          >
+            📊 <span class="hidden sm:inline ml-1">{$t('session.common.stats')}</span>
+          </a>
 
           </div>
-
+          {/if}
+          </div>
         {/each}
     </div>
     {/if}
