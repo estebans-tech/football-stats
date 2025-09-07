@@ -39,10 +39,27 @@ export async function setTeamForPlayer(matchId: string, playerId: string, team: 
   }
 }
   
-export async function removePlayer(matchId: string, playerId: string, team: TeamAB, half: Half) { 
+export async function removePlayer(
+  matchId: string,
+  playerId: string,
+  team: TeamAB,
+  half: Half
+) {
   const db = assertDb()
-  const row = await db.lineups_local.where({ matchId, playerId, team, half }).first()
-  if (row) await db.lineups_local.update(row.id, { deletedAtLocal: Date.now(), updatedAtLocal: Date.now() })
+  const now = Date.now()
+  const hasCompound =
+    // @ts-ignore: dexie internal shape
+    !!db.lineups_local.schema.idxByName?.['[matchId+playerId+team+half]']
+
+  if (hasCompound) {
+    return db.lineups_local
+      .where('[matchId+playerId+team+half]')
+      .equals([matchId, playerId, team, half])
+      .modify({ deletedAtLocal: now, updatedAtLocal: now })
+  } else {
+    const row = await db.lineups_local.where({ matchId, playerId, team, half }).first()
+    if (row) await db.lineups_local.update(row.id, { deletedAtLocal: now, updatedAtLocal: now })
+  }
 }
 
 /** Copy BOTH teams from fromHalf → toHalf (skips duplicates) */
