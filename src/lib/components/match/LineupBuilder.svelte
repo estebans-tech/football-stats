@@ -54,6 +54,18 @@
     }
   
     function selectTeam(team: TeamAB) { teamForAdd = team }
+
+    function isInteractiveTarget(e: Event) {
+       const el = e.target as HTMLElement | null
+        if (!el) return false
+        // any clickable/typable control inside the panel
+        return !!el.closest('button, a, input, select, textarea, label, [role="button"]')
+    }
+
+    function selectTeamArea(team: TeamAB, e: MouseEvent) {
+        if (isInteractiveTarget(e)) return // don't steal clicks from row buttons etc.
+        teamForAdd = team
+    }
   
     const colClass = (team: TeamAB) =>
       `rounded-xl border p-3 ${teamForAdd === team ? 'ring-2 ring-indigo-500 border-indigo-500' : ''}`
@@ -69,7 +81,9 @@
   
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <!-- Red -->
-        <section class={colClass('A')}>
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <section class={colClass('A')} onclick={(e) => selectTeamArea('A', e)}>
             <h3 class="mb-2">
             <button
                 type="button"
@@ -100,7 +114,9 @@
         </section>
   
         <!-- Black -->
-        <section class={colClass('B')}>
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <section class={colClass('B')}  onclick={(e) => selectTeamArea('B', e)}>
             <h3 class="mb-2">
             <button
                 type="button"
