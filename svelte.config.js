@@ -5,6 +5,10 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte'
 export default {
   kit: {
     adapter: adapter(),
+    prerender: {
+      entries: ['/', '/invite'], // only these routes
+      crawl: false               // don’t follow links to other pages
+    },      
     alias: {
       $lib: 'src/lib'
     }
