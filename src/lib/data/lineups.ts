@@ -181,3 +181,21 @@ export async function swapTeamsForHalf(
 export async function copyFirstHalfToSecondHalf(matchId: string) {
   return copyHalf(matchId, 1, 2)
 }
+
+/** Flip A↔B for all alive lineup rows in a match (whole game). */
+export async function swapTeamsForMatch(matchId: string) {
+  const db = assertDb()
+  const now = Date.now()
+  const rows = (await db.lineups_local.where('matchId').equals(matchId).toArray())
+    .filter(l => !l.deletedAtLocal)
+
+  if (!rows.length) return
+
+  const swapped: LineupLocal[] = rows.map(l => ({
+    ...l,
+    team: l.team === 'A' ? 'B' : 'A',
+    updatedAtLocal: now
+  }))
+
+  await db.lineups_local.bulkPut(swapped)
+}
