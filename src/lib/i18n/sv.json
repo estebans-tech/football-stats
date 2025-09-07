@@ -85,12 +85,18 @@
   },
   "match_day": {
     "match": {
-      "numbered": "Match {num}"
+      "numbered": "Match {num}",
+      "lineups": { "title": "Startelvor", "empty": "Inga elvor ännu." },
+      "goals": { "title": "Mål", "empty": "Inga mål ännu.", "assist": "assist: {name}" },
+      "team": { "home": "Hemma", "away": "Borta" },
+      "half": "H{n}"
     }
   },
   "common": {
     "edit": "Redigera",
-    "view": "Visa"
+    "loading": "Laddar…",
+    "not_found": "Hittades inte.",
+    "back": "Tillbaka" 
   },
   "sync": {
     "players": {

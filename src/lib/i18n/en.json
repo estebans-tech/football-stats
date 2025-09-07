@@ -85,12 +85,19 @@
   },
   "match_day": {
     "match": {
-      "numbered": "Match {num}"
+      "numbered": "Match {num}",
+      "lineups": { "title": "Lineups", "empty": "No lineups yet." },
+      "goals": { "title": "Goals", "empty": "No goals yet.", "assist": "assist: {name}" },
+      "team": { "home": "Home", "away": "Away" },
+      "half": "H{n}"
     }
   },
   "common": {
     "edit": "Edit",
-    "view": "View"
+    "view": "View",
+    "loading": "Loading…",
+    "not_found": "Not found.", 
+    "back": "Back" 
   },
   "sync": {
     "players": {

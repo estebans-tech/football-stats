@@ -4,7 +4,6 @@ import { assertDb } from '$lib/db/dexie'
 import { uid } from '$lib/utils/utils'             // your existing uid
 import type { MatchLocal, SessionLocal } from '$lib/types/domain'
 
-function now() { return Date.now() }
 
 // Guard: throw if session is missing or locked
 async function ensureUnlocked(sessionId: string) {
@@ -126,6 +125,15 @@ export function observeLocalMatchesMap() {
       next: (map) => set(map),
       error: () => set({})
     })
+    return () => sub.unsubscribe()
+  })
+}
+
+export function observeLocalMatch(id: string) {
+  const db = assertDb()
+  return readable<MatchLocal | undefined>(undefined, (set) => {
+    const sub = liveQuery(() => db.matches_local.get(id))
+      .subscribe({ next: set, error: () => set(undefined) })
     return () => sub.unsubscribe()
   })
 }

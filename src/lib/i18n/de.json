@@ -85,12 +85,19 @@
   },
   "match_day": {
     "match": {
-      "numbered": "Spiel {num}"
+      "numbered": "Spiel {num}",
+      "lineups": { "title": "Aufstellungen", "empty": "Noch keine Aufstellungen." },
+      "goals": { "title": "Tore", "empty": "Noch keine Tore.", "assist": "Assist: {name}" },
+      "team": { "home": "Heim", "away": "Auswärts" },
+      "half": "H{n}"
     }
   },
   "common": {
     "edit": "Bearbeiten",
-    "view": "Ansehen"
+    "view": "Ansehen",
+    "loading": "Laden…",
+    "not_found": "Nicht gefunden.",
+    "back": "Zurück"
   },
   "sync": {
     "players": {
