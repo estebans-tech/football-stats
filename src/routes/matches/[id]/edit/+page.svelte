@@ -3,7 +3,7 @@
   import { writable } from 'svelte/store'
   import { t } from 'svelte-i18n'
   import type { PageData } from './$types'
-
+   import LineupBuilder from '$lib/components/match/LineupBuilder.svelte'
   import { db } from '$lib/db/dexie'
 
   import { observeLocalMatch } from '$lib/data/matches'
@@ -126,8 +126,10 @@
   </header>
 
   {#await ready}{:then}
-  <!-- Team builder (whole game) -->
-  <div class="rounded-xl border bg-white p-4 space-y-3">
+    <!-- Team builder (whole game) -->
+    <!-- NEW: lineup UI lives in the component -->
+    <LineupBuilder matchId={data.id} {players$} {lineups$} />
+<!-- <div class="rounded-xl border bg-white p-4 space-y-3">
     <div class="flex flex-wrap items-center gap-3">
       <div class="flex items-center gap-2">
         <span class="text-sm">{$t('match_day.match.team.label')}</span>
@@ -143,7 +145,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <!-- Available -->
-      <div>
+      <!-- <div>
         <div class="font-medium mb-2">{$t('match_day.match.lineups.available')}</div>
         <ul class="space-y-1 max-h-72 overflow-auto pr-1">
           {#each availablePlayers(teamForAdd) as p (p.id)}
@@ -153,10 +155,10 @@
             </li>
           {/each}
         </ul>
-      </div>
+      </div> -->
 
       <!-- Red -->
-      <div>
+      <!-- <div>
         <div class="font-medium mb-2">{$t('match_day.match.team.red')}</div>
         <ul class="space-y-1">
           {#each teamPlayers('A') as pid (pid)}
@@ -166,10 +168,10 @@
             </li>
           {/each}
         </ul>
-      </div>
+      </div> -->
 
       <!-- Black -->
-      <div>
+      <!-- <div>
         <div class="font-medium mb-2">{$t('match_day.match.team.black')}</div>
         <ul class="space-y-1">
           {#each teamPlayers('B') as pid (pid)}
@@ -181,7 +183,7 @@
         </ul>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- Goals -->
   <div class="rounded-xl border bg-white p-4 space-y-3">
