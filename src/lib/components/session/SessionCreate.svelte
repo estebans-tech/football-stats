@@ -55,7 +55,7 @@
     })
   </script>
   
-  <section class="mx-auto max-w-md w-full rounded-2xl border p-6 bg-white shadow-sm">
+  <section class="mx-auto max-w-md w-full rounded-2xl border p-6 bg-white shadow-sm mb-6">
     <h1 class="text-xl font-semibold mb-2">{$t('session.create.title')}</h1>
     <p class="text-sm text-gray-600 mb-6">{$t('session.create.intro')}</p>
   

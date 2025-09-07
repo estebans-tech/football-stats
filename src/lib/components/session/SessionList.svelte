@@ -100,7 +100,7 @@
   </script>
   
   <section class="mx-auto max-w-2xl w-full">
-    <h2 class="text-lg font-semibold mb-3">{$t('session.list.title')}</h2>
+    <h2 class="text-lg font-semibold mb-2">{$t('session.list.title')}</h2>
   
     {#if $sessions.length === 0}
       <div class="rounded-xl border border-gray-300 p-4 text-sm text-gray-600 bg-white">
@@ -119,8 +119,8 @@
           : 'border-green-500'
           }`}>
           <div
-            class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
+            class="flex items-center justify-between flex-wrap">
+              <div class="flex items-center gap-2 mb-2">
                 <!-- date -->
                 <h3 class="font-medium">{s.date}</h3>
                 {#if s.status === 'locked' && canEditMatch}
