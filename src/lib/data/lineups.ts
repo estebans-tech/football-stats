@@ -160,3 +160,7 @@ export async function swapTeamsForHalf(
     await db.lineups_local.bulkPut(swapped)
   })
 }
+
+export async function copyFirstHalfToSecondHalf(matchId: string) {
+  return copyHalf(matchId, 1, 2)
+}

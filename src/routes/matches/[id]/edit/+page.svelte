@@ -13,7 +13,7 @@
     observeLocalLineupsForMatch,
     setTeamForPlayer,
     removePlayer,
-    copyHalf,
+    copyFirstHalfToSecondHalf,
     swapTeamsForHalf
   } from '$lib/data/lineups'
   import {
@@ -43,6 +43,7 @@
   const goals$   = writable<GoalLocal[]>([])
   const lineups$ = writable<LineupLocal[]>([])
   const players$ = writable<Record<string, PlayerLocal>>({})
+  const hasH1 = $derived($lineups$.some(l => l.half === 1 && !l.deletedAtLocal))
 
 
   // ---------- UI state
@@ -79,11 +80,7 @@
   }
   async function copyH1toH2() {
     const id = data.id
-    await copyHalf(id, 1, 2)
-  }
-  async function copyH2toH1() {
-    const id = data.id
-    await copyHalf(id, 2, 1)
+    await copyFirstHalfToSecondHalf(id)
   }
   async function swapTeams() {
     const id = data.id
@@ -155,9 +152,9 @@
         <label class="flex items-center gap-1"><input type="radio" value={2} bind:group={half}/> H2</label>
       </div>
       <div class="ml-auto flex flex-wrap gap-2">
-        <button class="btn btn-secondary" onclick={copyH1toH2}>{$t('match_day.match.actions.copy_h1_h2', { values: { from: 1, to: 2 } })}</button>
-        <button class="btn btn-secondary" onclick={copyH2toH1}>{$t('match_day.match.actions.copy_h1_h2', { values: { from: 2, to: 1 } })}</button>
-
+        <button class="btn btn-secondary" onclick={copyH1toH2} disabled={!hasH1}>
+          {$t('match_day.match.actions.copy_h1_h2', { values: { from: 1, to: 2 } })}
+        </button>
         <button onclick={swapTeams}>
           {$t('match_day.match.actions.swap_teams')}
         </button>
