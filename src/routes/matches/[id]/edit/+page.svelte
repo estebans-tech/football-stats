@@ -1,6 +1,6 @@
 <script lang="ts">
   import { browser } from '$app/environment'
-  import { readable, writable, type Readable } from 'svelte/store'
+  import { writable } from 'svelte/store'
   import { t } from 'svelte-i18n'
   import type { PageData } from './$types'
 
@@ -35,8 +35,8 @@
 
   // ---------- props (runes mode)
   type Props = { data: PageData }
-  let { data } = $props<Props>()
-  const matchId = $derived(data.id)
+  let { data }: Props = $props()
+  // const matchId = $derived(data.id)
 
   // ---------- local snapshot writables used by UI helpers
   const match$   = writable<MatchLocal | undefined>(undefined)
@@ -44,23 +44,13 @@
   const lineups$ = writable<LineupLocal[]>([])
   const players$ = writable<Record<string, PlayerLocal>>({})
 
-  // ---------- live query readables
-  const matchStore:   Readable<MatchLocal | undefined>      =
-    browser ? observeLocalMatch(matchId) : readable(undefined)
-  const goalsStore:   Readable<GoalLocal[]>                 =
-    browser ? observeLocalGoalsForMatch(matchId) : readable([])
-  const lineupsStore: Readable<LineupLocal[]>               =
-    browser ? observeLocalLineupsForMatch(matchId) : readable([])
-  const playersMap:   Readable<Record<string, PlayerLocal>> =
-    browser ? observeLocalActivePlayersMap() : readable({})
 
   // ---------- UI state
   let teamForAdd = $state<TeamAB>('A') // default Red / Team A
     let half = $state<Half>(1)      // default H1
 
   // keep if you use {#await ready} in markup
-  let ready = $state<Promise<void>>(Promise.resolve())
-
+  // let ready = $state<Promise<void>>(Promise.resolve())
   // ---------- helpers (read from the snapshot writables)
   const nameOf = (id: string) => ($players$[id]?.name) ?? id
 
@@ -80,30 +70,42 @@
 
   // ---------- actions
   async function addToTeam(pid: string) {
-    await setTeamForPlayer(matchId, pid, teamForAdd, half)
+    const id = data.id
+    await setTeamForPlayer(id, pid, teamForAdd, half)
   }
   async function removeFromTeam(pid: string, team: TeamAB, h: Half) {
-    await removePlayer(matchId, pid, team, h)
+    const id = data.id
+    await removePlayer(id, pid, team, h)
   }
-  async function copyH1toH2()      { await copyHalf(matchId, 1, 2) }
-  async function copyH2toH1()      { await copyHalf(matchId, 2, 1) }
-  async function swapTeams()       { await swapTeamsForHalf(matchId, half) }
-
+  async function copyH1toH2() {
+    const id = data.id
+    await copyHalf(id, 1, 2)
+  }
+  async function copyH2toH1() {
+    const id = data.id
+    await copyHalf(id, 2, 1)
+  }
+  async function swapTeams() {
+    const id = data.id
+    await swapTeamsForHalf(id, half)
+  }
   async function quickAdd(team: TeamAB) {
+    const id = data.id
     const pool = teamPlayers(team, half)
     const scorer = pool[0] ?? null
-    await addGoalQuick({ matchId, team, half, scorerId: scorer })
+    await addGoalQuick({ matchId: id, team, half, scorerId: scorer })
   }
-  async function saveGoal(g: GoalLocal) { await updateGoal(g) }
-  async function removeGoal(id: string) { await deleteGoal(id) }
+  // async function saveGoal(g: GoalLocal) { await updateGoal(g) }
+  // async function removeGoal(id: string) { await deleteGoal(id) }
 
   // ---------- 1) Seed a snapshot so first render has data
-  if (browser) {
-    ready = (async () => {
+  const ready: Promise<void> = browser
+  ? (async () => {
+      const id = data.id
       const [m, g, l, p] = await Promise.all([
-        db.matches_local.get(matchId),
-        db.goals_local.where('matchId').equals(matchId).toArray(),
-        db.lineups_local.where('matchId').equals(matchId).toArray(),
+        db.matches_local.get(id),
+        db.goals_local.where('matchId').equals(id).toArray(),
+        db.lineups_local.where('matchId').equals(id).toArray(),
         db.players_local.toArray()
       ])
       match$.set(m)
@@ -111,23 +113,28 @@
       lineups$.set(l)
       players$.set(Object.fromEntries(p.map(x => [x.id, x])))
     })()
-  }
+  : Promise.resolve()
 
   // ---------- 2) Keep snapshot in sync with live queries
   $effect(() => {
-    if (!browser) return
-    const u1 = matchStore.subscribe(match$.set)
-    const u2 = goalsStore.subscribe(goals$.set)
-    const u3 = lineupsStore.subscribe(lineups$.set)
-    const u4 = playersMap.subscribe(players$.set)
-    return () => { u1(); u2(); u3(); u4() }
-  })
+  if (!browser) return
+  const id = data.id
+
+  const u1 = observeLocalMatch(id).subscribe(match$.set)
+  const u2 = observeLocalGoalsForMatch(id).subscribe(goals$.set)
+  const u3 = observeLocalLineupsForMatch(id).subscribe(lineups$.set)
+  const u4 = observeLocalActivePlayersMap().subscribe(players$.set)
+
+  return () => { u1(); u2(); u3(); u4() }
+})
 </script>
 
 <section class="mx-auto max-w-4xl w-full space-y-6">
   <header class="flex items-center justify-between">
     <h1 class="text-xl font-semibold">
-      {$t('match_day.match.numbered', { values: { num: $matchStore?.orderNo ?? '?' } })}
+      {$t('match_day.match.numbered', {
+        values: { num: $match$?.orderNo ?? '?' }   // ← note the ?. before orderNo
+      })}
     </h1>
     <!-- <a href={`/matches/${matchId}`} class="text-sm underline hover:no-underline">{$t('common.back')}</a> -->
     <a href="/" class="text-sm underline hover:no-underline">{$t('common.back')}</a>
@@ -209,11 +216,11 @@
       </div>
     </div>
 
-    {#if $goalsStore.length === 0}
+    {#if $goals$.length === 0}
       <div class="text-sm text-gray-600">{$t('match_day.match.goals.empty')}</div>
     {:else}
       <ul class="space-y-2">
-        {#each $goalsStore as g (g.id)}
+        {#each $goals$ as g (g.id)}
           <li class="rounded border px-2 py-2">
             <div class="flex flex-wrap items-center gap-2">
               <span class="text-xs px-2 py-0.5 rounded border">{g.team === 'A' ? $t('match_day.match.team.red') : $t('match_day.match.team.black')} · {$t('match_day.match.half', { values: { n: g.half } })}</span>
