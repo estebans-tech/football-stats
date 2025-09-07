@@ -8,6 +8,8 @@
 
   // Svelte 5: use callback prop instead of createEventDispatcher
   export let onSync: (() => void) | undefined = undefined
+  export const syncBusy: boolean = false
+
   let open = false
   $: $page.url, (open = false)
 
@@ -51,7 +53,7 @@
     <div class="hidden md:flex items-center gap-2">
       {#if showSyncButton}
         <!-- Uses your .btn class from app.css -->
-        <button class="btn" aria-label={$t('header.actions.sync')} on:click={() => onSync?.()}>
+        <button class="btn btn-outline" aria-label={$t('header.actions.sync')} on:click={() => onSync?.()}>
           {$t('header.actions.sync')}
         </button>
       {/if}

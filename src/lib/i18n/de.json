@@ -91,5 +91,12 @@
   "common": {
     "edit": "Bearbeiten",
     "view": "Ansehen"
+  },
+  "sync": {
+    "players": {
+      "start": "Spieler werden synchronisiert…",
+      "done": "Spieler synchronisiert. Hochgeladen: {pushed}, Abgerufen: {pulled}."
+    },
+    "error": "Synchronisierung fehlgeschlagen. Bitte erneut versuchen."
   }
 }

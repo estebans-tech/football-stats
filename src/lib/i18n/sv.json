@@ -91,5 +91,12 @@
   "common": {
     "edit": "Redigera",
     "view": "Visa"
+  },
+  "sync": {
+    "players": {
+      "start": "Synkar spelare…",
+      "done": "Spelare synkade. Uppladdat: {pushed}, Hämtat: {pulled}."
+    },
+    "error": "Synken misslyckades. Försök igen."
   }
 }

@@ -91,5 +91,12 @@
   "common": {
     "edit": "Edit",
     "view": "View"
+  },
+  "sync": {
+    "players": {
+      "start": "Syncing players…",
+      "done": "Players synced. Uploaded: {pushed}, Fetched: {pulled}."
+    },
+    "error": "Sync failed. Please try again."
   }
 }
