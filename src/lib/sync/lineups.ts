@@ -7,44 +7,74 @@ import type { LineupRow } from '$lib/types/cloud'
 import type { LineupLocal } from '$lib/types/domain'
 
 
-// interface SupabaseLineupRow {
-//   id: string;
-//   match_id: string;
-//   half: number;
-//   team: string;
-//   player_id: string;
-//   created_at: string;
-//   updated_at: string;
-//   deleted_at: string | null;
-// }
-
 const key = 'sync.lineups'
 
 export const pushLineups = async () => {
-  const db = assertDb()
-  const last = await getLastSync(`${key}.push`)
-  const changed = await db.lineups_local.filter((r: any) => (r.updatedAtLocal || 0) > last).toArray()
-  if (!changed.length) return { pushed: 0 }
+  const db = assertDb();
+  const last = await getLastSync(`${key}.push`);
 
-  const sb = await ensureSession()
-  const club_id = await readClubId()
-  const rows = changed.map((r: any) => ({
-    id: r.id,
-    club_id,
-    match_id: r.matchId,
-    half: Number(r.half),
-    team: r.team,
-    player_id: r.playerId,
-    created_at: new Date(r.createdAt || r.updatedAtLocal || Date.now()).toISOString(),
-    updated_at: new Date(r.updatedAtLocal || Date.now()).toISOString(),
-    deleted_at: r.deletedAtLocal ? new Date(r.deletedAtLocal).toISOString() : null
-  }))
+  const changed = await db.lineups_local
+    .filter((r: any) => (r.updatedAtLocal || 0) > last)
+    .toArray();
 
-  const { error } = await sb.from('lineups').upsert(rows, { onConflict: 'id' })
-  if (error) throw error
+  if (!changed.length) return { pushed: 0 };
 
-  await setLastSync(`${key}.push`, Date.now())
-  return { pushed: rows.length }
+  const sb = await ensureSession();
+  const club_id = await readClubId();
+
+  // local -> cloud mapping for team
+  const toCloudTeam = (t?: string) => (t === 'B' ? 'away' : 'home'); // default 'A'->home
+
+  // Dedupe by (match, player, half)
+  const byKey = new Map<string, any>();
+  for (const r of changed) {
+    const k = `${r.matchId}|${r.playerId}|${r.half ?? 1}`;
+
+    const row = {
+      id: r.id,                                   // preserve id so NOT NULL is satisfied
+      club_id,
+      match_id: r.matchId,
+      player_id: r.playerId,
+      half: r.half ?? 1,
+      team: r.team ?? 'A', 
+      created_at: new Date(r.createdAt || r.updatedAtLocal || Date.now()).toISOString(),
+      updated_at: new Date(r.updatedAtLocal || Date.now()).toISOString(),
+      deleted_at: r.deletedAtLocal ? new Date(r.deletedAtLocal).toISOString() : null
+    };
+
+    const prev = byKey.get(k);
+    if (!prev || new Date(row.updated_at).getTime() > new Date(prev.updated_at).getTime()) {
+      byKey.set(k, row);
+    }
+  }
+
+  const rows = Array.from(byKey.values());
+  if (!rows.length) return { pushed: 0 };
+
+  // Defensive: only push lineups whose match exists in cloud
+  const matchIds = Array.from(new Set(rows.map(r => r.match_id)));
+  const { data: existing, error: exErr } = await sb
+    .from('matches')
+    .select('id')
+    .in('id', matchIds);
+  if (exErr) throw exErr;
+
+  const ok = new Set((existing ?? []).map((r: { id: string }) => r.id))
+  const filtered = rows.filter(r => ok.has(r.match_id));
+  if (!filtered.length) {
+    await setLastSync(`${key}.push`, Date.now());
+    return { pushed: 0 };
+  }
+
+  // Upsert using your unique index on (match_id, player_id, half)
+  const { error } = await sb
+    .from('lineups')
+    .upsert(filtered, { onConflict: 'match_id,player_id,half' });
+
+  if (error) throw error;
+
+  await setLastSync(`${key}.push`, Date.now());
+  return { pushed: filtered.length };
 }
 
 export const pullLineups = async () => {
@@ -80,7 +110,7 @@ export const pullLineups = async () => {
 }
 
 export const syncLineups = async () => {
-  const a = await pushLineups()
-  const b = await pullLineups()
-  return { pushed: a.pushed, pulled: b.pulled }
+  const pushed = await pushLineups();    // uses the “repoint to canonical match_id” logic
+  const pulled = await pullLineups();
+  return { pushed: pushed?.pushed ?? 0, pulled: pulled?.pulled ?? 0 };
 }

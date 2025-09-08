@@ -133,6 +133,10 @@
       "start": "Synkar spelare…",
       "done": "Spelare synkade. Uppladdat: {pushed}, Hämtat: {pulled}."
     },
+    "games": {
+      "start": "Synkar match…",
+      "done": "Matcher synkade. Uppladdat: {pushed}, Hämtat: {pulled}."
+    },
     "error": "Synken misslyckades. Försök igen."
   }
 }

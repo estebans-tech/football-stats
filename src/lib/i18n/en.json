@@ -133,6 +133,10 @@
       "start": "Syncing players…",
       "done": "Players synced. Uploaded: {pushed}, Fetched: {pulled}."
     },
+    "games": {
+      "start": "Syncing games",
+      "done": "Games synced. Uploaded: {pushed}, Fetched: {pulled}."
+    },
     "error": "Sync failed. Please try again."
   }
 }

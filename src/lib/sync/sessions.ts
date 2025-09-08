@@ -82,7 +82,7 @@ export const pullSessions = async () => {
 }
 
 export const syncSessions = async () => {
-  const a = await pushSessions()
-  const b = await pullSessions()
-  return { pushed: a?.pushed, pulled: b.pulled }
+  const pushed = await pushSessions()
+  const pulled = await pullSessions()
+  return { pushed: pushed?.pushed ?? 0, pulled: pulled.pulled ?? 0 }
 }

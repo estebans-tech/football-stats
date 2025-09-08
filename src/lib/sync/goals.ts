@@ -4,86 +4,128 @@ import { getLastSync, setLastSync } from './state'
 import type { GoalRow } from '$lib/types/cloud'
 import type { GoalLocal} from '$lib/types/domain'
 
-
-// type SupabaseGoalRow = {
-//   id: string;
-//   match_id: string;
-//   half: number;
-//   team: string;
-//   scorer_id: string;
-//   assist_id: string | null;
-//   minute: number | null;
-//   created_at: string;
-//   updated_at: string;
-//   deleted_at: string | null;
-// }
-
 const key = 'sync.goals'
+
+// Helper: build map localMatchId -> cloudMatchId
+async function buildRemoteMatchMap(localMatchIds: string[], club_id: string) {
+  const db = assertDb()
+  const locals = await db.matches_local.where('id').anyOf(localMatchIds).toArray()
+  if (!locals.length) return new Map<string, string>()
+
+  const sessionIds = Array.from(new Set(locals.map(m => m.sessionId)))
+  const sb = await ensureSession()
+
+  // fetch all cloud matches for those sessions (for this club)
+  const { data, error } = await sb
+    .from('matches')
+    .select('id, session_id, order_no')
+    .in('session_id', sessionIds)
+    .eq('club_id', club_id)
+  if (error) throw error
+
+  const bySessionOrder = new Map<string, string>()
+  for (const m of (data ?? [])) {
+    bySessionOrder.set(`${m.session_id}|${m.order_no ?? 0}`, m.id)
+  }
+
+  const map = new Map<string, string>()
+  for (const lm of locals) {
+    const k = `${lm.sessionId}|${lm.orderNo ?? 0}`
+    const cloudId = bySessionOrder.get(k)
+    if (cloudId) map.set(lm.id, cloudId)
+  }
+  return map
+}
 
 export const pushGoals = async () => {
   const db = assertDb()
   const last = await getLastSync(`${key}.push`)
-  const changed = await db.goals_local.filter((r: any) => (r.updatedAtLocal || 0) > last).toArray()
+
+  const changed = await db.goals_local
+    .filter((r: any) => (r.updatedAtLocal || 0) > last)
+    .toArray()
+
   if (!changed.length) return { pushed: 0 }
 
   const sb = await ensureSession()
   const club_id = await readClubId()
-  const rows = changed.map((r: any) => ({
-    id: r.id,
+
+  // Build payload — include NOT NULL columns (half!), keep id for ON CONFLICT id
+  const rows = changed.map((g: any) => ({
+    id: g.id,
     club_id,
-    match_id: r.matchId,
-    half: Number(r.half),
-    team: r.team,
-    scorer_id: r.scorerId,
-    assist_id: r.assistId || null,
-    minute: r.minute || null,
-    created_at: new Date(r.createdAt || r.updatedAtLocal || Date.now()).toISOString(),
-    updated_at: new Date(r.updatedAtLocal || Date.now()).toISOString(),
-    deleted_at: r.deletedAtLocal ? new Date(r.deletedAtLocal).toISOString() : null
+    match_id: g.matchId,
+    half: g.half ?? 1,            // <-- required by DB
+    team: g.team ?? 'A',          // change to toCloudTeam(g.team) if your cloud expects 'home'/'away'
+    minute: g.minute ?? null,
+    scorer_id: g.scorerId ?? null,
+    assist_id: g.assistId ?? null,
+    created_at: new Date(g.createdAt || g.updatedAtLocal || Date.now()).toISOString(),
+    updated_at: new Date(g.updatedAtLocal || Date.now()).toISOString(),
+    deleted_at: g.deletedAtLocal ? new Date(g.deletedAtLocal).toISOString() : null
   }))
 
-  const { error } = await sb.from('goals').upsert(rows, { onConflict: 'id' })
+  // Ensure referenced matches exist in cloud (avoid 23503)
+  const matchIds = Array.from(new Set(rows.map(r => r.match_id)))
+  const { data: existing, error: exErr } = await sb
+    .from('matches')
+    .select('id')
+    .in('id', matchIds)
+  if (exErr) throw exErr
+
+  // 'existing' is an array of objects like { id: string } from the 'matches' table.
+  // Explicitly type 'r' to resolve the 'implicitly has an any type' error.
+  const ok = new Set((existing ?? []).map((r: { id: string }) => r.id))
+  const filtered = rows.filter(r => ok.has(r.match_id))
+  if (!filtered.length) {
+    await setLastSync(`${key}.push`, Date.now())
+    return { pushed: 0 }
+  }
+
+  // Upsert by id (primary/unique key)
+  const { error } = await sb.from('goals').upsert(filtered, { onConflict: 'id' })
   if (error) throw error
 
   await setLastSync(`${key}.push`, Date.now())
-  return { pushed: rows.length }
+  return { pushed: filtered.length }
 }
 
 export const pullGoals = async () => {
   const sb = await ensureSession()
   const club_id = await readClubId()
-  const last = await getLastSync('sync.goals.pull')
+  const last = await getLastSync(`${key}.pull`)
+
   const { data, error } = await sb
     .from('goals')
-    .select('id, match_id, half, team, scorer_id, assist_id, minute, created_at, updated_at, deleted_at')
+    .select('id, match_id, half, team, minute, scorer_id, assist_id, created_at, updated_at, deleted_at')
     .eq('club_id', club_id)
-    .gt('updated_at', new Date(last || 0).toISOString())  // ✅ incremental
+    .gt('updated_at', new Date(last || 0).toISOString())
     .order('updated_at', { ascending: true })
   if (error) throw error
 
-  const db = assertDb()
+  const rows = (data ?? []) as GoalRow[]
 
-  const rows = (data ?? []) as GoalRow[] 
+  const db = assertDb()
   const mapped: GoalLocal[] = rows.map((r) => ({
     id: r.id,
     matchId: r.match_id,
-    half: toHalf(r.half),                 // ✅ 1|2
-    team: toTeam(r.team ?? 'home'),       // ✅ 'home'|'away'
-    scorerId: r.scorer_id,
-    assistId: r.assist_id ?? undefined,   // ✅ optional
-    minute: r.minute ?? undefined,        // ✅ optional
+    half: toHalf(r.half),
+    team: toTeam(r.team ?? 'A'),      // change if your cloud uses 'home'/'away' exclusively
+    minute: r.minute ?? undefined,
+    scorerId: r.scorer_id ?? undefined,
+    assistId: r.assist_id ?? undefined,
     createdAt: optMs(r.created_at),
     updatedAtLocal: msFromIso(r.updated_at) || Date.now(),
     deletedAtLocal: optMs(r.deleted_at)
   }))
 
   await bulkPutIfNewer(db.goals_local, mapped)
-  await setLastSync('sync.goals.pull', Date.now())
+  await setLastSync(`${key}.pull`, Date.now())
   return { pulled: mapped.length }
 }
 
 export const syncGoals = async () => {
-  const a = await pushGoals()
-  const b = await pullGoals()
-  return { pushed: a.pushed, pulled: b.pulled }
+  const pushed = await pushGoals()
+  const pulled = await pullGoals()
+  return { pushed: pushed?.pushed ?? 0, pulled: pulled?.pulled ?? 0 }
 }
