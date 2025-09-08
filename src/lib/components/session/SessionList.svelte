@@ -113,18 +113,18 @@
           <!-- per-row match count store -->
           {@const count = counts[s.id] ?? 0}
           {@const matches = matchesBySession[s.id] ?? []}
-        <div 
-        class={`rounded-xl border border-gray-400 bg-white px-4 py-3 p-4 mb-6`}>
+        <div class={`rounded-xl border border-gray-400 bg-white px-4 py-3 p-4 mb-6`}>
           <div
             class="flex items-center justify-between flex-wrap">
               <div class="flex items-center gap-2 mb-2">
-                <!-- date -->
-                <h3 class="font-medium">{s.date}</h3>
                 {#if s.status === 'locked' && $canEdit}
+                <!-- locked -->
                   <span class="text-xs px-2 py-0.5 rounded-full border text-red-600 border-red-500">
                     {$t('session.status.locked')}
                   </span>
                 {/if}
+                <!-- date -->
+                <h3 class="font-medium">{s.date}</h3>
               </div>
               {#if $canEdit}
               <div class="flex items-center gap-2">
