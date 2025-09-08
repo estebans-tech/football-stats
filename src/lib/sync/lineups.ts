@@ -25,18 +25,18 @@ export const pushLineups = async () => {
   // local -> cloud mapping for team
   const toCloudTeam = (t?: string) => (t === 'B' ? 'away' : 'home'); // default 'A'->home
 
-  // Dedupe by (match, player, half)
+  // 1) dedupe i batch på (matchId, playerId, half)
   const byKey = new Map<string, any>();
   for (const r of changed) {
     const k = `${r.matchId}|${r.playerId}|${r.half ?? 1}`;
 
     const row = {
-      id: r.id,                                   // preserve id so NOT NULL is satisfied
+      id: r.id,                     // behåll id => NOT NULL ok
       club_id,
       match_id: r.matchId,
       player_id: r.playerId,
       half: r.half ?? 1,
-      team: r.team ?? 'A', 
+      team: r.team ?? 'A',          // eller mappa till 'home'/'away' om ditt schema kräver det
       created_at: new Date(r.createdAt || r.updatedAtLocal || Date.now()).toISOString(),
       updated_at: new Date(r.updatedAtLocal || Date.now()).toISOString(),
       deleted_at: r.deletedAtLocal ? new Date(r.deletedAtLocal).toISOString() : null
@@ -48,29 +48,22 @@ export const pushLineups = async () => {
     }
   }
 
-  const rows = Array.from(byKey.values());
+  const rows = [...byKey.values()];
   if (!rows.length) return { pushed: 0 };
 
   // Defensive: only push lineups whose match exists in cloud
+  // 2) FK-säkerhet: skicka inte upp rader vars match inte finns i molnet
   const matchIds = Array.from(new Set(rows.map(r => r.match_id)));
-  const { data: existing, error: exErr } = await sb
-    .from('matches')
-    .select('id')
-    .in('id', matchIds);
+  const { data: existing, error: exErr } = await sb.from('matches').select('id').in('id', matchIds);
   if (exErr) throw exErr;
-
-  const ok = new Set((existing ?? []).map((r: { id: string }) => r.id))
+  const ok = new Set((existing ?? []).map((r: { id: string }) => r.id));
   const filtered = rows.filter(r => ok.has(r.match_id));
-  if (!filtered.length) {
-    await setLastSync(`${key}.push`, Date.now());
-    return { pushed: 0 };
-  }
+  if (!filtered.length) { await setLastSync(`${key}.push`, Date.now()); return { pushed: 0 }; }
 
-  // Upsert using your unique index on (match_id, player_id, half)
+  // 3) upsert mot partial unique-index (match_id,player_id,half)
   const { error } = await sb
     .from('lineups')
     .upsert(filtered, { onConflict: 'match_id,player_id,half' });
-
   if (error) throw error;
 
   await setLastSync(`${key}.push`, Date.now());

@@ -47,44 +47,48 @@ export const pushGoals = async () => {
 
   if (!changed.length) return { pushed: 0 }
 
-  const sb = await ensureSession()
-  const club_id = await readClubId()
+  const sb = await ensureSession();
+  const club_id = await readClubId();
+
+  // dedupe (välj en naturlig nyckel – här ex: match+minute+team+scorer+assist)
+  const byKey = new Map<string, any>();
 
   // Build payload — include NOT NULL columns (half!), keep id for ON CONFLICT id
-  const rows = changed.map((g: any) => ({
-    id: g.id,
-    club_id,
-    match_id: g.matchId,
-    half: g.half ?? 1,            // <-- required by DB
-    team: g.team ?? 'A',          // change to toCloudTeam(g.team) if your cloud expects 'home'/'away'
-    minute: g.minute ?? null,
-    scorer_id: g.scorerId ?? null,
-    assist_id: g.assistId ?? null,
-    created_at: new Date(g.createdAt || g.updatedAtLocal || Date.now()).toISOString(),
-    updated_at: new Date(g.updatedAtLocal || Date.now()).toISOString(),
-    deleted_at: g.deletedAtLocal ? new Date(g.deletedAtLocal).toISOString() : null
-  }))
+  for (const r of changed) {
+    const k = `${r.matchId}|${r.minute ?? 0}|${r.team ?? 'A'}|${r.scorerId ?? ''}|${r.assistId ?? ''}`;
+    const row = {
+      id: r.id,
+      club_id,
+      match_id: r.matchId,
+      half: r.half ?? 1,
+      team: r.team ?? 'A',
+      minute: r.minute ?? null,
+      scorer_id: r.scorerId ?? null,
+      assist_id: r.assistId ?? null,
+      created_at: new Date(r.createdAt || r.updatedAtLocal || Date.now()).toISOString(),
+      updated_at: new Date(r.updatedAtLocal || Date.now()).toISOString(),
+      deleted_at: r.deletedAtLocal ? new Date(r.deletedAtLocal).toISOString() : null
+    };
+    const prev = byKey.get(k);
+    if (!prev || new Date(row.updated_at).getTime() > new Date(prev.updated_at).getTime()) {
+      byKey.set(k, row);
+    }
+  }
+  const rows = [...byKey.values()];
+  if (!rows.length) return { pushed: 0 };
 
   // Ensure referenced matches exist in cloud (avoid 23503)
-  const matchIds = Array.from(new Set(rows.map(r => r.match_id)))
-  const { data: existing, error: exErr } = await sb
-    .from('matches')
-    .select('id')
-    .in('id', matchIds)
-  if (exErr) throw exErr
+  // FK-säkerhet: matcherna måste finnas
+  const matchIds = Array.from(new Set(rows.map(r => r.match_id)));
+  const { data: existing, error: exErr } = await sb.from('matches').select('id').in('id', matchIds);
+  if (exErr) throw exErr;
+  const ok = new Set((existing ?? []).map((r: { id: string }) => r.id));
+  const filtered = rows.filter(r => ok.has(r.match_id));
+  if (!filtered.length) { await setLastSync(`${key}.push`, Date.now()); return { pushed: 0 }; }
 
-  // 'existing' is an array of objects like { id: string } from the 'matches' table.
-  // Explicitly type 'r' to resolve the 'implicitly has an any type' error.
-  const ok = new Set((existing ?? []).map((r: { id: string }) => r.id))
-  const filtered = rows.filter(r => ok.has(r.match_id))
-  if (!filtered.length) {
-    await setLastSync(`${key}.push`, Date.now())
-    return { pushed: 0 }
-  }
-
-  // Upsert by id (primary/unique key)
-  const { error } = await sb.from('goals').upsert(filtered, { onConflict: 'id' })
-  if (error) throw error
+  // Upsert – enklast mot id (du kan lägga ett partial-unik-index om du vill)
+  const { error } = await sb.from('goals').upsert(filtered, { onConflict: 'id' });
+  if (error) throw error;
 
   await setLastSync(`${key}.push`, Date.now())
   return { pushed: filtered.length }

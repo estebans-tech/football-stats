@@ -95,7 +95,7 @@ export const pushMatches = async () => {
   const db = assertDb();
   const last = await getLastSync(`${key}.push`);
 
-  // What changed locally?
+  // 1) Vad har ändrats lokalt?
   const changed = await db.matches_local
     .filter((r: any) => (r.updatedAtLocal || 0) > last)
     .toArray();
@@ -105,73 +105,100 @@ export const pushMatches = async () => {
   const sb = await ensureSession();
   const club_id = await readClubId();
 
-  // Fetch all cloud matches for the affected sessions to detect
-  // canonical rows (same session_id+order_no but different id)
+  // 2) Hämta molnets rader för de berörda sessionerna
   const sessionIds = Array.from(new Set(changed.map((m: any) => m.sessionId)));
+
   const { data: cloudRows, error: cloudErr } = await sb
     .from('matches')
-    .select('id,session_id,order_no')
+    .select('id, session_id, order_no, updated_at, deleted_at') // ⬅️ viktigt
     .in('session_id', sessionIds);
 
   if (cloudErr) throw cloudErr;
 
-  const cloudByKey = new Map<string, { id: string }>();
+  // Key = "session:order"  ->  { id, updated_at, deleted_at }
+  const cloudByKey = new Map<
+    string,
+    { id: string; updated_at: string | null; deleted_at: string | null }
+  >();
+
   for (const r of cloudRows ?? []) {
-    cloudByKey.set(`${r.session_id}:${r.order_no}`, { id: r.id });
+    cloudByKey.set(`${r.session_id}:${r.order_no}`, {
+      id: r.id,
+      updated_at: r.updated_at ?? null,
+      deleted_at: r.deleted_at ?? null
+    });
   }
 
-  // Build:
-  //  - rowsSafe: rows we can upsert by id without breaking unique(session_id,order_no)
-  //  - rewrite: map localId -> canonicalCloudId for duplicates we must not insert
+  // 3) Bygg säkra upserts + ev. omskrivnings-karta
   const rowsSafe: any[] = [];
-  const rewrite = new Map<string, string>();
+  const rewrite = new Map<string, string>(); // localId -> canonical cloudId
 
   for (const r of changed) {
     const k = `${r.sessionId}:${r.orderNo ?? null}`;
     const cloud = cloudByKey.get(k);
 
     if (!cloud) {
-      // No cloud row uses this (session, order), safe to upsert by id
+      // Inget moln-row använder (session,order) -> säkert att upserta med vår id
       rowsSafe.push({
         id: r.id,
         club_id,
         session_id: r.sessionId,
         order_no: r.orderNo ?? null,
-        created_at: new Date(r.createdAt || r.updatedAtLocal || Date.now()).toISOString(),
+        created_at: new Date(r.updatedAtLocal || Date.now()).toISOString(),
         updated_at: new Date(r.updatedAtLocal || Date.now()).toISOString(),
         deleted_at: r.deletedAtLocal ? new Date(r.deletedAtLocal).toISOString() : null
       });
-    } else if (cloud.id === r.id) {
-      // Same id already exists in cloud → safe to upsert by id (idempotent)
+      continue;
+    }
+
+    if (cloud.id === r.id) {
+      // Samma id finns redan i molnet -> idempotent upsert
       rowsSafe.push({
         id: r.id,
         club_id,
         session_id: r.sessionId,
         order_no: r.orderNo ?? null,
-        created_at: new Date(r.createdAt || r.updatedAtLocal || Date.now()).toISOString(),
         updated_at: new Date(r.updatedAtLocal || Date.now()).toISOString(),
         deleted_at: r.deletedAtLocal ? new Date(r.deletedAtLocal).toISOString() : null
       });
-    } else {
-      // Cloud already has a different id for the same (session,order)
-      // → DO NOT insert. Remember to rewrite children to cloud.id.
-      rewrite.set(r.id, cloud.id);
+      continue;
+    }
+
+    // Annat id i molnet för samma (session,order) -> skriv inte in en dubblett
+    // utan peka om barn till cloud.id
+    rewrite.set(r.id, cloud.id);
+
+    const localMs = r.updatedAtLocal || 0;
+    const remoteMs = cloud.updated_at ? new Date(cloud.updated_at).getTime() : 0;
+
+    // Om den lokala är nyare: skriv uppdateringen på det kanoniska moln-id:t
+    if (localMs > remoteMs) {
+      rowsSafe.push({
+        id: cloud.id,
+        club_id,
+        session_id: r.sessionId,
+        order_no: r.orderNo ?? null,
+        // skicka inte created_at vid update
+        updated_at: new Date(localMs || Date.now()).toISOString(),
+        deleted_at: r.deletedAtLocal
+          ? new Date(r.deletedAtLocal).toISOString()
+          : (cloud.deleted_at ?? null)
+      });
     }
   }
 
-  // If we must rewrite children, do it atomically in Dexie
+  // 4) Peka om barn (goals/lineups) och markera lokalt dubblett-match som raderad
   if (rewrite.size) {
     await db.transaction('rw', db.goals_local, db.lineups_local, db.matches_local, async () => {
       for (const [localId, cloudId] of rewrite) {
         await db.goals_local.where('matchId').equals(localId).modify({ matchId: cloudId });
         await db.lineups_local.where('matchId').equals(localId).modify({ matchId: cloudId });
-        // Hide the local duplicate (optional: keep for history)
         await db.matches_local.where('id').equals(localId).modify({ deletedAtLocal: Date.now() });
       }
     });
   }
 
-  // Upsert only the safe rows; conflict by id
+  // 5) Upserta enbart säkra rader, konflikt på id
   if (rowsSafe.length) {
     const { error } = await sb.from('matches').upsert(rowsSafe, { onConflict: 'id' });
     if (error) throw error;
@@ -179,8 +206,7 @@ export const pushMatches = async () => {
 
   await setLastSync(`${key}.push`, Date.now());
   return { pushed: rowsSafe.length };
-}
-
+};
 
 /**
  * Collapse local duplicates per (sessionId, orderNo).
