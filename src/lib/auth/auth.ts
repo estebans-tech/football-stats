@@ -38,7 +38,10 @@ const writeCache = (p: Profile) => {
 export const session = writable<import('@supabase/supabase-js').Session | null>(null)
 export const profile = writable<Profile>(null)
 
-export const canEdit = derived(profile, p => p?.role === 'admin' || p?.role === 'editor')
+export const canEdit = derived([profile, role], ([$profile, $role]) => {
+  const r = $profile?.role ?? $role
+  return r === 'admin' || r === 'editor'
+})
 export const isAdmin = derived(profile, p => p?.role === 'admin')
 
 let initialized = false
