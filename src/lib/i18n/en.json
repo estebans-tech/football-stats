@@ -116,7 +116,7 @@
       "half_label": "Half",
       "select_player": "Select player",
       "goals": { "scorer": "Scorer", "assist": "Assist", "minute": "Minute", "title": "Goals", "empty": "No goals yet." },
-      "team": { "label": "Team", "home": "Home", "away": "Away", "red": "Red", "black": "Black"  },
+      "team": { "label": "Team", "home": "Home", "away": "Away", "red": "Red", "black": "Black", "add_one": "1"  },
       "half": "H{n}",
       "actions": { "copy_h1_h2": "Copy H{from} → H{to}", "copy_team": "Copy {from} → {to}", "swap_teams": "Swap Red ↔ Black" }
     }

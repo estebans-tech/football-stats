@@ -1,181 +1,164 @@
 <script lang="ts">
     import { t } from 'svelte-i18n'
     import type { Writable } from 'svelte/store'
-    import type { TeamAB, PlayerLocal, LineupLocal } from '$lib/types/domain'
-    import { setTeamForPlayer, removePlayer, swapTeamsForMatch } from '$lib/data/lineups'
+    import type { PlayerLocal, LineupLocal, TeamAB } from '$lib/types/domain'
+    import { setTeamForPlayer, removePlayer } from '$lib/data/lineups'
   
     type Props = {
       matchId: string
       players$: Writable<Record<string, PlayerLocal>>
       lineups$: Writable<LineupLocal[]>
+      half?: 1 | 2
     }
-    let { matchId, players$, lineups$ }: Props = $props()
+    let { matchId, players$, lineups$, half = 1 }: Props = $props()
   
-    // Selected target team (used when clicking "Add" in the right column)
-    let teamForAdd = $state<TeamAB>('A')
+    // Sorterad trupp
+    const roster = $derived.by(() => {
+        const all = Object.values($players$ ?? {})
+        const assigned = new Set(Object.keys(membershipById)) // visa inaktiva om de redan är placerade
+        return all
+            .filter(p => ((p.active && !p.deletedAtLocal) || assigned.has(p.id)))
+            .sort((a, b) => a.name.localeCompare(b.name))
+    })
   
-    // -------- helpers (whole-game; canonical half = 1)
-    const nameOf = (id: string) => ($players$[id]?.name) ?? id
-  
-    // IDs of players in a given team (only half=1, skip soft-deleted)
-    const teamPlayers = (team: TeamAB) =>
-      $lineups$.filter(l => l.half === 1 && l.team === team && !l.deletedAtLocal).map(l => l.playerId)
-  
-    // Fast membership sets for “already on a team?” checks
-    const usedA = $derived(
-      new Set(
-        $lineups$
-          .filter(l => l.half === 1 && l.team === 'A' && !l.deletedAtLocal)
-          .map(l => l.playerId)
-      )
+    // playerId -> team ('A' | 'B') för aktuell halvlek; undefined = bänk
+    const membershipById = $derived.by((): Record<string, TeamAB | undefined> => {
+        const m: Record<string, TeamAB | undefined> = {}
+        for (const l of ($lineups$ ?? [])) {
+            if (!l.deletedAtLocal && l.half === half) m[l.playerId] = l.team
+        }
+        return m
+    })
+ 
+    // counts per team for the selected half
+    const totalRedPlayers   = $derived.by(() =>
+    Object.values(membershipById).filter((t) => t === 'A').length
     )
-    const usedB = $derived(
-      new Set(
-        $lineups$
-          .filter(l => l.half === 1 && l.team === 'B' && !l.deletedAtLocal)
-          .map(l => l.playerId)
-      )
+    const totalBlackPlayers = $derived.by(() =>
+    Object.values(membershipById).filter((t) => t === 'B').length
     )
-  
-    // Full roster (active players), sorted by name
-    const allPlayers = $derived(
-      Object.values($players$).sort((a, b) => a.name.localeCompare(b.name))
-    )
-  
-    // -------- actions (lineup writes always use half = 1)
-    async function addToSelected(pid: string) {
-      await setTeamForPlayer(matchId, pid, teamForAdd, 1)
-    }
-    async function removeFrom(team: TeamAB, pid: string) {
-      await removePlayer(matchId, pid, team, 1)
-    }
-    async function swapTeams() {
-      await swapTeamsForMatch(matchId)
-    }
-  
-    function selectTeam(team: TeamAB) { teamForAdd = team }
+    // sum of both
+    const totalPlayers = $derived(totalRedPlayers + totalBlackPlayers)
+    const isInactive = (pid: string) => !$players$?.[pid]?.active
+    const isBenched  = (pid: string) => membershipById[pid] === undefined
+    const canAssign  = (pid: string, team: TeamAB) =>
 
-    function isInteractiveTarget(e: Event) {
-       const el = e.target as HTMLElement | null
-        if (!el) return false
-        // any clickable/typable control inside the panel
-        return !!el.closest('button, a, input, select, textarea, label, [role="button"]')
+    membershipById[pid] !== team && !isInactive(pid)  
+    // --- actions
+    async function assign(pid: string, team: TeamAB) {
+        if (membershipById[pid] === team) return
+        // 1) rensa eventuella dubbletter
+        await Promise.allSettled([
+            removePlayer(matchId, pid, 'A', half),
+            removePlayer(matchId, pid, 'B', half),
+        ])
+        // 2) lägg i önskat lag
+        await setTeamForPlayer(matchId, pid, team, half)
+        }
+
+        async function toBench(pid: string) {
+        // bänk = ta bort ALLA placeringar (A & B) för halvleken
+        await Promise.allSettled([
+            removePlayer(matchId, pid, 'A', half),
+            removePlayer(matchId, pid, 'B', half),
+        ])
     }
 
-    function selectTeamArea(team: TeamAB, e: MouseEvent) {
-        if (isInteractiveTarget(e)) return // don't steal clicks from row buttons etc.
-        teamForAdd = team
+    // --- UI helpers
+    function rowClass(pid: string) {
+      const team = membershipById[pid]
+      return [
+        'flex items-center justify-between rounded border px-3 py-2 transition-colors',
+        team === 'A' ? 'bg-red-800 text-white border-red-700' : '',
+        team === 'B' ? 'bg-neutral-900 text-white border-neutral-900' : '',
+        !team ? 'bg-white text-black border-gray-300' : ''
+      ].join(' ')
     }
+
+    // ---- Button style helpers (Tailwind)
+  const redBtnClass = (disabled: boolean) =>
+    [
+      'w-10 h-9 rounded-lg inline-flex items-center justify-center text-base',
+      disabled
+        // ghost på färgad rad – vit kant + svag bakgrund + ring
+        ? 'bg-red-800 text-white/80 border border-white/30 ring-1 ring-white/40 cursor-default'
+        // solid röd – funkar även på svart/vit rad
+        : 'bg-red-800 hover:bg-red-700 text-white border border-white/10 shadow-xs',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80'
+    ].join(' ')
+
+  const blackBtnClass = (disabled: boolean) =>
+    [
+      'w-10 h-9 rounded-lg inline-flex items-center justify-center text-base',
+      disabled
+        ? 'bg-white/5 text-white/80 border border-white/30 ring-1 ring-white/40 cursor-default'
+        : 'bg-neutral-900 hover:bg-black text-white border border-white/30 shadow-xs',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80'
+    ].join(' ')
+
+  const benchBtnClass =
+    'w-10 h-9 rounded-lg inline-flex items-center justify-center text-base ' +
+    'bg-white text-black border border-gray-300 hover:bg-gray-50 shadow-xs ' +
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40'
   
-    const colClass = (team: TeamAB) =>
-      `rounded-xl border p-3 ${teamForAdd === team ? 'ring-2 ring-indigo-500 border-indigo-500' : ''}`
   </script>
   
-  <div class="rounded-xl border bg-white p-4 space-y-3">
-    <div class="flex items-center justify-between">
-      <div class="text-sm text-gray-700">{$t('match_day.match.team.label')}</div>
-      <button class="text-base font-semibold hover:underline" onclick={swapTeams}>
-        {$t('match_day.match.actions.swap_teams')}
-      </button>
-    </div>
+  <section class="rounded-xl border bg-white p-4">
+    <h3 class="mb-3 font-semibold">{$t('match_day.match.lineups.available')}</h3>
   
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <!-- Red -->
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <section class={colClass('A')} onclick={(e) => selectTeamArea('A', e)}>
-            <h3 class="mb-2">
+    <ul class="space-y-2 max-h-[520px] overflow-auto pr-1">
+      {#each roster as p (p.id)}
+        <li class={rowClass(p.id)}>
+            <span class="truncate">{p.name}</span>
+            {#if isInactive(p.id)}
+              <span class="ml-2 text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded
+                           border border-white/30 bg-white/15 text-white/90">
+                Inactive
+              </span>
+            {/if}  
+          <div class="flex items-center gap-2">
+            <!-- RED + (disabled om redan röd) -->
             <button
-                type="button"
-                class="font-semibold bg-transparent p-0 m-0 border-0 cursor-pointer
-                    focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
-                aria-pressed={teamForAdd === 'A'}
-                onclick={() => selectTeam('A')}
-            >
-                {$t('match_day.match.team.red')}
-            </button>
-            </h3>
-        
-            <ul class="space-y-1">
-            {#each teamPlayers('A') as pid (pid)}
-                <li class="flex items-center justify-between rounded border px-2 py-1">
-                <span>{nameOf(pid)}</span>
-                <button
-                    class="btn btn-danger p-0 w-9 h-9 flex items-center justify-center"
-                    title={$t('common.remove')}
-                    aria-label={$t('common.remove')}
-                    onclick={() => removeFrom('A', pid)}
-                    >
-                    <span aria-hidden="true">−</span>
-                </button>
-                </li>
-            {/each}
-            </ul>
-        </section>
+            type="button"
+            class={redBtnClass(!canAssign(p.id, 'A'))}
+            title={$t('common.add')}
+            aria-label={$t('common.add')}
+            disabled={!canAssign(p.id, 'A')}
+            onclick={() => assign(p.id, 'A')}
+            >＋</button>
   
-        <!-- Black -->
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
-        <section class={colClass('B')}  onclick={(e) => selectTeamArea('B', e)}>
-            <h3 class="mb-2">
+            <!-- BLACK + (disabled om redan svart) -->
             <button
-                type="button"
-                class="font-semibold bg-transparent p-0 m-0 border-0 cursor-pointer
-                    focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
-                aria-pressed={teamForAdd === 'B'}
-                onclick={() => selectTeam('B')}
-            >
-                {$t('match_day.match.team.black')}
-            </button>
-            </h3>
-        
-            <ul class="space-y-1">
-            {#each teamPlayers('B') as pid (pid)}
-                <li class="flex items-center justify-between rounded border px-2 py-1">
-                <span>{nameOf(pid)}</span>
-                <button
-                    class="btn btn-danger p-0 w-9 h-9 flex items-center justify-center"
-                    title={$t('common.remove')}
-                    aria-label={$t('common.remove')}
-                    onclick={() => removeFrom('B', pid)}
-                    >
-                    <span aria-hidden="true">−</span>
-                </button>
-                </li>
-            {/each}
-            </ul>
-        </section>
+            type="button"
+            class={blackBtnClass(!canAssign(p.id, 'B'))}
+            title={$t('common.add')}
+            aria-label={$t('common.add')}
+            disabled={!canAssign(p.id, 'B')}
+            onclick={() => assign(p.id, 'B')}
+          >＋</button>
   
-      <!-- All players (full roster; Add disabled if already assigned) -->
-      <section class="rounded-xl border p-3">
-        <h3 class="mb-2 font-semibold">{$t('match_day.match.lineups.available')}</h3>
-        <ul class="space-y-1 max-h-72 overflow-auto pr-1">
-          {#each allPlayers as p (p.id)}
-            <li class="flex items-center justify-between rounded border px-2 py-1">
-              <span>{p.name}</span>
-              <div class="flex items-center gap-2">
-                {#if usedA.has(p.id) || usedB.has(p.id)}
-                  <span class="text-xs px-2 py-0.5 rounded border">
-                    {usedA.has(p.id) ? $t('match_day.match.team.red') : $t('match_day.match.team.black')}
-                  </span>
-                {/if}
-                <button
-                    class="btn btn-primary p-0 w-9 h-9 flex items-center justify-center disabled:opacity-50"
-                    title={$t('common.add')}
-                    aria-label={$t('common.add')}
-                    disabled={usedA.has(p.id) || usedB.has(p.id)}
-                    onclick={() => addToSelected(p.id)}
-                    >
-                    <span aria-hidden="true">＋</span>
-                </button>
-              </div>
-            </li>
-          {/each}
-        </ul>
-        <p class="mt-2 text-xs text-gray-500">
-          {$t('match_day.match.select_player')}
-        </p>
-      </section>
-    </div>
-  </div>
+            <!-- BENCHED − (visas bara om spelaren är i röd/svart) -->
+            <!-- {#if !isBenched(p.id)} -->
+            <button
+              type="button"
+              class={benchBtnClass}
+              title={$t('common.remove')}
+              aria-label={$t('common.remove')}
+              onclick={() => toBench(p.id)}
+            >−</button>
+            <!-- {/if} -->
+          </div>
+        </li>
+      {/each}
+    </ul>
+  
+    <div class="mt-3 flex items-center justify-end gap-4 text-sm">
+        <span>{$t('match_day.match.team.red')}: {totalRedPlayers}</span>
+        <span>{$t('match_day.match.team.black')}: {totalBlackPlayers}</span>
+        <span class="opacity-70">Total: {totalPlayers}</span>
+      </div>
+    <!-- <p class="mt-2 text-xs text-gray-500">
+      {$t('match_day.match.select_player')}
+    </p> -->
+  </section>
   
