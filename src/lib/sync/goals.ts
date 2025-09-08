@@ -38,60 +38,54 @@ async function buildRemoteMatchMap(localMatchIds: string[], club_id: string) {
 }
 
 export const pushGoals = async () => {
-  const db = assertDb()
-  const last = await getLastSync(`${key}.push`)
+  const db = assertDb();
+  const last = await getLastSync('sync.goals.push');
 
   const changed = await db.goals_local
     .filter((r: any) => (r.updatedAtLocal || 0) > last)
-    .toArray()
+    .toArray();
 
-  if (!changed.length) return { pushed: 0 }
+  if (!changed.length) return { pushed: 0 };
 
   const sb = await ensureSession();
   const club_id = await readClubId();
 
-  // dedupe (välj en naturlig nyckel – här ex: match+minute+team+scorer+assist)
-  const byKey = new Map<string, any>();
-
-  // Build payload — include NOT NULL columns (half!), keep id for ON CONFLICT id
+  // 1) dedupe på id (id är primärnyckeln i moln-tabellen)
+  const byId = new Map<string, any>();
   for (const r of changed) {
-    const k = `${r.matchId}|${r.minute ?? 0}|${r.team ?? 'A'}|${r.scorerId ?? ''}|${r.assistId ?? ''}`;
     const row = {
       id: r.id,
       club_id,
       match_id: r.matchId,
-      half: r.half ?? 1,
-      team: r.team ?? 'A',
       minute: r.minute ?? null,
+      half: r.half ?? 1,
+      team: r.team ?? 'A',       // om kolumnen finns i din moln-tabell
       scorer_id: r.scorerId ?? null,
       assist_id: r.assistId ?? null,
-      created_at: new Date(r.createdAt || r.updatedAtLocal || Date.now()).toISOString(),
+      created_at: new Date(r.updatedAtLocal || Date.now()).toISOString(),
       updated_at: new Date(r.updatedAtLocal || Date.now()).toISOString(),
       deleted_at: r.deletedAtLocal ? new Date(r.deletedAtLocal).toISOString() : null
     };
-    const prev = byKey.get(k);
-    if (!prev || new Date(row.updated_at).getTime() > new Date(prev.updated_at).getTime()) {
-      byKey.set(k, row);
-    }
+    const prev = byId.get(row.id);
+    if (!prev || row.updated_at > prev.updated_at) byId.set(row.id, row);
   }
-  const rows = [...byKey.values()];
-  if (!rows.length) return { pushed: 0 };
+  const rows = [...byId.values()];
 
-  // Ensure referenced matches exist in cloud (avoid 23503)
-  // FK-säkerhet: matcherna måste finnas
-  const matchIds = Array.from(new Set(rows.map(r => r.match_id)));
-  const { data: existing, error: exErr } = await sb.from('matches').select('id').in('id', matchIds);
-  if (exErr) throw exErr;
-  const ok = new Set((existing ?? []).map((r: { id: string }) => r.id));
+  // 2) säkerställ refererad match finns i molnet
+  const matchIds = [...new Set(rows.map(r => r.match_id))];
+  const { data: cloudMatches, error: mErr } = await sb
+    .from('matches').select('id').in('id', matchIds);
+  if (mErr) throw mErr;
+  const ok = new Set((cloudMatches ?? []).map((r : { id: string}) => r.id));
   const filtered = rows.filter(r => ok.has(r.match_id));
-  if (!filtered.length) { await setLastSync(`${key}.push`, Date.now()); return { pushed: 0 }; }
+  if (!filtered.length) { await setLastSync('sync.goals.push', Date.now()); return { pushed: 0 }; }
 
-  // Upsert – enklast mot id (du kan lägga ett partial-unik-index om du vill)
+  // 3) upsert på id
   const { error } = await sb.from('goals').upsert(filtered, { onConflict: 'id' });
   if (error) throw error;
 
-  await setLastSync(`${key}.push`, Date.now())
-  return { pushed: filtered.length }
+  await setLastSync('sync.goals.push', Date.now());
+  return { pushed: filtered.length };
 }
 
 export const pullGoals = async () => {
