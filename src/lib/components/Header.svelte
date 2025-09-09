@@ -100,8 +100,10 @@
               <button class="btn btn-danger w-full" aria-label={$t('header.actions.sync')} on:click={handleLogout}>
                 {$t('header.actions.logout')}
               </button>
-            {/if}    
-          <LanguageSwitcher />
+            {/if}
+            {#if $isAdmin}
+            <LanguageSwitcher />
+            {/if}
         </div>
       </nav>
     </div>
