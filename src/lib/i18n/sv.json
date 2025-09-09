@@ -7,6 +7,7 @@
       "home": "Hem",
       "invite": "Inbjudan",
       "backup": "Backup",
+      "players": "Spelare",
       "admin": "Admin",
       "settings": "Inställningar",
       "language": "Språk"
@@ -121,10 +122,38 @@
     },
     "common": { "stats": "Statistik" }
   },
+  "players": {
+    "title": "Spelare",
+    "hide_archived": "Dölj arkiverade",
+    "form": {
+      "name": "Namn",
+      "nickname": "Smeknamn",
+      "add_button": "Lägg till spelare",
+      "validation": {
+        "name_required": "Ange ett namn."
+      }
+    },
+    "list": {
+      "empty": "Inga spelare ännu."
+    },
+    "actions": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "archive": "Arkivera",
+      "unarchive": "Återställ"
+    },
+    "counts": {
+      "active": "Aktiva",
+      "archived": "Arkiverade",
+      "total": "Totalt"
+    }
+  },
   "common": {
     "edit": "Redigera",
     "loading": "Laddar…",
     "not_found": "Hittades inte.",
+    "save": "Spara",
+    "cancel": "Avbryt",
     "toggle": "Toggle", "add": "Add", "remove": "Remove", "delete": "Delete", "none": "None", "back": "Tillbaka" 
 
   },

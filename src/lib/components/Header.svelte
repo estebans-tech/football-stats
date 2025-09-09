@@ -15,11 +15,12 @@
 
   $: items = (
     $isAdmin ? [
+      { href: '/players', labelKey: 'header.nav.players' },
       { href: '/admin', labelKey: 'header.nav.admin' },
       { href: '/settings', labelKey: 'header.nav.settings' }
     ]
     : $canEdit ? [
-      { href: '/backup', labelKey: 'header.nav.backup' }
+      { href: '/players', labelKey: 'header.nav.players' }
     ]
     : [
       { href: '/invite', labelKey: 'header.nav.invite' }

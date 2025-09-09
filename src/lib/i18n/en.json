@@ -7,6 +7,7 @@
       "home": "Home",
       "invite": "Redeem",
       "backup": "Backup",
+      "players": "Players",
       "admin": "Admin",
       "settings": "Settings",
       "language": "Language"
@@ -121,11 +122,39 @@
       "actions": { "copy_h1_h2": "Copy H{from} → H{to}", "copy_team": "Copy {from} → {to}", "swap_teams": "Swap Red ↔ Black" }
     }
   },
+  "players": {
+    "title": "Players",
+    "hide_archived": "Hide archived",
+    "form": {
+      "name": "Name",
+      "nickname": "Nickname",
+      "add_button": "Add player",
+      "validation": {
+        "name_required": "Please enter a name."
+      }
+    },
+    "list": {
+      "empty": "No players yet."
+    },
+    "actions": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "archive": "Archive",
+      "unarchive": "Unarchive"
+    },
+    "counts": {
+      "active": "Active",
+      "archived": "Archived",
+      "total": "Total"
+    }
+  },
   "common": {
     "edit": "Edit",
     "view": "View",
     "loading": "Loading…",
     "not_found": "Not found.", 
+    "save": "Save",
+    "cancel": "Cancel",
     "toggle": "Toggle", "add": "Add", "remove": "Remove", "delete": "Delete", "none": "None", "back": "Back" 
   },
   "sync": {

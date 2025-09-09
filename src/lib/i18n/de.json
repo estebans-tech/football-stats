@@ -7,6 +7,7 @@
       "home": "Startseite",
       "invite": "Einladung",
       "backup": "Backup",
+      "players": "Spieler",
       "admin": "Admin",
       "settings": "Einstellungen",
       "language": "Sprache"
@@ -121,6 +122,32 @@
       "actions": { "copy_h1_h2": "Kopiere H{from} → H{to}", "copy_team": "Kopiere {from} → {to}", "swap_teams": "Rot ↔ Schwarz" }
     }
   },
+  "players": {
+    "title": "Spieler",
+    "hide_archived": "Archivierte ausblenden",
+    "form": {
+      "name": "Name",
+      "nickname": "Spitzname",
+      "add_button": "Spieler hinzufügen",
+      "validation": {
+        "name_required": "Bitte einen Namen eingeben."
+      }
+    },
+    "list": {
+      "empty": "Noch keine Spieler."
+    },
+    "actions": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "archive": "Archivieren",
+      "unarchive": "Wiederherstellen"
+    },
+    "counts": {
+      "active": "Aktiv",
+      "archived": "Archiviert",
+      "total": "Insgesamt"
+    }
+  },
   "common": {
     "edit": "Bearbeiten",
     "view": "Ansehen",
@@ -131,6 +158,8 @@
     "add": "Hinzufügen",
     "remove": "Entfernen",
     "delete": "Löschen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
     "none": "Keine"
   },
   "sync": {

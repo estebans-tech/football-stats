@@ -109,7 +109,7 @@
     <ul class="space-y-2 max-h-[520px] overflow-auto pr-1">
       {#each roster as p (p.id)}
         <li class={rowClass(p.id)}>
-            <span class="truncate">{p.name}</span>
+            <span class="truncate">{p.nickname ?? p.name}</span>
             {#if isInactive(p.id)}
               <span class="ml-2 text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded
                            border border-white/30 bg-white/15 text-white/90">

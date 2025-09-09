@@ -11,14 +11,9 @@ export interface BaseLocal {
   deletedAtLocal?: number;  // set to ms when “deleted”; undefined = alive
 }
 
-export interface PlayerLocal extends BaseLocal {
-  active: boolean;
+export interface PlayerLocal extends BaseLocal, Player {
   createdAt: number;
-  name: string;
-  nickname?: string;
-  archivedAtLocal?: number
 }
-
 export interface SessionLocal extends BaseLocal {
   date: string;           // 'YYYY-MM-DD'
   status: 'open'|'locked';
@@ -51,3 +46,5 @@ export interface KeyValLocal {
   key: 'clubId' | 'role' | 'schemaVersion' | 'lastOpenedSessionId' | string;
   value: any;
 }
+
+export type Player = { name: string; nickname?: string | null; active: boolean }
