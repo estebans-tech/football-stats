@@ -66,7 +66,9 @@
         </button>
       {/if}
 
+      {#if $isAdmin}
       <LanguageSwitcher />
+      {/if}
     </div>
 
     <!-- Mobile menu button -->
