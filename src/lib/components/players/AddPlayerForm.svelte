@@ -33,6 +33,7 @@
     <input
       class="w-full rounded-md border border-gray-300 px-3 py-2"
       placeholder={$t('players.form.name')}
+      required
       bind:value={name}
     />
     <input

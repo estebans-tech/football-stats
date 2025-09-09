@@ -42,13 +42,14 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <input
             class="w-full rounded-md border border-gray-300 px-3 py-2"
-            placeholder={$t('players.form.name')}
-            bind:value={name}
+            placeholder={$t('players.form.nickname')}
+            bind:value={nickname}
           />
           <input
             class="w-full rounded-md border border-gray-300 px-3 py-2"
-            placeholder={$t('players.form.nickname')}
-            bind:value={nickname}
+            placeholder={$t('players.form.name')}
+            required
+            bind:value={name}
           />
         </div>
         <div class="mt-2 flex flex-wrap justify-end gap-2">
