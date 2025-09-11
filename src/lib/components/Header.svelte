@@ -16,7 +16,7 @@
   $: currentRole = ((page.data.role ?? 'anon') as Role); // cast as rRole
   $: showAdmin = isAdmin(currentRole);
   $: showEditor = !showAdmin && canEditFromRole(page.data.role);
-  $: showLogout = showAdmin || showEditor;
+  $: showBoth = showAdmin || showEditor;
 
   $: items = (
     showAdmin ? [
@@ -45,7 +45,6 @@
       <span class="text-2xl">⚽</span>
       <span>{$t('brand.title')}</span>
     </a>
-
     <!-- Desktop nav -->
     <nav class="hidden md:flex items-center gap-1" aria-label={$t('header.a11y.primary_navigation')}>
       {#each items as n}
@@ -54,13 +53,13 @@
     </nav>
 
     <div class="hidden md:flex items-center gap-2">
-      {#if showEditor}
+      {#if showBoth}
         <!-- Uses your .btn class from app.css -->
         <button class="btn btn-outline" aria-label={$t('header.actions.sync')} on:click={() => onSync?.()}>
           {$t('header.actions.sync')}
         </button>
       {/if}
-      {#if showLogout}
+      {#if showBoth}
       <form method="POST" action="/logout">
         <button class="btn btn-danger w-full active:translate-y-[1px]
          focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/60 focus-visible:ring-offset-2
@@ -100,7 +99,7 @@
               {$t('header.actions.sync')}
             </button>
             {/if}
-            {#if showLogout}
+            {#if showBoth}
               <form method="POST" action="/logout">
                 <button class="btn btn-danger w-full" aria-label={$t('header.actions.sync')} on:click={handleLogout}>
                   {$t('header.actions.logout')}
