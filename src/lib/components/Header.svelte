@@ -4,33 +4,33 @@
   import { goto } from '$app/navigation'
   import { page } from '$app/state'
   import { t } from 'svelte-i18n'
-  
+  import { isAdmin, canEditFromRole } from '$lib/auth/helpers';
+
   import type { Role } from '$lib/types/auth'
 
-  export let onSync: (() => void) | undefined = undefined
   export const syncBusy: boolean = false
+  export let onSync: (() => void) | undefined = undefined
 
   let open = false
-  $: role = ((page.data?.role ?? 'anon') as Role)
-  $: canEdit = page.data?.canEdit
+
+  $: currentRole = ((page.data.role ?? 'anon') as Role); // cast as rRole
+  $: showAdmin = isAdmin(currentRole);
+  $: showEditor = !showAdmin && canEditFromRole(page.data.role);
+  $: showLogout = showAdmin || showEditor;
 
   $: items = (
-    role === 'admin' ? [
+    showAdmin ? [
       { href: '/admin/players', labelKey: 'header.nav.players' },
       { href: '/admin', labelKey: 'header.nav.admin' },
       { href: '/settings', labelKey: 'header.nav.settings' }
     ]
-    : canEdit ? [
+    : showEditor ? [
       { href: '/admin/players', labelKey: 'header.nav.players' }
     ]
     : [
       { href: '/invite', labelKey: 'header.nav.invite' }
     ]
   )
-
-  
-  $: showSyncButton = role === 'admin' || canEdit
-  $: showLogout = role === 'admin' || canEdit
 
   async function handleLogout() {
     // await signOut()
@@ -54,7 +54,7 @@
     </nav>
 
     <div class="hidden md:flex items-center gap-2">
-      {#if showSyncButton}
+      {#if showEditor}
         <!-- Uses your .btn class from app.css -->
         <button class="btn btn-outline" aria-label={$t('header.actions.sync')} on:click={() => onSync?.()}>
           {$t('header.actions.sync')}
@@ -64,13 +64,13 @@
       <form method="POST" action="/logout">
         <button class="btn btn-danger w-full active:translate-y-[1px]
          focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/60 focus-visible:ring-offset-2
-         transition-colors disabled:opacity-50 disabled:pointer-events-none" aria-label={$t('header.actions.sync')} on:click={handleLogout}>
+         transition-colors disabled:opacity-50 disabled:pointer-events-none" aria-label={$t('header.actions.sync')}>
           {$t('header.actions.logout')}
         </button>
       </form>
       {/if}
 
-      {#if role === 'admin'}
+      {#if showAdmin}
       <LanguageSwitcher />
       {/if}
     </div>
@@ -95,17 +95,19 @@
           <NavLink href={n.href} labelKey={n.labelKey} />
         {/each}
         <div class="pt-2 flex items-center gap-2">
-          {#if showSyncButton}
+          {#if showAdmin}
             <button class="btn w-full" aria-label={$t('header.actions.sync')} on:click={() => onSync?.()}>
               {$t('header.actions.sync')}
             </button>
             {/if}
             {#if showLogout}
-              <button class="btn btn-danger w-full" aria-label={$t('header.actions.sync')} on:click={handleLogout}>
-                {$t('header.actions.logout')}
-              </button>
+              <form method="POST" action="/logout">
+                <button class="btn btn-danger w-full" aria-label={$t('header.actions.sync')} on:click={handleLogout}>
+                  {$t('header.actions.logout')}
+                </button>
+              </form>
             {/if}
-            {#if role === 'admin'}
+            {#if showAdmin}
             <LanguageSwitcher />
             {/if}
         </div>

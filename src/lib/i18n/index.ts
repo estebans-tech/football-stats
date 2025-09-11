@@ -1,37 +1,17 @@
-import { register, init, getLocaleFromNavigator, locale } from 'svelte-i18n'
-import { browser } from '$app/environment'
-import {
-  SUPPORTED_LOCALES,
-  FALLBACK_LOCALE,
-  isSupportedLocale,
-  type LocaleCode,
-  type LocaleCodeMaybe
-} from './types'
+import { register, init, locale } from 'svelte-i18n'
+import type { LocaleCode } from './types';
 
-// Explicit lazy registration (statiska imports för Vite treeshaking)
-register('sv', () => import('./sv.json'))
-register('en', () => import('./en.json'))
-register('de', () => import('./de.json'))
+// lazy-load JSON dictionaries
+register('en', () => import('./en.json'));
+register('de', () => import('./de.json'));
+register('sv', () => import('./sv.json'));
 
-// Resolve initial locale: saved -> system base -> fallback
-const saved = (browser ? localStorage.getItem('locale') : null) as LocaleCodeMaybe
-const systemBase = (browser ? getLocaleFromNavigator()?.split('-')[0] : null) as LocaleCodeMaybe
-
-const initial: LocaleCode =
-  (isSupportedLocale(saved) && saved) ||
-  (isSupportedLocale(systemBase) && systemBase) ||
-  FALLBACK_LOCALE
-
-init({
-  fallbackLocale: FALLBACK_LOCALE,
-  initialLocale: initial
-})
-
-// Persist future changes (client only)
-if (browser) {
-  locale.subscribe((val) => {
-    if (isSupportedLocale(val)) localStorage.setItem('locale', val)
-  })
+/** Call once on the client with the server-chosen locale */
+export function startI18n(initial: LocaleCode, fallback: LocaleCode) {
+  init({
+    fallbackLocale: fallback,
+    initialLocale: initial
+  });
+  // if a server render set a different locale later, this setter keeps them in sync
+  locale.set(initial);
 }
-
-export * from './types'

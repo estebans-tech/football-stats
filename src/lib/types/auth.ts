@@ -1,6 +1,5 @@
-export type DbRole = 'viewer' | 'editor' | 'admin';
-export type Role  = 'anon'  | DbRole;  // 'anon' + DB roles
-// export type Role = 'anon' | 'editor' | 'admin' /* | 'viewer' */;
+// Types only — no logic here.
+export type Role = 'anon' | 'viewer' | 'editor' | 'admin';
 
 export type Profile = {
   user_id: string;
@@ -9,13 +8,17 @@ export type Profile = {
   club_id?: string | null;
 } | null;
 
-export type UserSummary = { id: string; email?: string | null } | null;
+export type UserSummary = {
+  id: string;
+  email?: string | null;
+} | null;
 
 export type AuthState = {
   user: UserSummary;
   role: Role;
   profile: Profile;
   canEdit: boolean;
+  isAdmin?: boolean;
 };
 
 export type AuthErrorCode =
@@ -25,4 +28,9 @@ export type AuthErrorCode =
   | 'EMAIL_MISMATCH'
   | 'CALLBACK_FAILED'
   | 'PROFILE_UPSERT_FAILED'
+  | 'GENERIC' // +for iinternal
   | 'INTERNAL_ERROR';
+
+  export const isRole = (val: unknown): val is Role =>
+    val === 'anon' || val === 'viewer' || val === 'editor' || val === 'admin'
+  
