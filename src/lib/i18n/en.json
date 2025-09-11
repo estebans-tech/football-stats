@@ -26,16 +26,16 @@
     "title": "Redeem",
     "intro": "Enter your redeem code to gain access.",
     "label_code": "Redeem code",
-    "placeholder": "e.g. ADMIN-2024 or EDITOR-2024",
+    "placeholder": "e.g. KICKER-2024 oder KAEFIG-2024",
     "submit": "Sign in",
     "submitting": "Signing in…",
     "success_admin": "Welcome! Admin privileges enabled.",
     "success_editor": "Welcome! Editor privileges enabled.",
     "redirecting": "Redirecting…",
     "errors": {
-      "empty": "Please enter a code.",
-      "invalid_code": "Invalid redeem code.",
-      "generic": "Something went wrong. Please try again."
+      "EMPTY": "Please enter a code.",
+      "INVITE_INVALID": "Invalid redeem code.",
+      "GENERIC": "Something went wrong. Please try again."
     }
   },
   "session": {

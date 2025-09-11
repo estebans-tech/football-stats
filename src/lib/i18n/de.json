@@ -26,16 +26,16 @@
     "title": "Einladung",
     "intro": "Gib deinen Einladungscode ein, um Zugriff zu erhalten.",
     "label_code": "Einladungscode",
-    "placeholder": "z. B. ADMIN-2024 oder EDITOR-2024",
+    "placeholder": "z. B. KICKER-2024 oder KAEFIG-2024",
     "submit": "Einloggen",
     "submitting": "Anmelden…",
     "success_admin": "Willkommen! Admin-Rechte aktiviert.",
     "success_editor": "Willkommen! Editor-Rechte aktiviert.",
     "redirecting": "Leite weiter…",
     "errors": {
-      "empty": "Bitte gib einen Code ein.",
-      "invalid_code": "Ungültiger Einladungscode.",
-      "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+      "EMPTY": "Bitte gib einen Code ein.",
+      "INVITE_INVALID": "Ungültiger Einladungscode.",
+      "GENERIC": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
     }
   },
   "session": {

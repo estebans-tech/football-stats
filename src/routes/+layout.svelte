@@ -13,6 +13,7 @@
   async function handleSync() {
     if (syncing) return
     syncing = true
+
     try {
       toast.info($t('sync.players.start'))
       const { pushed, pulled } = await syncPlayers()

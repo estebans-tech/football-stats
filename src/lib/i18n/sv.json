@@ -26,16 +26,16 @@
       "title": "Inbjudan",
       "intro": "Ange din inbjudningskod för att få åtkomst.",
       "label_code": "Inbjudningskod",
-      "placeholder": "t.ex. ADMIN-2024 eller EDITOR-2024",
+      "placeholder": "t.ex. KICKER-2024 oder KAEFIG-2024",
       "submit": "Logga in",
       "submitting": "Loggar in…",
       "success_admin": "Välkommen! Admin-behörighet aktiverad.",
       "success_editor": "Välkommen! Editor-behörighet aktiverad.",
       "redirecting": "Omdirigerar…",
       "errors": {
-        "empty": "Fyll i en kod.",
-        "invalid_code": "Ogiltig inbjudningskod.",
-        "generic": "Något gick fel. Försök igen."
+        "EMPTY": "Fyll i en kod.",
+        "INVITE_INVALID": "Ogiltig inbjudningskod.",
+        "GENERIC": "Något gick fel. Försök igen."
       }
     },
   "session": {

@@ -1,81 +1,45 @@
 <script lang="ts">
-  // Comments in English
-  import { t } from 'svelte-i18n'
-  import { acceptInvite } from '$lib/auth/auth'
-  import { goto } from '$app/navigation'
-  import { redeemInvite } from '$lib/auth/auth'
+import { t } from 'svelte-i18n'
 
-  import type { Role } from '$lib/auth/types'
+export let form: { code?: string } | undefined;
+export let next: string | undefined;
 
-  let code = ''
+  // let code = ''
+  let code = '';
   let busy = false
-  let errorMsg = ''
-  let successRole: Role | null = null
 
-  async function submit() {
-    errorMsg = ''
-    successRole = null
-    const trimmed = code.trim()
-    if (!trimmed) { errorMsg = $t('invite.errors.empty'); return }
-
+  function handleSubmit() {
+    // do NOT preventDefault — allow normal POST + redirect/fail
+    setTimeout(() => {
+    }, 800);
     busy = true
-    try {
-      const res = await redeemInvite(trimmed)
-      successRole = res.role as Role
-      await new Promise((r) => setTimeout(r, 600))
-
-      await goto('/')
-    } catch (e: any) {
-      errorMsg =
-        e?.message === 'INVALID_INVITE'
-          ? $t('invite.errors.invalid_code')
-          : $t('invite.errors.generic')
-    } finally {
-      busy = false
-    }
-  }
-
-  function onSubmit(e: SubmitEvent) {
-    e.preventDefault()
-    submit()
   }
 </script>
 
-<section class="mx-auto max-w-md w-full rounded-2xl border p-6 bg-white shadow-sm">
-  <h1 class="text-xl font-semibold mb-2">{$t('invite.title')}</h1>
-  <p class="text-sm text-gray-600 mb-6">{$t('invite.intro')}</p>
+<section class="mx-auto max-w-md w-full rounded-sm border border-gray-300 p-6 bg-white shadow-md">
 
-  <form class="space-y-3" on:submit|preventDefault={onSubmit} novalidate>
-    <div>
-      <label class="block text-sm font-medium mb-1" for="invite-code">
+  <form class="space-y-3" method="POST"  on:submit={handleSubmit}>
+    {#if next}<input type="hidden" name="next" value={next} />{/if}
+    <div class="space-y-2">
+      <label for="invite-code" class="block text-sm font-medium">
         {$t('invite.label_code')}
-      </label>
+        </label>
       <input
         id="invite-code"
         name="code"
-        class="w-full rounded-lg border px-3 py-2"
+        class="w-full rounded-md border border-gray-300 px-3 py-2"
         type="text"
         placeholder={$t('invite.placeholder')}
         bind:value={code}
         autocomplete="one-time-code"
         spellcheck="false"
         required
-        aria-invalid={errorMsg ? 'true' : 'false'}
-        aria-describedby={errorMsg ? 'invite-error' : undefined}
+        aria-invalid={form?.code ? 'true' : 'false'}
+        aria-describedby={form?.code ? 'invite-error' : undefined}
+        readonly={busy} 
       />
+
     </div>
-
-    {#if successRole}
-      <div class="text-sm text-green-700" role="status" aria-live="polite">
-        {#if successRole === 'admin'}
-          {$t('invite.success_admin')}
-        {:else}
-          {$t('invite.success_editor')}
-        {/if}
-        <span class="opacity-70"> {$t('invite.redirecting')}</span>
-      </div>
-    {/if}
-
     <button
       type="submit"
       class="btn btn-primary w-full"
@@ -91,10 +55,9 @@
     </button>
   </form>
 
-  {#if errorMsg}
-    <div id="invite-error" class="my-4 mx-auto text-sm text-red-600" role="alert" aria-live="assertive">
-      {errorMsg}
+  {#if form?.code}
+    <div id="invite-error" class="mt-3 text-sm text-red-600" role="alert" aria-live="assertive">
+      {$t(`invite.errors.${form.code}`) || $t('invite.errors.GENERIC')}
     </div>
   {/if}
-
 </section>

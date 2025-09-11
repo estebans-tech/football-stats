@@ -1,37 +1,39 @@
 <script lang="ts">
   import NavLink from '$lib/components/NavLink.svelte'
   import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte'
-  import { page } from '$app/stores'
-  import { t } from 'svelte-i18n'
-  import { isAdmin, canEdit, signOut } from '$lib/auth/auth'
   import { goto } from '$app/navigation'
+  import { page } from '$app/state'
+  import { t } from 'svelte-i18n'
+  
+  import type { Role } from '$lib/types/auth'
 
-  // Svelte 5: use callback prop instead of createEventDispatcher
   export let onSync: (() => void) | undefined = undefined
   export const syncBusy: boolean = false
 
   let open = false
-  $: $page.url, (open = false)
+  $: role = ((page.data?.role ?? 'anon') as Role)
+  $: canEdit = page.data?.canEdit
 
   $: items = (
-    $isAdmin ? [
-      { href: '/players', labelKey: 'header.nav.players' },
+    role === 'admin' ? [
+      { href: '/admin/players', labelKey: 'header.nav.players' },
       { href: '/admin', labelKey: 'header.nav.admin' },
       { href: '/settings', labelKey: 'header.nav.settings' }
     ]
-    : $canEdit ? [
-      { href: '/players', labelKey: 'header.nav.players' }
+    : canEdit ? [
+      { href: '/admin/players', labelKey: 'header.nav.players' }
     ]
     : [
       { href: '/invite', labelKey: 'header.nav.invite' }
     ]
   )
 
-  $: showSyncButton = $isAdmin || $canEdit
-  $: showLogout = $isAdmin || $canEdit
+  
+  $: showSyncButton = role === 'admin' || canEdit
+  $: showLogout = role === 'admin' || canEdit
 
   async function handleLogout() {
-    await signOut()
+    // await signOut()
     await goto('/')  // tillbaka till start
   }
 </script>
@@ -39,8 +41,8 @@
 <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b">
   <div class="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
     <!-- Brand -->
-    <a href="/" class="flex items-center gap-2 font-semibold" aria-label={$t('brand.title')}>
-      <span class="text-xl">⚽</span>
+    <a href="/" class="flex items-center gap-2 font-semibold text-xl" aria-label={$t('brand.title')}>
+      <span class="text-2xl">⚽</span>
       <span>{$t('brand.title')}</span>
     </a>
 
@@ -59,14 +61,16 @@
         </button>
       {/if}
       {#if showLogout}
+      <form method="POST" action="/logout">
         <button class="btn btn-danger w-full active:translate-y-[1px]
          focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/60 focus-visible:ring-offset-2
          transition-colors disabled:opacity-50 disabled:pointer-events-none" aria-label={$t('header.actions.sync')} on:click={handleLogout}>
           {$t('header.actions.logout')}
         </button>
+      </form>
       {/if}
 
-      {#if $isAdmin}
+      {#if role === 'admin'}
       <LanguageSwitcher />
       {/if}
     </div>
@@ -101,7 +105,7 @@
                 {$t('header.actions.logout')}
               </button>
             {/if}
-            {#if $isAdmin}
+            {#if role === 'admin'}
             <LanguageSwitcher />
             {/if}
         </div>
