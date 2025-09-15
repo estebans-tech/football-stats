@@ -10,7 +10,7 @@
   } from '$lib/data/matches'
     import { onMount } from 'svelte'
     import { toasts as toast } from '$lib/ui/toast/store'
-    import { canEdit, profile, initAuth, isAdmin } from '$lib/auth/auth'
+    import { canEdit, isAuthenticated, isAdmin } from '$lib/auth/client'
 
     import type { MatchLocal } from '$lib/types/domain'
 
@@ -30,6 +30,8 @@
     $: counts = $matchCounts
     $: bySession = $matchesMap
     $: matchesBySession = $matchesMap
+    $: isEditor = canEdit()
+    $: isAdministrator = isAdmin()
 
     async function remove(id: string, date: string) {
       const ok = confirm($t('session.delete_confirm'))
@@ -98,7 +100,7 @@
       }
     }
 
-    onMount(() => { initAuth() })
+    onMount(() => { isAuthenticated() })
   </script>
   
   <section class="mx-auto max-w-2xl w-full">
@@ -117,7 +119,7 @@
           <div
             class="flex items-center justify-between flex-wrap">
               <div class="flex items-center gap-2 mb-2">
-                {#if s.status === 'locked' && $canEdit}
+                {#if s.status === 'locked' && isEditor}
                 <!-- locked -->
                   <span class="text-xs px-2 py-0.5 rounded-full border text-red-600 border-red-500">
                     {$t('session.status.locked')}
@@ -126,7 +128,7 @@
                 <!-- date -->
                 <h3 class="font-medium">{s.date}</h3>
               </div>
-              {#if $canEdit}
+              {#if isEditor}
               <div class="flex items-center gap-2">
                 {#if s.status === 'open'}
                 <!-- add 4: only when there are NO matches yet -->
@@ -179,7 +181,7 @@
                 🔒 <span class="hidden sm:block ">{s.status !== 'locked' ? $t('session.list.lock') : $t('session.list.unlock')}</span>
                 </button>
 
-                {#if $isAdmin}
+                {#if isAdministrator}
                   <button
                     class="btn btn-danger"
                     disabled={busyId === s.id}
@@ -197,7 +199,7 @@
 
           {#if matches.length > 0}
           <ul class="my-3 space-y-2">
-            {#if s.status !== 'locked' && $canEdit}
+            {#if s.status !== 'locked' && isEditor}
             {#each matches as m (m.id)}
                 <li class="rounded-xl border border-gray-300 p-4 flex items-center justify-between">
                   <div class="font-medium">{$t('match_day.match.numbered', { values: { num: m.orderNo } })}</div>
@@ -205,7 +207,7 @@
                   <a
                     href={`/matches/${m.id}/edit/`}
                     class="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50"
-                  >{canEdit ? $t('common.edit') : $t('common.view')}</a>
+                  >{isEditor ? $t('common.edit') : $t('common.view')}</a>
                 </li>
             {/each}
             {/if}
