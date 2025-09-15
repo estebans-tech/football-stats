@@ -41,7 +41,7 @@ async function nextOrderNo(sessionId: string) {
 }
 
 export async function createLocalMatch(sessionId: string): Promise<MatchLocal> {
-  await ensureUnlocked(sessionId)  // ⬅️ guard
+  await ensureUnlocked(sessionId)  // guard
 
   const db = assertDb()
   const orderNo = await nextOrderNo(sessionId)
@@ -57,7 +57,7 @@ export async function createLocalMatch(sessionId: string): Promise<MatchLocal> {
 }
 
 export async function createLocalMatches(sessionId: string, count: number): Promise<MatchLocal[]> {
-  await ensureUnlocked(sessionId)  // ⬅️ guard
+  await ensureUnlocked(sessionId)  // guard
 
   if (count <= 0) return []
   const db = assertDb()
@@ -93,7 +93,7 @@ export function observeLocalMatchCounts() {
 
 // Soft-delete the most recently added (highest orderNo) non-deleted match for a session
 export async function softDeleteLastLocalMatch(sessionId: string): Promise<MatchLocal | null> {
-  await ensureUnlocked(sessionId)  // ⬅️ guard
+  await ensureUnlocked(sessionId)  // guard
 
   const db = assertDb()
   const arr = await db.matches_local

@@ -110,7 +110,7 @@ export const pushMatches = async () => {
 
   const { data: cloudRows, error: cloudErr } = await sb
     .from('matches')
-    .select('id, session_id, order_no, updated_at, deleted_at') // ⬅️ viktigt
+    .select('id, session_id, order_no, updated_at, deleted_at')
     .in('session_id', sessionIds);
 
   if (cloudErr) throw cloudErr;

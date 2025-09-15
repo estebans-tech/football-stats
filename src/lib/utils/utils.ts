@@ -21,3 +21,11 @@ export function isValidYMD(s: string) {
   // Check month/day boundaries (e.g., 2025-02-30 -> invalid)
   return !Number.isNaN(d.getTime()) && s === d.toISOString().slice(0, 10)
 }
+
+  // robust tidsparser: ISO/string/Date -> ms epoch | null
+export const toMs = (v: unknown): number | null => {
+    if (v == null) return null
+    if (typeof v === 'number') return Number.isFinite(v) ? v : null
+    const t = new Date(v as any).getTime()
+    return Number.isFinite(t) ? t : null
+  }

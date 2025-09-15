@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { PageData } from './$types'
+  import { t } from 'svelte-i18n'
   import { browser } from '$app/environment'
   import { readable, type Readable } from 'svelte/store'
-  import { t } from 'svelte-i18n'
-  import { canEdit } from '$lib/auth/auth'
-  import type { PageLoad } from './$types'
+  import { canEdit } from '$lib/auth/client'
 
+  // Types
+  import type { PageLoad, PageData } from './$types'
   import type {
     MatchLocal,
     GoalLocal,
@@ -25,6 +25,8 @@
   }
 
   export let data: PageData
+
+  $: isEditor = canEdit()
 
   // SSR-safe fallbacks: deklarera alltid stores på top level
   const matchStore: Readable<MatchLocal | undefined> =
@@ -103,7 +105,7 @@
                 {#if g.assistId} <span class="text-gray-600">({$t('match_day.match.goals.assist', { values: { name: nameOf(g.assistId) } })})</span>{/if}
                 <span class="text-xs text-gray-500 ml-2">({$t('match_day.match.half', { values: { n: g.half } })})</span>
               </span>
-              {#if canEdit}
+              {#if isEditor}
                 <a class="text-xs underline hover:no-underline" href={`/matches/${data.id}/edit#goal-${g.id}`}>{$t('common.edit')}</a>
               {/if}
             </li>

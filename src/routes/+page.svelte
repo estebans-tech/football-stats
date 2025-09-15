@@ -1,9 +1,9 @@
 <script lang="ts">
   import SessionCreate from '$lib/components/session/SessionCreate.svelte'
   import SessionList from '$lib/components/session/SessionList.svelte'
-  import { isAdmin, canEdit } from '$lib/auth/auth'
+  import { canEdit, isAdmin } from '$lib/auth/client'
 
-  $: canAddMatch = $isAdmin || $canEdit
+  $: canAddMatch = isAdmin() || canEdit()
 </script>
 
 

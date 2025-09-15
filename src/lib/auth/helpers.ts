@@ -1,4 +1,4 @@
-import type { Role } from './types';
+import type { Role } from '$lib/auth/types';
 
 export const isAdmin = (role: Role | null | undefined): boolean =>
   role === 'admin';
