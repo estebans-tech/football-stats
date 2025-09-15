@@ -18,7 +18,7 @@
     }
   })
 
-  const isArchived = () => !!(player.deletedAtLocal)
+  const isArchived = () => !!(player.deletedAt)
 
   async function saveEdits() {
     editing = false

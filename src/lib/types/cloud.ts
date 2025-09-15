@@ -49,6 +49,7 @@ export interface CloudPlayer {
   active: boolean;
   updated_at: string;
   deleted_at: string | null;
+  created_at: string | null;
 }
 
 export type GoalRow = {

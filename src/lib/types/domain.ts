@@ -4,15 +4,19 @@ export type Half = 1 | 2
 export type TeamColor= 'red' | 'black'
 export type TeamAB = 'A' | 'B'
 export type DedupeMode = 'keep-recent' | 'keep-A' | 'keep-B'
+export type LocalPlayerOp = 'create' | 'update' | 'delete' | null
 
 export interface BaseLocal {
   id: ULID;
-  updatedAtLocal: number;   // ms since epoch for easy comparisons
-  deletedAtLocal?: number;  // set to ms when “deleted”; undefined = alive
+  updatedAtLocal: number | null;   // ms since epoch for easy comparisons
+  deletedAtLocal?: number | null;  // set to ms when “deleted”; undefined = alive
 }
 
 export interface PlayerLocal extends BaseLocal, Player {
-  createdAt: number;
+  createdAt: number | null;
+  deletedAt: number | null;
+  updatedAt: number | null;
+  dirty: boolean;
 }
 export interface SessionLocal extends BaseLocal {
   date: string;           // 'YYYY-MM-DD'

@@ -5,7 +5,7 @@ import type { PlayerLocal, Player } from '$lib/types/domain'
 
 
 const isActive = (p: PlayerLocal) =>
-  (p.active !== false) && !p.deletedAtLocal
+  (p.active !== false) && !p.deletedAt
 
 export function observeLocalActivePlayersMap() {
   const db = assertDb()
@@ -53,8 +53,7 @@ export async function addPlayer(input: Pick<Player, 'name'> & Partial<Pick<Playe
     active: input.active ?? true,
     createdAt: now,
     updatedAtLocal: now,
-    // Vi använder archivedAtLocal för arkiv, deletedAtLocal lämnas ifred (hard delete).
-    deletedAtLocal: undefined
+    dirty: true
   } as PlayerLocal)
   return id
 }
@@ -62,18 +61,23 @@ export async function addPlayer(input: Pick<Player, 'name'> & Partial<Pick<Playe
 // Toggle active
 export async function setPlayerActive(playerId: string, active: boolean) {
   const db = assertDb()
+
   await db.players_local.update(playerId, {
     active,
-    updatedAtLocal: Date.now()
+    updatedAtLocal: Date.now(),
+    dirty: true
   })
 }
 
 // Toggle archive (soft delete via archivedAtLocal). Unarchive = undefined.
 export async function setPlayerArchived(playerId: string, archived: boolean) {
   const db = assertDb()
+  const now = Date.now()
+
   await db.players_local.update(playerId, {
-    deletedAtLocal: archived ? Date.now() : undefined,
-    updatedAtLocal: Date.now()
+    deletedAt: archived ? now : null,
+    updatedAtLocal: now,
+    dirty: true
   })
 }
 
@@ -83,6 +87,7 @@ export async function updatePlayer(playerId: string, patch: Pick<Player, 'name' 
   await db.players_local.update(playerId, {
     name: patch.name?.trim(),
     nickname: (patch.nickname ?? '').trim() || null,
-    updatedAtLocal: Date.now()
+    updatedAtLocal: Date.now(),
+    dirty: true
   })
 }
