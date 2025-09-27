@@ -4,6 +4,7 @@ export interface CloudSession {
   club_id: string;
   date: string;
   status: 'open'|'locked';
+  created_at: string;
   updated_at: string;   // ISO
   deleted_at: string | null;
 }
@@ -15,6 +16,7 @@ export interface CloudMatch {
   order_no: number;
   updated_at: string;
   deleted_at: string | null;
+  created_at: string | null
 }
 
 export interface CloudLineup {

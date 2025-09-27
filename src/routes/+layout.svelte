@@ -20,10 +20,10 @@
     try {
       toast.info($t('sync.players.start'))
       const { pushed, pulled } = await syncPlayers()
+      toast.success($t('sync.players.done', { values: { pushed, pulled } }))
       toast.info($t('sync.games.start'))
       const games = await syncGames()
       toast.success($t('sync.games.done', { values: games }))
-      toast.success($t('sync.players.done', { values: { pushed, pulled } }))
     } catch (e) {
       toast.danger($t('sync.error'))
     } finally {

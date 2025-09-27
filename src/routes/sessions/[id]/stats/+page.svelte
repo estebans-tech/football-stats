@@ -36,7 +36,7 @@
             const matches = await db.matches_local
                 .where('sessionId')
                 .equals(sessionId)
-                .filter(m => !m.deletedAtLocal)
+                .filter(m => !m.deletedAt)
                 .toArray();
 
             matches.sort((a, b) => (a.orderNo ?? 0) - (b.orderNo ?? 0));
@@ -49,13 +49,13 @@
                 matchIds.length
                 ? db.goals_local
                     .where('matchId').anyOf(matchIds)
-                    .and(g => !g.deletedAtLocal)
+                    .and(g => !g.deletedAt)
                     .toArray()
                 : Promise.resolve([]),
                 matchIds.length
                 ? db.lineups_local
                     .where('matchId').anyOf(matchIds)
-                    .and(l => !l.deletedAtLocal)
+                    .and(l => !l.deletedAt)
                     .toArray()
                 : Promise.resolve([]),
                 db.players_local.toArray()

@@ -4,14 +4,14 @@ import type {
 } from '$lib/types/domain';
 
 export class LocalDB extends Dexie {
-  players_local!: Table<PlayerLocal, string>;
-  sessions_local!: Table<SessionLocal, string>;
-  matches_local!: Table<MatchLocal, string>;
-  lineups_local!: Table<LineupLocal, string>;
-  goals_local!: Table<GoalLocal, string>;
+  players_local!: Table<PlayerLocal, string>
+  sessions_local!: Table<SessionLocal, string>
+  matches_local!: Table<MatchLocal, string>
+  lineups_local!: Table<LineupLocal, string>
+  goals_local!: Table<GoalLocal, string>
 
   constructor() {
-    super('football_stats');
+    super('football_stats')
     this.version(1).stores({
       // Index:
       // - id (PK implicit)
@@ -27,16 +27,78 @@ export class LocalDB extends Dexie {
         createdAt,
         updatedAt,
         deletedAt,
-        deletedAtLocal,
+        updatedAtLocal,
         [dirty+op+updatedAtLocal]
       `,
       sessions_local: 'id, date, status, updatedAtLocal, deletedAtLocal',
-      matches_local:  'id, sessionId, orderNo, updatedAtLocal, deletedAtLocal',
+      matches_local:  'id, sessionId, orderNo, createdAt, updatedAt, deletedAt, updatedAtLocal, dirty',
       lineups_local:  'id, matchId, half, team, playerId, updatedAtLocal, deletedAtLocal',
       goals_local:    'id, matchId, half, team, scorerId, assistId, minute, updatedAtLocal, deletedAtLocal',
       keyval_local:   'key' // { key: string; value: unknown }
-    });
+    })
 
+    this.version(2).stores({
+      // Index: id (PK), club_id, date, [club_id+date] för snabba klubb+datum-queries,
+      // dirty/op för sync-urval, updatedAt/updatedAtLocal för sort/checkpoints
+      sessions_local:
+        'id, club_id, date, [club_id+date], dirty, op, updatedAt, updatedAtLocal',
+    })
+    .upgrade((tx) => {
+      // Migrera äldre poster till nya regler.
+      return tx.table<SessionLocal>('sessions_local').toCollection().modify((row) => {
+        // Säkerställ alltid updatedAtLocal (fallback till 0 om helt saknas)
+        if (row.updatedAtLocal == null) row.updatedAtLocal = 0
+
+        // createdAt/updatedAt är speglar — låt vara som de är (kan vara null/undefined)
+        // Rensa bort ev. legacy-fält (om du hade createdAtLocal/deletedAtLocal tidigare)
+        // @ts-expect-error legacy
+        delete row.createdAtLocal
+        delete row.deletedAtLocal
+
+        // Normalisera op/dirty
+        if (row.dirty && !row.op) row.op = 'update'
+        if (!row.op) row.op = null
+      })
+    })
+
+    this._installSessionHooks()
+  }
+
+  private _installSessionHooks() {
+    const t = this.sessions_local
+
+    // Skapande: ny rad lokalt ⇒ op='create', dirty=true
+    t.hook('creating', (_pk, obj: SessionLocal) => {
+      const now = Date.now()
+      obj.updatedAtLocal ??= now
+      obj.dirty ??= true
+      obj.op ??= 'create'
+
+      // Speglar sätts EJ lokalt (väntar på server)
+      obj.createdAt ??= null
+      obj.updatedAt ??= null
+    })
+
+    // Uppdatering: bumpa updatedAtLocal + sätt op
+    t.hook('updating', (mods, _pk, obj: SessionLocal) => {
+      const now = Date.now()
+
+      // Om något ändras i domänfält → markera för push
+      const domainTouched =
+        'date' in mods || 'status' in mods || 'club_id' in mods
+
+      if (domainTouched) {
+        const m = mods as Partial<SessionLocal>
+        if (obj.op !== 'create') m.op = 'update' // redan känd av servern
+        m.dirty = true
+        m.updatedAtLocal = now
+        return m
+      }
+
+      // Spegelfält från servern (createdAt/updatedAt) ska normalt inte skrivas i UI,
+      // men om de råkar komma via pull, låt dem passera utan att smutsa ner raden.
+      return mods
+    })
   }
 }
 

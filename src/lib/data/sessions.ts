@@ -2,6 +2,7 @@ import { assertDb } from '$lib/db/dexie'
 import { uid, isValidYMD } from '$lib/utils/utils'
 import { readable } from 'svelte/store'
 import { liveQuery } from 'dexie'
+import { readClubId } from '$lib/sync/common'
 // import { queueGames } from '$lib/sync/auto'
 
 import type { SessionLocal, SessionStatus } from '$lib/types/domain'
@@ -9,31 +10,6 @@ import type { SessionLocal, SessionStatus } from '$lib/types/domain'
 // export const getSessionByDate = async (date = isoDate()) => {
 //   const db = assertDb()
 //   return await db.sessions_local.where('date').equals(date).first()
-// }
-
-// export const createSession = async (date = isoDate()) => {
-//   const db = assertDb()
-//   const now = Date.now()
-//   const existing = await getSessionByDate(date)
-
-//   if (existing) return existing
-//   const session = { id: uid(), date, status: 'open' as const, createdAt: now, updatedAtLocal: now } as SessionLocal
-//   await db.sessions_local.add(session)
-//   return session
-// }
-
-// export const createSessionIfMissing = async (date: string) => {
-//   const existing = await getSessionByDate(date)
-//   if (existing) return existing
-  
-//   const now = Date.now()
-//   const row = { id: uid(), date, status: 'open' as const, createdAt: now, updatedAtLocal: now, deletedAtLocal: undefined }
-//   const db = assertDb()
-//   await db.sessions_local.put(row)
-
-//   // queueGames()
-
-//   return row
 // }
 
 // If you already have a create function, export an alias to keep the component import stable.
@@ -50,19 +26,22 @@ export async function createLocalSession(input: { date: string; status?: Session
   }
 
   const db = assertDb()
+  const club_id = await readClubId()
 
   // 3. Check exists
   const existing = await db.sessions_local.where('date').equals(input.date).first()
-  if (existing && !existing.deletedAtLocal) {
+  if (existing && !existing.deletedAt) {
     throw new Error('DUPLICATE_DATE')
   }
 
   const session: SessionLocal = {
     id: uid(),
-    date: input.date,                 // yyyy-mm-dd from form
-    status: input.status ?? 'open',
+    club_id,
+    date: input.date,
+    status,
+    dirty: true,
+    op: 'create',
     updatedAtLocal: Date.now()
-    // deletedAtLocal: undefined
   }
 
   await db.sessions_local.add(session)
@@ -77,12 +56,13 @@ export function observeLocalSessions() {
     const sub = liveQuery(() =>
       db.sessions_local.orderBy('date').reverse().toArray()
     ).subscribe({
-      next: (rows) => set(rows.filter((r) => !r.deletedAtLocal)),
+      next: (rows) => set(rows.filter((r) => r.op !== 'delete')),
       error: (err) => {
         console.error('observeLocalSessions', err)
         set([])
       }
     })
+
     return () => sub.unsubscribe()
   })
 }
@@ -91,25 +71,27 @@ export function observeLocalSessions() {
 export async function listLocalSessions(): Promise<SessionLocal[]> {
   const db = assertDb()
   const rows = await db.sessions_local.orderBy('date').reverse().toArray()
-  return rows.filter((r) => !r.deletedAtLocal)
+  return rows.filter((r) => !r.deletedAt)
 }
 
 // Soft delete (marks deletedAtLocal, keeps record)
 export async function softDeleteLocalSession(id: string) {
   const db = assertDb()
-  const now = Date.now()
+
   await db.sessions_local.update(id, {
-    deletedAtLocal: now,
-    updatedAtLocal: now
+    dirty: true,
+    op: 'delete',
+    updatedAtLocal: Date.now()
   })
 }
 
 export async function lockLocalSession(id: string) {
   const db = assertDb()
-  const now = Date.now()
+
   await db.sessions_local.update(id, {
     status: 'locked',
-    updatedAtLocal: now
+    updatedAtLocal: Date.now(),
+    dirty: true
   })
 }
 
@@ -119,11 +101,11 @@ export async function toggleLocalSessionStatus(id: string): Promise<'locked' | '
   if (!row || row.deletedAtLocal) throw new Error('NOT_FOUND')
 
   const next = row.status === 'locked' ? 'open' : 'locked'
-  const now = Date.now()
 
   await db.sessions_local.update(id, {
     status: next,
-    updatedAtLocal: now
+    updatedAtLocal: Date.now(),
+    dirty: true
   })
 
   return next
