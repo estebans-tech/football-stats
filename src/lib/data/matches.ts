@@ -1,7 +1,7 @@
 import { readable } from 'svelte/store'
 import { liveQuery } from 'dexie'
 import { assertDb } from '$lib/db/dexie'
-import { uid } from '$lib/utils/utils'             // your existing uid
+import { uid } from '$lib/utils/utils'
 import type { MatchLocal, SessionLocal } from '$lib/types/domain'
 
 
@@ -9,7 +9,7 @@ import type { MatchLocal, SessionLocal } from '$lib/types/domain'
 async function ensureUnlocked(sessionId: string) {
   const db = assertDb()
   const s = (await db.sessions_local.get(sessionId)) as SessionLocal | undefined
-  if (!s || s.deletedAtLocal) throw new Error('SESSION_NOT_FOUND')
+  if (!s || s.deletedAt) throw new Error('SESSION_NOT_FOUND')
   if (s.status === 'locked') throw new Error('SESSION_LOCKED')
 }
 
@@ -34,9 +34,11 @@ async function nextOrderNo(sessionId: string) {
   const list = await db.matches_local
     .where('sessionId')
     .equals(sessionId)
-    .filter((m: MatchLocal) => !m.deletedAtLocal)
-    .sortBy('orderNo')                        // ✅ on Collection
+    .filter((m: MatchLocal) => m.deletedAt === null && m.dirty === false)
+    .sortBy('orderNo')
+    
   const last = list[list.length - 1]
+
   return (last?.orderNo ?? 0) + 1
 }
 
@@ -45,12 +47,18 @@ export async function createLocalMatch(sessionId: string): Promise<MatchLocal> {
 
   const db = assertDb()
   const orderNo = await nextOrderNo(sessionId)
+  const now = Date.now()
+
   const match: MatchLocal = {
     id: uid(),
     sessionId,
     orderNo,
-    updatedAtLocal: Date.now()
-    }
+    createdAt: now,
+    deletedAt: null,
+    updatedAt: now,
+    updatedAtLocal: now,
+    dirty: true
+  }
 
   await db.matches_local.add(match)
   return match
@@ -67,7 +75,11 @@ export async function createLocalMatches(sessionId: string, count: number): Prom
     id: uid(),
     sessionId,
     orderNo: start + i,
-    updatedAtLocal: now
+    createdAt: now,
+    deletedAt: null,
+    updatedAt: now,
+    updatedAtLocal: now,
+    dirty: true
   }))
   await db.matches_local.bulkAdd(items)
   return items
@@ -80,7 +92,7 @@ export function observeLocalMatchCounts() {
       next: (rows: MatchLocal[]) => {
         const acc: Record<string, number> = {}
         for (const m of rows) {
-          if (m.deletedAtLocal) continue
+          if (m.deletedAt) continue
           acc[m.sessionId] = (acc[m.sessionId] ?? 0) + 1
         }
         set(acc)
@@ -91,23 +103,57 @@ export function observeLocalMatchCounts() {
   })
 }
 
-// Soft-delete the most recently added (highest orderNo) non-deleted match for a session
-export async function softDeleteLastLocalMatch(sessionId: string): Promise<MatchLocal | null> {
+export async function softDeleteLastLocalMatchLegacy(sessionId: string): Promise<MatchLocal | null> {
   await ensureUnlocked(sessionId)  // guard
 
   const db = assertDb()
   const arr = await db.matches_local
     .where('sessionId').equals(sessionId)
-    .filter((m: MatchLocal) => !m.deletedAtLocal)
+    .filter((m: MatchLocal) => !m.deletedAt && m.dirty !== true)
     .sortBy('orderNo') // Collection.sortBy is valid; we aren't using orderBy here
   const last = arr[arr.length - 1]
   if (!last) return null
 
+  
   const now = Date.now()
-  await db.matches_local.update(last.id, { deletedAtLocal: now, updatedAtLocal: now })
-  return { ...last, deletedAtLocal: now, updatedAtLocal: now }
+  await db.matches_local.update(last.id, { deletedAt: now, updatedAtLocal: now, dirty: true })
+  return { ...last, deletedAt: now, updatedAtLocal: now, dirty: true }
 }
 
+// Soft-delete the most recently added (highest orderNo) non-deleted match for a session
+export async function softDeleteLastLocalMatch(sessionId: string): Promise<MatchLocal | null> {
+  await ensureUnlocked(sessionId)  // guard
+  const db = assertDb()
+  const now = Date.now()
+  
+  const arr = await db.matches_local
+    .where('sessionId').equals(sessionId)
+    .filter((m: MatchLocal) =>  m.deletedAt == null)
+    .sortBy('orderNo')
+
+    const last = arr[arr.length - 1]
+    if (!last) return null
+
+    await db.matches_local.update(last.id, { deletedAt: now, updatedAtLocal: now, dirty: true })
+    return { ...last, deletedAt: now, updatedAtLocal: now, dirty: true }
+}
+
+export async function deleteLocalMatchLegacy(sessionId: string) {
+  await ensureUnlocked(sessionId)  // guard
+  const db = assertDb()
+  const now = Date.now()
+  
+  const arr = await db.matches_local
+    .where('sessionId').equals(sessionId)
+    // .filter((m: MatchLocal) => !m.deletedAt && m.dirty !== true)
+    .sortBy('orderNo') // Collection.sortBy is valid; we aren't using orderBy here
+
+    const last = arr[arr.length - 1]
+    if (!last) return null
+
+    await db.matches_local.update(last.id, { deletedAt: now, updatedAtLocal: now, dirty: true })
+    return { ...last, deletedAt: now, updatedAtLocal: now, dirty: true }
+}
 /** Live map: sessionId -> matches[] (sorted by orderNo, non-deleted) */
 export function observeLocalMatchesMap() {
   const db = assertDb()
@@ -116,15 +162,19 @@ export function observeLocalMatchesMap() {
       // Table.orderBy is fine here; we’re not on a Collection
       const rows = await db.matches_local.orderBy('orderNo').toArray()
       const map: Record<string, MatchLocal[]> = {}
-      for (const m of rows) {
-        if (m.deletedAtLocal) continue
-        ;(map[m.sessionId] ||= []).push(m)
+
+      for (const match of rows) {
+        if (match.deletedAt) continue
+
+        ;(map[match.sessionId] ||= []).push(match)
       }
+
       return map
     }).subscribe({
       next: (map) => set(map),
       error: () => set({})
     })
+
     return () => sub.unsubscribe()
   })
 }
