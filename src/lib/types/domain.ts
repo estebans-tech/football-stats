@@ -63,15 +63,25 @@ export interface LineupLocal extends BaseLocal {
 }
 
 export interface GoalLocal extends BaseLocal {
-  matchId: ULID;
-  half: Half;
-  team: TeamAB;
-  scorerId: ULID;
-  assistId?: ULID;
-  minute?: number;
-  createdAt: number | null
-  deletedAt: number | null
-  updatedAt: number | null
+  // Domain fields
+  matchId: ULID
+  half: Half
+  team: TeamAB
+  scorerId: ULID
+  assistId: ULID | null      // ← tillåt null
+  minute: number | null      // ← tillåt null
+  // TODO: add support for:
+  // ownGoal: boolean;
+  // penalty: boolean;
+
+  // Server mirrors (ISO strings)
+  createdAt: string | null    // ← var number | null
+  updatedAt: string | null    // ← var number | null
+  deletedAt: string | null    // ← var number | null
+
+  // Offline state (same lifecycle as matches/sessions)
+  dirty: boolean
+  op: PlanedOperation | null
 }
 
 export interface KeyValLocal {

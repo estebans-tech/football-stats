@@ -1,3 +1,5 @@
+import type { Half, TeamAB } from '$lib/types/domain'
+
 // Mirrors Supabase public tables (columns from your SQL)
 export interface CloudSession {
   id: string;
@@ -32,16 +34,22 @@ export interface CloudLineup {
 }
 
 export interface CloudGoal {
-  id: string;
-  club_id: string;
-  match_id: string;
-  half: 1|2;
-  team: 'A'|'B';
-  scorer_id: string;
-  assist_id?: string | null;
-  minute?: number | null;
-  updated_at: string;
-  deleted_at: string | null;
+  // Identifiers
+  id: string
+  club_id: string
+  match_id: string
+
+  // Domain fields
+  half: Half
+  team: TeamAB
+  scorer_id: string
+  assist_id: string | null
+  minute: number | null
+
+  // Server timestamps (ISO strings)
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
 }
 
 export interface CloudPlayer {

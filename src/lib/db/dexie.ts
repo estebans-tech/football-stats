@@ -1,6 +1,6 @@
 import Dexie, { type Table } from 'dexie';
 import type {
-  PlayerLocal, SessionLocal, MatchLocal, LineupLocal, GoalLocal, KeyValLocal
+  PlayerLocal, SessionLocal, MatchLocal, LineupLocal, GoalLocal
 } from '$lib/types/domain';
 
 export class LocalDB extends Dexie {
@@ -33,8 +33,7 @@ export class LocalDB extends Dexie {
       sessions_local: 'id, date, status, updatedAtLocal, deletedAtLocal',
       matches_local:  'id, sessionId, orderNo, createdAt, updatedAt, deletedAt, updatedAtLocal, dirty',
       lineups_local:  'id, matchId, half, team, playerId, updatedAtLocal, deletedAtLocal',
-      goals_local:    'id, matchId, half, team, scorerId, assistId, minute, updatedAtLocal, deletedAtLocal',
-      keyval_local:   'key' // { key: string; value: unknown }
+      goals_local:    'id, matchId, half, team, scorerId, assistId, minute, updatedAtLocal, deletedAtLocal'
     })
 
     this.version(2).stores({
@@ -43,7 +42,7 @@ export class LocalDB extends Dexie {
       sessions_local:
         'id, club_id, date, [club_id+date], dirty, op, updatedAt, updatedAtLocal',
     })
-    .upgrade((tx) => {
+    .upgrade(tx => {
       // Migrera äldre poster till nya regler.
       return tx.table<SessionLocal>('sessions_local').toCollection().modify((row) => {
         // Säkerställ alltid updatedAtLocal (fallback till 0 om helt saknas)
@@ -91,8 +90,41 @@ export class LocalDB extends Dexie {
       })
     })
 
+    this.version(4).stores({
+      // goals: add server mirrors and align with offline lifecycle
+      goals_local:
+        'id, matchId, half, team, scorerId, assistId, minute, createdAt, updatedAt, deletedAt, updatedAtLocal, dirty, op',      
+    })
+    .upgrade(tx => {
+      const tbl = tx.table('goals_local')
+    
+      return tbl.toCollection().modify((row: any) => {
+        // ensure local meta exists
+        if (row.updatedAtLocal == null) row.updatedAtLocal = 0
+        if (row.dirty == null) row.dirty = false
+        if (row.op == null) row.op = null
+    
+        // server mirrors are ISO strings or null
+        if (row.createdAt === undefined) row.createdAt = null
+        if (row.updatedAt === undefined) row.updatedAt = null
+        if (row.deletedAt === undefined) row.deletedAt = null
+    
+        // nullable domain fields
+        if (row.assistId === undefined) row.assistId = null
+        if (row.minute === undefined) row.minute = null
+    
+        // normalize push state
+        if (row.dirty && !row.op) row.op = 'update'
+    
+        // drop legacy locals if present
+        delete row.createdAtLocal
+        delete row.deletedAtLocal
+      })
+    })
+
     this._installSessionHooks()
     this._installMatchHooks()
+    this._installGoalHooks()
   }
 
   private _installSessionHooks() {
@@ -170,6 +202,38 @@ export class LocalDB extends Dexie {
       // Spegelfält från servern (createdAt/updatedAt/deletedAt) och lokal meta
       // ska kunna sättas utan att smutsa ner raden.
       return mods
+    })
+  }
+
+  private _installGoalHooks() {
+    const t = this.goals_local
+  
+    // creating: mark new local rows as dirty create, leave mirrors null
+    t.hook('creating', (_pk, obj: GoalLocal) => {
+      const now = Date.now()
+      obj.updatedAtLocal ??= now
+      obj.dirty ??= true
+      obj.op ??= 'create'
+  
+      obj.createdAt ??= null
+      obj.updatedAt ??= null
+      obj.deletedAt ??= null
+  
+      obj.assistId ??= null
+      obj.minute ??= null
+    })
+  
+    // updating: only dirty when domain fields change
+    t.hook('updating', (mods, _pk, obj: GoalLocal) => {
+      const domainKeys = ['matchId', 'half', 'team', 'scorerId', 'assistId', 'minute']
+      const domainChanged = domainKeys.some(k => Object.prototype.hasOwnProperty.call(mods, k))
+      if (!domainChanged) return mods
+  
+      const m = mods as Partial<GoalLocal>
+      m.updatedAtLocal = Date.now()
+      m.dirty = true
+      if (obj.op !== 'create') m.op = 'update'
+      return m
     })
   }
 }
