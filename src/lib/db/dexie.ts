@@ -61,7 +61,7 @@ export class LocalDB extends Dexie {
       })
     })
 
-    db.version(3).stores({
+    this.version(3).stores({
       // …behåll dina andra stores oförändrade
       matches_local: `
         id,
