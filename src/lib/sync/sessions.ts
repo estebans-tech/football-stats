@@ -1,24 +1,13 @@
 import { assertDb } from '$lib/db/dexie'
 import { ensureSession, readClubId } from '$lib/sync/common'
-import { getLastSync, setLastSync } from './state'
+import { getPullCheckpoint, updatePullCheckpoint } from '$lib/sync/state'
+
 // import type { CloudSession} from '$lib/types/cloud'
 import type { SessionLocal} from '$lib/types/domain'
-import type { CloudSession } from '$lib/types/cloud'
+import type { CloudSession, CloudAck } from '$lib/types/cloud'
 import { toMs } from '$lib/utils/utils'
 
 const syncPrefix = 'sync.sessions'
-type CloudAck = { id: string; created_at: string; updated_at: string }
-// --- Help functions ---
-async function getPullCheckpoint(key: string) {
-  const lastMs: number = (await getLastSync(key)) ?? 0;
-  const lastIso: string =
-    lastMs > 0 ? new Date(lastMs).toISOString() : '1970-01-01T00:00:00.000Z';
-  return { lastMs, lastIso }
-}
-
-async function updatePullCheckpoint(key: string, maxMs: number) {
-  if (maxMs > 0) await setLastSync(key, maxMs)
-}
 
 async function preloadLocalSessions(
   db: any,
