@@ -1,22 +1,13 @@
 import { assertDb } from '$lib/db/dexie'
 import { ensureSession, readClubId, msFromIso, bulkPutIfNewer, optMs } from './common'
 
-import { getLastSync, setLastSync } from './state'
+import { getLastSync, setLastSync, getPullCheckpoint, updatePullCheckpoint } from '$lib/sync/state'
 import type { MatchRow, CloudMatch, CloudSession } from '$lib/types/cloud'
 import type { MatchLocal, ULID } from '$lib/types/domain'
 import { toMs, isoDate as toIso } from '$lib/utils/utils'
 import { number } from 'svelte-i18n'
 
-// interface SupabaseMatchRow {
-//   id: string;
-//   session_id: string;
-//   order_no: number;
-//   created_at: string;
-//   updated_at: string;
-//   deleted_at: string | null;
-// }
-
-const syncKey = 'sync.matches'
+const syncPrefix = 'sync.matches'
 
 // type MatchUpsertRow = {
 //   __local_id?: string;                // <-- in-memory only (strip before send)
@@ -276,7 +267,7 @@ export function summarizeApplyResults(
  */
 export const pushMatchesLegacy = async () => {
   const db = assertDb();
-  const lastSync = await getLastSync(`${syncKey}.push`);
+  const lastSync = await getLastSync(`${syncPrefix}.push`);
 
   // 1) Plocka lokala ändringar som kan påverka ordningen (aktiva, ej soft-deleted)
   const changedForRevision = await db.matches_local
@@ -296,7 +287,7 @@ export const pushMatchesLegacy = async () => {
     if (plan.length) plansBySession.set(sid, plan)
     console.log('plan length', plan.length, plan)
   }
-console.log('plan length', changedForRevision)
+// console.log('plan length', changedForRevision)
 
   
   // const changed = await db.matches_local
@@ -536,46 +527,10 @@ export async function pushMatches(): Promise<{
   // return { pushed, failed, skipped: skipped || undefined, errors: errors.length ? errors : undefined }
 }
 
-/**
- * Collapse local duplicates per (sessionId, orderNo).
- * Keeps the most recently updated; marks the rest deleted locally.
- * This is safe and makes the UI stop showing duplicates immediately.
- */
-// async function squashLocalMatchDuplicates(): Promise<number> {
-//   const db = assertDb();
-//   const all = await db.matches_local
-//     .filter((m: any) => !m.deletedAtLocal)
-//     .toArray();
-
-//   const groups = new Map<string, any[]>();
-//   for (const m of all) {
-//     const k = `${m.sessionId}#${m.orderNo}`;
-//     (groups.get(k) ?? groups.set(k, []).get(k)!).push(m);
-//   }
-
-//   let squashed = 0;
-//   const now = Date.now();
-//   for (const [, arr] of groups) {
-//     if (arr.length <= 1) continue;
-//     // newest first
-//     arr.sort((a, b) => (b.updatedAtLocal || 0) - (a.updatedAtLocal || 0));
-//     const keep = arr[0];
-//     for (const loser of arr.slice(1)) {
-//       await db.matches_local.update(loser.id, {
-//         deletedAtLocal: now,
-//         updatedAtLocal: now,
-//       });
-//       squashed++;
-//     }
-//   }
-//   return squashed;
-// }
-
-export const pullMatches = async () => {
+export const pullMatchesLegacy = async () => {
   const sb = await ensureSession()
   const club_id = await readClubId()
-
-  const last = await getLastSync(`${syncKey}.pull`);
+  const last = await getLastSync(`${syncPrefix}.pull`) // ms
 
   const { data, error } = await sb
     .from('matches')
@@ -583,12 +538,16 @@ export const pullMatches = async () => {
     .eq('club_id', club_id)
     .gt('updated_at', new Date(last || 0).toISOString())
     .order('updated_at', { ascending: true })
-  if (error) throw error
 
-  const rows = (data ?? []) as MatchRow[]
+  if (error) throw error
+  const rows = (data ?? []) as CloudMatch[]
+
 
   const db = assertDb()
-  const mapped = rows.map((r: MatchRow) => {
+  let applied = 0
+  let nextCheckpoint = last || 0
+
+  const mapped = rows.map((r: CloudMatch) => {
     // robust timeparser: ISO/string/Date -> ms epoch | null
     const createdAt = toMs(r.created_at)
     const updatedAt = toMs(r.updated_at)
@@ -608,9 +567,160 @@ export const pullMatches = async () => {
   }) as MatchLocal[]
 
   await db.matches_local.bulkPut(mapped)
-  await setLastSync(`${syncKey}.pull`, Date.now())
+  await setLastSync(`${syncPrefix}.pull`, Date.now())
 
   return { pulled: mapped.length }
+}
+
+
+// Fetch all cloud matches updated strictly after `lastIso` for a given club.
+// - Uses incremental checkpointing on `updated_at` (server clock, ISO string).
+// - Returns rows ordered ascending by `updated_at` to preserve a stable apply order.
+// - Does NOT transform field names; caller maps snake_case → camelCase.
+// - Safe to call with `lastIso = null` (interpreted as "from epoch").
+//
+// Dependencies:
+// - `CloudMatch` type
+// - Supabase client type (generic `any` here to avoid import noise)
+//
+export async function fetchCloudMatchesSince(
+  sb: any,                      // SupabaseClient
+  clubId: string,               // ULID
+  lastIso: string | null        // ISO timestamp or null
+): Promise<CloudMatch[]> {
+  // Base query: limit to club and order by updated_at ASC for deterministic application
+  let query = sb
+    .from('matches')
+    .select('id, club_id, session_id, order_no, created_at, updated_at, deleted_at')
+    .eq('club_id', clubId)
+    .order('updated_at', { ascending: true })
+
+  // Incremental filter: only rows strictly newer than last checkpoint
+  if (lastIso) {
+    query = query.gt('updated_at', lastIso)
+  }
+
+  const { data, error } = await query
+  if (error) throw error
+
+  return (data ?? []) as CloudMatch[]
+}
+
+// Preload a set of local matches by id into a Map for O(1) lookups during apply.
+// - Accepts an array of ULIDs (may contain duplicates; they are de-duplicated).
+// - Uses Dexie.bulkGet for efficient batched reads.
+// - Returns Map<id, MatchLocal> for fast access in the pull loop.
+//
+// Dependencies:
+// - LocalDB with table `matches_local`
+// - ULID, MatchLocal types
+//
+export async function preloadLocalMatches(
+  db: any,
+  ids: ULID[]
+): Promise<Map<ULID, MatchLocal>> {
+  if (!ids.length) return new Map()
+
+  // Deduplicate ids to keep the query lean
+  const uniqueIds = Array.from(new Set(ids))
+
+  const rows = await db.matches_local
+    .where('id')
+    .anyOf(uniqueIds)
+    .toArray()
+
+  const byId = new Map<ULID, MatchLocal>()
+  for (const row of rows) byId.set(row.id, row)
+
+  return byId
+}
+
+// Apply one cloud match row to local storage, respecting dirty-protection
+// Rules:
+// - If server row has deleted_at → hard-delete locally
+// - If local row is missing → insert a clean mirror (dirty=false, op=null, updatedAtLocal=0)
+// - If local row exists and dirty=false → update domain fields + server mirrors (preserve updatedAtLocal)
+// - If local row exists and dirty=true → do nothing
+//
+// Assumptions:
+// - Called inside an existing Dexie transaction
+// - `db` exposes `matches_local` table
+// - `toMs` converts ISO|string|Date|null → number|null
+export async function applyCloudMatchToLocal(
+  db: any,
+  row: CloudMatch,
+  existing?: MatchLocal
+) {
+  const createdAt = toMs(row.created_at)
+  const updatedAt = toMs(row.updated_at)
+  const deletedAt = toMs(row.deleted_at)
+
+  // Server soft-deleted → hard-delete locally
+  if (deletedAt) {
+    await db.matches_local.delete(row.id)
+    return
+  }
+
+  // Patch with domain fields + server mirrors (no local metadata)
+  const patch: Pick<
+    MatchLocal,
+    'clubId' | 'sessionId' | 'orderNo' | 'createdAt' | 'updatedAt' | 'deletedAt'
+  > = {
+    clubId: row.club_id as ULID,
+    sessionId: row.session_id as ULID,
+    orderNo: row.order_no as number,
+    createdAt,
+    updatedAt,
+    deletedAt: null
+  }
+
+  if (!existing) {
+    // Insert clean local mirror
+    const doc: MatchLocal = {
+      id: row.id as ULID,
+      ...patch,
+      updatedAtLocal: 0,
+      dirty: false,
+      op: null
+    }
+    await db.matches_local.put(doc)
+    return
+  }
+
+  // Existing row present
+  if (!existing.dirty) {
+    // Safe to update domain + server mirrors
+    await db.matches_local.update(row.id, patch)
+    return
+  }
+
+  // existing.dirty === true → keep local changes (no-op)
+}
+
+export const pullMatches = async () => {
+  const sb = await ensureSession()
+  const club_id = await readClubId()
+  const db = assertDb()
+
+  const { lastMs, lastIso } = await getPullCheckpoint(`${syncPrefix}.pull`)
+  const cloudRows = await fetchCloudMatchesSince(sb, club_id, lastIso) // → CloudMatch[]
+
+  let maxUpdatedAtMs = lastMs
+
+  await db.transaction('rw', db.matches_local, async () => {
+    const localById = await preloadLocalMatches(db, cloudRows.map(r => r.id)) // Map<ULID, MatchLocal>
+
+    for (const row of cloudRows) {
+      const updatedAtMs = toMs(row.updated_at)
+      if (updatedAtMs == null) continue
+      if (updatedAtMs > maxUpdatedAtMs) maxUpdatedAtMs = updatedAtMs
+
+      await applyCloudMatchToLocal(db, row, localById.get(row.id))
+    }
+  })
+
+  await updatePullCheckpoint(`${syncPrefix}.pull`, maxUpdatedAtMs)
+  return { pulled: cloudRows.length }
 }
 
 export const syncMatches = async () => {
