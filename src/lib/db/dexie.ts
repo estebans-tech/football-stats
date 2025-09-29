@@ -61,7 +61,38 @@ export class LocalDB extends Dexie {
       })
     })
 
+    db.version(3).stores({
+      // …behåll dina andra stores oförändrade
+      matches_local: `
+        id,
+        sessionId,
+        clubId,
+        orderNo,
+        [sessionId+orderNo],
+        updatedAtLocal,
+        dirty, op,
+        updatedAt,
+        createdAt,
+        deletedAt
+      `
+    })
+    .upgrade(async (tx) => {
+      const t = tx.table('matches_local')
+      await t.toCollection().modify((m: any) => {
+        if (m.createdAt === undefined) m.createdAt = null
+        if (m.updatedAt === undefined) m.updatedAt = null
+        if (m.deletedAt === undefined) m.deletedAt = null
+        if (typeof m.updatedAtLocal !== 'number') m.updatedAtLocal = Date.now()
+        if (typeof m.dirty !== 'boolean') m.dirty = false
+        if (m.op === undefined) m.op = null
+  
+        // Rensa ev. gammalt brus — valfritt:
+        if ('deletedAtLocal' in m) delete m.deletedAtLocal
+      })
+    })
+
     this._installSessionHooks()
+    this._installMatchHooks()
   }
 
   private _installSessionHooks() {
@@ -97,6 +128,47 @@ export class LocalDB extends Dexie {
 
       // Spegelfält från servern (createdAt/updatedAt) ska normalt inte skrivas i UI,
       // men om de råkar komma via pull, låt dem passera utan att smutsa ner raden.
+      return mods
+    })
+  }
+
+  private _installMatchHooks() {
+    const t = this.matches_local
+  
+    // Skapande: ny rad lokalt ⇒ op='create', dirty=true
+    t.hook('creating', (_pk, obj: MatchLocal) => {
+      const now = Date.now()
+  
+      obj.updatedAtLocal = now
+      obj.dirty = true
+      obj.op = 'create'            // PlannedOperation (du har nullable i typen)
+  
+      // Speglar sätts EJ lokalt (väntar på server)
+      obj.createdAt ??= null
+      obj.updatedAt ??= null
+      obj.deletedAt ??= null
+    })
+  
+    // Uppdatering: bumpa updatedAtLocal + sätt op när domänfält ändras
+    t.hook('updating', (mods, _pk, obj: MatchLocal) => {
+      const now = Date.now()
+  
+      // Domänfält som ska trigga “smuts”
+      const domainTouched =
+        'clubId' in mods ||
+        'sessionId' in mods ||
+        'orderNo' in mods
+  
+      if (domainTouched) {
+        const m = mods as Partial<MatchLocal>
+        if (obj.op !== 'create') m.op = 'update' // redan känd av servern
+        m.dirty = true
+        m.updatedAtLocal = now
+        return m
+      }
+  
+      // Spegelfält från servern (createdAt/updatedAt/deletedAt) och lokal meta
+      // ska kunna sättas utan att smutsa ner raden.
       return mods
     })
   }

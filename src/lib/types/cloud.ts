@@ -10,13 +10,14 @@ export interface CloudSession {
 }
 
 export interface CloudMatch {
-  id: string;
-  club_id: string;
-  session_id: string;
-  order_no: number;
-  updated_at: string;
-  deleted_at: string | null;
-  created_at: string | null
+  id: string;                // ULID
+  club_id: string;           // FK → clubs.id
+  session_id: string;        // FK → sessions.id
+  order_no: number;          // unik per (session_id) bland aktiva
+
+  created_at: string;        // ISO
+  updated_at: string;        // ISO
+  deleted_at: string | null; // ISO|null (soft delete)
 }
 
 export interface CloudLineup {
@@ -86,3 +87,5 @@ export type MatchRow = {
   updated_at: string | null
   deleted_at: string | null
 }
+
+export type CloudAck = { id: string; created_at: string; updated_at: string }

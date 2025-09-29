@@ -19,6 +19,7 @@ export interface PlayerLocal extends BaseLocal, Player {
   updatedAt: number | null
   dirty: boolean;
 }
+
 export interface SessionLocal extends BaseLocal {
   // domänfält
   club_id: string;
@@ -36,12 +37,19 @@ export interface SessionLocal extends BaseLocal {
 }
 
 export interface MatchLocal extends BaseLocal {
-  createdAt: number | null
-  deletedAt: number | null
-  updatedAt: number | null
-  sessionId: ULID;
-  orderNo: number;
-  dirty: boolean;
+  // domänfält
+  clubId: ULID
+  sessionId: ULID
+  orderNo: number
+
+  // server-spegel (okänd före första sync)
+  createdAt?: number | null    // ms, från created_at
+  updatedAt?: number | null    // ms, från updated_at
+  deletedAt?: number | null    // ms, från deleted_at (spegling)
+
+  // lokal metadata (endast klienten skriver detta)
+  dirty: boolean
+  op: PlanedOperation
 }
 
 export interface LineupLocal extends BaseLocal {
