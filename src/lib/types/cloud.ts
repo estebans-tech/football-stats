@@ -39,9 +39,9 @@ export interface CloudGoal {
   club_id: string
   match_id: string
 
-  // Domain fields
-  half: Half
-  team: TeamAB
+    // Domain fields
+    half: Half
+    team: TeamAB
   scorer_id: string
   assist_id: string | null
   minute: number | null
