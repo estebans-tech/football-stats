@@ -4,6 +4,7 @@
   import { t } from 'svelte-i18n'
   import type { PageData } from './$types'
    import LineupBuilder from '$lib/components/match/LineupBuilder.svelte'
+   import GoalsEditor from '$lib/components/match/GoalsEditor.svelte'
   import { db } from '$lib/db/dexie'
 
   import { observeLocalMatch } from '$lib/data/matches'
@@ -50,10 +51,10 @@
   const teamPlayers = (team: TeamAB) =>
     $lineups$.filter(l => l.team === team && !l.deletedAtLocal).map(l => l.playerId)
 
-  const availablePlayers = (team: TeamAB) => {
-    const used = new Set(teamPlayers(team))
-    return Object.values($players$).filter(p => !used.has(p.id))
-  }
+  // const availablePlayers = (team: TeamAB) => {
+  //   const used = new Set(teamPlayers(team))
+  //   return Object.values($players$).filter(p => !used.has(p.id))
+  // }
 
   function lineupFor(goal: GoalLocal) {
     // scorer/assist options come from whole-game lineup for that team
@@ -61,26 +62,26 @@
   }
 
   // ---------- actions (lineup ops always write with half=1 under the hood)
-  async function addToTeam(pid: string) {
-    const id = data.id
-    await setTeamForPlayer(id, pid, teamForAdd, 1)
-  }
+  // async function addToTeam(pid: string) {
+  //   const id = data.id
+  //   await setTeamForPlayer(id, pid, teamForAdd, 1)
+  // }
 
-  async function removeFromTeam(pid: string, team: TeamAB) {
-    const id = data.id
-    await removePlayer(id, pid, team, 1)
-  }
+  // async function removeFromTeam(pid: string, team: TeamAB) {
+  //   const id = data.id
+  //   await removePlayer(id, pid, team, 1)
+  // }
 
-  async function swapTeams() {
-    const id = data.id
-    await swapTeamsForMatch(id) // flips A↔B for the entire lineup
-  }
+  // async function swapTeams() {
+  //   const id = data.id
+  //   await swapTeamsForMatch(id) // flips A↔B for the entire lineup
+  // }
 
   // Goals keep their own half
   async function quickAdd(team: TeamAB) {
     const id = data.id
     const pool = teamPlayers(team)
-    const scorer = pool[0] ?? null
+    const scorer = pool[0]
     await addGoalQuick({ matchId: id, team, half: goalHalf, scorerId: scorer })
   }
 
@@ -130,8 +131,16 @@
     <!-- NEW: lineup UI lives in the component -->
     <LineupBuilder matchId={data.id} {players$} {lineups$} />
 
+    <GoalsEditor
+      matchId={data.id}
+      half={goalHalf}
+      goals={goals$}
+      lineups={lineups$}
+      lineupFor={lineupFor}
+    />
+
     <!-- Goals -->
-    <div class="rounded-xl border bg-white p-4 space-y-3">
+    <!-- <div class="rounded-xl border bg-white p-4 space-y-3">
       <div class="flex gap-2 items-center">
         <h2 class="text-base font-semibold">{$t('match_day.match.goals.title')}</h2>
         <div class="flex items-center gap-2 ml-4">
@@ -157,7 +166,6 @@
                   · {$t('match_day.match.half', { values: { n: g.half } })}
                 </span>
 
-                <!-- scorer -->
                 <select
                   class="rounded border px-2 py-1"
                   onchange={(e) => updateGoal(g.id, { scorerId: (e.currentTarget as HTMLSelectElement).value || undefined })}
@@ -167,7 +175,6 @@
                   {/each}
                 </select>
 
-                <!-- assist -->
                 <select
                   class="rounded border px-2 py-1"
                   onchange={(e) => updateGoal(g.id, { assistId: (e.currentTarget as HTMLSelectElement).value || undefined })}
@@ -178,7 +185,6 @@
                   {/each}
                 </select>
 
-                <!-- minute -->
                 <input
                   class="rounded border px-2 py-1 w-20"
                   type="number" min="0" max="200"
@@ -192,6 +198,6 @@
           {/each}
         </ul>
       {/if}
-    </div>
+    </div> -->
   {/await}
 </section>
