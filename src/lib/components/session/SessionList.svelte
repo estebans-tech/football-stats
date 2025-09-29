@@ -5,8 +5,8 @@
       observeLocalMatchCounts,
       createLocalMatch,
       createLocalMatches,
-      softDeleteLastLocalMatch,
-      observeLocalMatchesMap
+      observeLocalMatchesMap,
+      deleteMatchLocal
   } from '$lib/data/matches'
     import { onMount } from 'svelte'
     import { toasts as toast } from '$lib/ui/toast/store'
@@ -21,9 +21,8 @@
     let busyId: string | null = null
     let toggleBusyId: string | null = null
     let addBusyId: string | null = null
-    let addBusy = false
     let counts: Record<string, number> = {}
-    let removeOneBusyId: string | null = null
+    let removeMatchBusyId: string | null = null
     let bySession: Record<string, import('$lib/types/domain').MatchLocal[]> = {}
     let matchesBySession: Record<string, MatchLocal[]> = {}
 
@@ -76,27 +75,29 @@
     }
 
     async function addFour(sessionId: string) {
-    addBusy = true
+      addBusyId = sessionId
       try {
         await createLocalMatches(sessionId, 4)
         toast.success($t('session.match.toast.added_four'))
       } catch {
         toast.danger($t('session.match.toast.error'))
       } finally {
-        addBusy = false
+        addBusyId = null
       }
     }
     
-    async function removeOne(sessionId: string) {
-      removeOneBusyId = sessionId
+    async function onRemoveMatch(sessionId: string, matchId: string) {
+      const ok = confirm($t('session.match.delete_confirm'))
+      if (!ok) return
+      removeMatchBusyId = matchId
       try {
-        const res = await softDeleteLastLocalMatch(sessionId)
+        const res = await deleteMatchLocal(sessionId, matchId)
         if (res) toast.warning($t('session.match.toast.removed_one'))
         else toast.info($t('session.match.toast.nothing_to_remove'))
       } catch {
         toast.danger($t('session.match.toast.error'))
       } finally {
-        removeOneBusyId = null
+        removeMatchBusyId = null
       }
     }
 
@@ -157,16 +158,16 @@
                   +1
                 </button>
                 <!-- -1 (delete last match) -->
-                <button
+                <!-- <button
                   class="btn btn-danger"
-                  disabled={count === 0 || removeOneBusyId === s.id}
-                  aria-busy={removeOneBusyId === s.id ? 'true' : 'false'}
+                  disabled={count === 0 || removeMatchBusyId === s.id}
+                  aria-busy={removeMatchBusyId === s.id ? 'true' : 'false'}
                   on:click={() => removeOne(s.id)}
                   title={count === 0 ? $t('session.match.hint.remove_one_disabled') : ''}
                 >
-                  {#if removeOneBusyId === s.id}<span class="spinner mr-1"></span>{/if}
+                  {#if removeMatchBusyId === s.id}<span class="spinner mr-1"></span>{/if}
                   −1
-                </button>
+                </button> -->
                 {/if}
 
                 <button
@@ -200,16 +201,26 @@
           {#if matches.length > 0}
           <ul class="my-3 space-y-2">
             {#if s.status !== 'locked' && isEditor}
-            {#each matches as m (m.id)}
-                <li class="rounded-xl border border-gray-300 p-4 flex items-center justify-between">
-                  <div class="font-medium">{$t('match_day.match.numbered', { values: { num: m.orderNo } })}</div>
-                    
-                  <a
-                    href={`/matches/${m.id}/edit/`}
-                    class="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50"
-                  >{isEditor ? $t('common.edit') : $t('common.view')}</a>
-                </li>
-            {/each}
+              {#each matches as m (m.id)}
+                  <li class="rounded-xl border border-gray-300 p-4 flex items-center justify-between">
+                    <div class="font-medium">{$t('match_day.match.numbered', { values: { num: m.orderNo } })}</div>
+                    <div>
+                      <a
+                      href={`/matches/${m.id}/edit/`}
+                      class="btn btn-success"
+                    >{isEditor ? $t('common.edit') : $t('common.view')}</a>
+                    {#if isAdministrator}
+                      <button
+                        disabled={removeMatchBusyId === m.id}
+                        aria-busy={removeMatchBusyId === m.id ? 'true' : 'false'}
+                        class="btn btn-danger" on:click={() => onRemoveMatch(s.id, m.id)}>
+                        {#if removeMatchBusyId === m.id}<span class="spinner mr-1"></span>{/if}
+                        -
+                      </button>
+                    {/if}
+                    </div>  
+                  </li>
+              {/each}
             {/if}
           </ul>
 

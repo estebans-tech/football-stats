@@ -2,7 +2,7 @@ import { readable } from 'svelte/store'
 import { liveQuery } from 'dexie'
 import { assertDb } from '$lib/db/dexie'
 import { uid } from '$lib/utils/utils'
-import type { MatchLocal, SessionLocal } from '$lib/types/domain'
+import type { MatchLocal, SessionLocal, ULID } from '$lib/types/domain'
 
 
 // Guard: throw if session is missing or locked
@@ -31,14 +31,13 @@ export function observeLocalMatchCount(sessionId: string) {
 // Compute the next orderNo for a session (ignores soft-deleted)
 async function nextOrderNo(sessionId: string) {
   const db = assertDb()
-  const list = await db.matches_local
-    .where('sessionId')
-    .equals(sessionId)
-    .filter((m: MatchLocal) => m.deletedAt === null && m.dirty === false)
+
+  const matches = await db.matches_local
+    .where('sessionId').equals(sessionId)
+    .filter((m: MatchLocal) => m.deletedAt == null && m.op !== 'delete')
     .sortBy('orderNo')
     
-  const last = list[list.length - 1]
-
+  const last = matches[matches.length - 1]
   return (last?.orderNo ?? 0) + 1
 }
 
@@ -47,17 +46,25 @@ export async function createLocalMatch(sessionId: string): Promise<MatchLocal> {
 
   const db = assertDb()
   const orderNo = await nextOrderNo(sessionId)
-  const now = Date.now()
+  const session = await db.sessions_local.get(sessionId)
+  if (!session) throw new Error('Session not found')
+  const clubId = (session.club_id ?? session.club_id) as ULID
 
   const match: MatchLocal = {
     id: uid(),
+    clubId,
     sessionId,
     orderNo,
-    createdAt: now,
+
+    // serverspeglar okända vid create
+    createdAt: null,
+    updatedAt: null,
     deletedAt: null,
-    updatedAt: now,
-    updatedAtLocal: now,
-    dirty: true
+
+    // lokal meta
+    updatedAtLocal: Date.now(),
+    dirty: true,
+    op: 'create'
   }
 
   await db.matches_local.add(match)
@@ -71,16 +78,28 @@ export async function createLocalMatches(sessionId: string, count: number): Prom
   const db = assertDb()
   const start = await nextOrderNo(sessionId)
   const now = Date.now()
+  const session = await db.sessions_local.get(sessionId)
+  if (!session) throw new Error('Session not found')
+  const clubId = (session.club_id ?? session.club_id) as ULID
+
   const items = Array.from({ length: count }, (_, i) => ({
     id: uid(),
+    clubId,
     sessionId,
     orderNo: start + i,
-    createdAt: now,
+
+    // serverspeglar okända vid create
+    createdAt: null,
+    updatedAt: null,
     deletedAt: null,
-    updatedAt: now,
+
+    // lokal meta
     updatedAtLocal: now,
-    dirty: true
-  }))
+    dirty: true,
+    op: 'create'
+
+  })) as MatchLocal[]
+
   await db.matches_local.bulkAdd(items)
   return items
 }
@@ -138,6 +157,34 @@ export async function softDeleteLastLocalMatch(sessionId: string): Promise<Match
     return { ...last, deletedAt: now, updatedAtLocal: now, dirty: true }
 }
 
+// deleteMatchLocal (soft delete if already pushed; hard delete if never pushed)
+export async function deleteMatchLocal(sessionId: string, matchId: ULID) {
+  await ensureUnlocked(sessionId)  // guard
+
+  const db = assertDb()
+  const now = Date.now()
+  const match: MatchLocal | undefined = await db.matches_local.get(matchId)
+  if (!match) return
+
+  // sanity: avoid deleting a match that doesn’t belong to this session
+  if (match.sessionId !== sessionId) return
+
+  // if never pushed: hard-delete locally
+  if (match.op === 'create') {
+    await db.matches_local.delete(matchId)
+    return
+  }
+
+  // otherwise: mark for soft-delete
+  await db.matches_local.update(matchId, {
+    dirty: true,
+    op: 'delete',
+    updatedAtLocal: now
+  })
+  return { match: matchId, deletedAt: now, updatedAtLocal: now, dirty: true }
+
+}
+
 export async function deleteLocalMatchLegacy(sessionId: string) {
   await ensureUnlocked(sessionId)  // guard
   const db = assertDb()
@@ -154,6 +201,7 @@ export async function deleteLocalMatchLegacy(sessionId: string) {
     await db.matches_local.update(last.id, { deletedAt: now, updatedAtLocal: now, dirty: true })
     return { ...last, deletedAt: now, updatedAtLocal: now, dirty: true }
 }
+
 /** Live map: sessionId -> matches[] (sorted by orderNo, non-deleted) */
 export function observeLocalMatchesMap() {
   const db = assertDb()
@@ -164,7 +212,7 @@ export function observeLocalMatchesMap() {
       const map: Record<string, MatchLocal[]> = {}
 
       for (const match of rows) {
-        if (match.deletedAt) continue
+        if (match.op === 'delete') continue
 
         ;(map[match.sessionId] ||= []).push(match)
       }
