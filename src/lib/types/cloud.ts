@@ -23,14 +23,20 @@ export interface CloudMatch {
 }
 
 export interface CloudLineup {
-  id: string;
-  club_id: string;
-  match_id: string;
-  half: 1|2;
-  team: 'A'|'B';
-  player_id: string;
-  updated_at: string;
-  deleted_at: string | null;
+  // Identifiers
+  id: string
+  club_id: string
+  match_id: string
+
+  // Domain fields
+  team: TeamAB
+  player_id: string
+  half: Half
+
+  // Server timestamps (ISO)
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
 }
 
 export interface CloudGoal {
@@ -39,9 +45,9 @@ export interface CloudGoal {
   club_id: string
   match_id: string
 
-    // Domain fields
-    half: Half
-    team: TeamAB
+  // Domain fields
+  half: Half
+  team: TeamAB
   scorer_id: string
   assist_id: string | null
   minute: number | null

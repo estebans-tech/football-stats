@@ -122,9 +122,42 @@ export class LocalDB extends Dexie {
       })
     })
 
+    this.version(5).stores({
+      // normalized schema for lineups
+      lineups_local:
+        'id, matchId, half, team, playerId, createdAt, updatedAt, deletedAt, updatedAtLocal, dirty, op'
+    })
+    .upgrade(tx => {
+      const tbl = tx.table('lineups_local')
+    
+      return tbl.toCollection().modify((row: any) => {
+        // ensure local meta exists
+        if (row.updatedAtLocal == null) row.updatedAtLocal = 0
+        if (row.dirty == null) row.dirty = false
+        if (row.op == null) row.op = null
+    
+        // server mirrors are ISO strings or null
+        if (row.createdAt === undefined) row.createdAt = null
+        if (row.updatedAt === undefined) row.updatedAt = null
+        if (row.deletedAt === undefined) row.deletedAt = null
+    
+        // nullable domain fields
+        if (row.assistId === undefined) row.assistId = null
+        if (row.minute === undefined) row.minute = null
+
+        // normalize push state
+        if (row.dirty && !row.op) row.op = 'update'
+    
+        // drop legacy locals if present
+        delete row.createdAtLocal
+        delete row.deletedAtLocal
+      })
+    })
+
     this._installSessionHooks()
     this._installMatchHooks()
     this._installGoalHooks()
+    this._installLineupHooks()
   }
 
   private _installSessionHooks() {
@@ -230,6 +263,33 @@ export class LocalDB extends Dexie {
       if (!domainChanged) return mods
   
       const m = mods as Partial<GoalLocal>
+      m.updatedAtLocal = Date.now()
+      m.dirty = true
+      if (obj.op !== 'create') m.op = 'update'
+      return m
+    })
+  }
+
+  private _installLineupHooks() {
+    const t = this.lineups_local
+  
+    // creating: mark dirty create, mirrors null
+    t.hook('creating', (_pk, obj: LineupLocal) => {
+      const now = Date.now()
+      obj.updatedAtLocal ??= now
+      obj.dirty ??= true
+      obj.op ??= 'create'
+      obj.createdAt ??= null
+      obj.updatedAt ??= null
+      obj.deletedAt ??= null
+    })
+  
+    // updating: only dirty when domain fields change
+    t.hook('updating', (mods, _pk, obj: LineupLocal) => {
+      const domainKeys = ['matchId', 'half', 'team', 'playerId']
+      const domainChanged = domainKeys.some(k => Object.prototype.hasOwnProperty.call(mods, k))
+      if (!domainChanged) return mods
+      const m = mods as Partial<LineupLocal>
       m.updatedAtLocal = Date.now()
       m.dirty = true
       if (obj.op !== 'create') m.op = 'update'

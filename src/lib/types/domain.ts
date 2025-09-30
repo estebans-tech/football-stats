@@ -42,10 +42,10 @@ export interface MatchLocal extends BaseLocal {
   sessionId: ULID
   orderNo: number
 
-  // server-spegel (okänd före första sync)
-  createdAt?: number | null    // ms, från created_at
-  updatedAt?: number | null    // ms, från updated_at
-  deletedAt?: number | null    // ms, från deleted_at (spegling)
+  // Server mirrors (ISO strings, unknown before first sync)
+  createdAt?: number | null    // ms, from created_at
+  updatedAt?: number | null    // ms, from updated_at
+  deletedAt?: number | null    // ms, from deleted_at (spegling)
 
   // lokal metadata (endast klienten skriver detta)
   dirty: boolean
@@ -53,13 +53,19 @@ export interface MatchLocal extends BaseLocal {
 }
 
 export interface LineupLocal extends BaseLocal {
-  matchId: ULID;
-  half: Half;
-  team: TeamAB;
-  playerId: ULID;
-  createdAt: number | null
-  deletedAt: number | null
-  updatedAt: number | null
+  matchId: ULID
+  half: Half
+  team: TeamAB
+  playerId: ULID
+
+  // Server mirrors (ISO strings, unknown before first sync)
+  createdAt?: number | null    // ms, from created_at
+  updatedAt?: number | null    // ms, from updated_at
+  deletedAt?: number | null    // ms, from deleted_at (spegling)
+
+  // Offline state (same lifecycle as matches/sessions)
+  dirty: boolean
+  op: PlanedOperation | null
 }
 
 export interface GoalLocal extends BaseLocal {
@@ -74,10 +80,10 @@ export interface GoalLocal extends BaseLocal {
   // ownGoal: boolean;
   // penalty: boolean;
 
-  // Server mirrors (ISO strings)
-  createdAt: string | null    // ← var number | null
-  updatedAt: string | null    // ← var number | null
-  deletedAt: string | null    // ← var number | null
+  // Server mirrors (ISO strings, unknown before first sync)
+  createdAt?: number | null    // ms, from created_at
+  updatedAt?: number | null    // ms, from updated_at
+  deletedAt?: number | null    // ms, from deleted_at (spegling)
 
   // Offline state (same lifecycle as matches/sessions)
   dirty: boolean
