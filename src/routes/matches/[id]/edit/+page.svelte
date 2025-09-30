@@ -8,18 +8,8 @@
   import { db } from '$lib/db/dexie'
 
   import { observeLocalMatch } from '$lib/data/matches'
-  import {
-    observeLocalLineupsForMatch,
-    setTeamForPlayer,
-    removePlayer,
-    swapTeamsForMatch,     // ✅ whole-match swap
-  } from '$lib/data/lineups'
-  import {
-    observeLocalGoalsForMatch,
-    addGoalQuick,
-    updateGoal,
-    deleteGoal
-  } from '$lib/data/goals'
+  import { observeLocalLineupsForMatch } from '$lib/data/lineups'
+  import { observeLocalGoalsForMatch } from '$lib/data/goals'
   import { observeLocalActivePlayersMap } from '$lib/data/players'
 
   import type {
@@ -51,39 +41,12 @@
   const teamPlayers = (team: TeamAB) =>
     $lineups$.filter(l => l.team === team && !l.deletedAtLocal).map(l => l.playerId)
 
-  // const availablePlayers = (team: TeamAB) => {
-  //   const used = new Set(teamPlayers(team))
-  //   return Object.values($players$).filter(p => !used.has(p.id))
-  // }
-
   function lineupFor(goal: GoalLocal) {
     // scorer/assist options come from whole-game lineup for that team
     return teamPlayers(goal.team).map(id => ({ id, name: nameOf(id) }))
   }
 
   // ---------- actions (lineup ops always write with half=1 under the hood)
-  // async function addToTeam(pid: string) {
-  //   const id = data.id
-  //   await setTeamForPlayer(id, pid, teamForAdd, 1)
-  // }
-
-  // async function removeFromTeam(pid: string, team: TeamAB) {
-  //   const id = data.id
-  //   await removePlayer(id, pid, team, 1)
-  // }
-
-  // async function swapTeams() {
-  //   const id = data.id
-  //   await swapTeamsForMatch(id) // flips A↔B for the entire lineup
-  // }
-
-  // Goals keep their own half
-  async function quickAdd(team: TeamAB) {
-    const id = data.id
-    const pool = teamPlayers(team)
-    const scorer = pool[0]
-    await addGoalQuick({ matchId: id, team, half: goalHalf, scorerId: scorer })
-  }
 
   // ---------- 1) Seed a snapshot so first render has data
   const ready: Promise<void> = browser
@@ -138,66 +101,5 @@
       lineups={lineups$}
       lineupFor={lineupFor}
     />
-
-    <!-- Goals -->
-    <!-- <div class="rounded-xl border bg-white p-4 space-y-3">
-      <div class="flex gap-2 items-center">
-        <h2 class="text-base font-semibold">{$t('match_day.match.goals.title')}</h2>
-        <div class="flex items-center gap-2 ml-4">
-          <span class="text-sm">{$t('match_day.match.half_label')}</span>
-          <label class="flex items-center gap-1"><input type="radio" value={1} bind:group={goalHalf}/> H1</label>
-          <label class="flex items-center gap-1"><input type="radio" value={2} bind:group={goalHalf}/> H2</label>
-        </div>
-        <div class="flex gap-2 ml-auto">
-          <button class="btn btn-danger" onclick={() => quickAdd('A')}>+ {$t('match_day.match.team.red')}</button>
-          <button class="btn" style="background:#000;color:#fff" onclick={() => quickAdd('B')}>+ {$t('match_day.match.team.black')}</button>
-        </div>
-      </div>
-
-      {#if $goals$.length === 0}
-        <div class="text-sm text-gray-600">{$t('match_day.match.goals.empty')}</div>
-      {:else}
-        <ul class="space-y-2">
-          {#each $goals$ as g (g.id)}
-            <li class="rounded border px-2 py-2">
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="text-xs px-2 py-0.5 rounded border">
-                  {g.team === 'A' ? $t('match_day.match.team.red') : $t('match_day.match.team.black')}
-                  · {$t('match_day.match.half', { values: { n: g.half } })}
-                </span>
-
-                <select
-                  class="rounded border px-2 py-1"
-                  onchange={(e) => updateGoal(g.id, { scorerId: (e.currentTarget as HTMLSelectElement).value || undefined })}
-                >
-                  {#each lineupFor(g) as p (p.id)}
-                    <option value={p.id} selected={p.id === g.scorerId}>{p.name}</option>
-                  {/each}
-                </select>
-
-                <select
-                  class="rounded border px-2 py-1"
-                  onchange={(e) => updateGoal(g.id, { assistId: (e.currentTarget as HTMLSelectElement).value || undefined })}
-                >
-                  <option value="">{ $t('common.none') }</option>
-                  {#each lineupFor(g) as p (p.id)}
-                    <option value={p.id} selected={p.id === g.assistId}>{p.name}</option>
-                  {/each}
-                </select>
-
-                <input
-                  class="rounded border px-2 py-1 w-20"
-                  type="number" min="0" max="200"
-                  value={g.minute ?? ''}
-                  onchange={(e) => updateGoal(g.id, { minute: Number((e.currentTarget as HTMLInputElement).value) || undefined })}
-                />
-
-                <button class="ml-auto btn btn-danger" onclick={() => deleteGoal(g.id)}>{$t('common.delete')}</button>
-              </div>
-            </li>
-          {/each}
-        </ul>
-      {/if}
-    </div> -->
   {/await}
 </section>

@@ -81,6 +81,9 @@ export async function applyCloudGoalToLocal(
   }
 
   // map cloud → local shape
+  const createdAt = toMs(row.created_at)
+  const updatedAt = toMs(row.updated_at)
+
   const mapped = {
     id: row.id,
     matchId: row.match_id,
@@ -91,9 +94,9 @@ export async function applyCloudGoalToLocal(
     minute: row.minute ?? null,
 
     // server mirrors
-    createdAt: row.created_at ?? null,
-    updatedAt: row.updated_at ?? null,
-    deletedAt: row.deleted_at ?? null
+    createdAt,
+    updatedAt,
+    deletedAt: null
   } as Partial<GoalLocal> & { id: ULID }
 
   if (!local) {
@@ -212,10 +215,14 @@ export const pushGoals = async () => {
   await db.transaction('rw', db.goals_local, async () => {
     // ack for upserts: update mirrors and clear dirty/op
     for (const row of upsertAck) {
+      const createdAt = toMs(row.created_at)
+      const updatedAt = toMs(row.updated_at)
+      const deletedAt = toMs(row.deleted_at)
+
       await db.goals_local.update(row.id, {
-        createdAt: row.created_at ?? null,
-        updatedAt: row.updated_at ?? null,
-        deletedAt: row.deleted_at ?? null,
+        createdAt,
+        updatedAt,
+        deletedAt,
         dirty: false,
         op: null
       })

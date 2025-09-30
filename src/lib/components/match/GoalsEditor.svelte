@@ -25,18 +25,26 @@
     for (const g of visible) {
       if (!seen.has(g.id)) {
         seen.add(g.id)
-        out.push(g)
+        out.push(g)            // ← move inside the if
       }
     }
     return out
   })
 
+  function lineupOptions(g: GoalLocal) {
+    const m = new Map<ULID, { id: ULID, name: string }>()
+    for (const p of lineupFor(g)) if (!m.has(p.id)) m.set(p.id, p)
+    return Array.from(m.values())
+  }
+
   // optional: log duplicates to quickly spot the source
   $effect(() => {
-    const ids = $goalsUniq.map(g => g.id)
+    for (const g of $goalsUniq) {
+    const ids = lineupFor(g).map(p => p.id)
     if (ids.length && new Set(ids).size !== ids.length) {
-      console.warn('duplicate goal ids observed', ids)
+      console.warn('duplicate lineup ids for goal', g.id, ids)
     }
+  }
   })
   
 
@@ -85,12 +93,12 @@
     </div>
 
     <div class="flex gap-2 ml-auto">
-      <button class="btn btn-danger" onclick={() => quickAdd('A')}>+ {$t('match_day.match.team.red')}</button>
-      <button class="btn" style="background:#000;color:#fff" onclick={() => quickAdd('B')}>+ {$t('match_day.match.team.black')}</button>
+      <button class="btn btn-danger !bg-red-800" onclick={() => quickAdd('A')}>+ <span class="hidden sm:block">{$t('match_day.match.team.red')}</span></button>
+      <button class="btn !bg-black !text-white" onclick={() => quickAdd('B')}>+ <span class="hidden sm:block">{$t('match_day.match.team.black')}</span></button>
     </div>
   </div>
 
-  {#if $goals.length === 0}
+  {#if $goalsUniq.length === 0}
     <div class="text-sm text-gray-600">{$t('match_day.match.goals.empty')}</div>
   {:else}
     <ul class="space-y-2">
@@ -104,7 +112,7 @@
 
             <select class="rounded border px-2 py-1"
               onchange={(e) => changeScorer(g.id, (e.currentTarget as HTMLSelectElement).value)}>
-              {#each lineupFor(g) as p (p.id)}
+              {#each lineupOptions(g) as p (p.id)}
                 <option value={p.id} selected={p.id === g.scorerId}>{p.name}</option>
               {/each}
             </select>
@@ -112,7 +120,7 @@
             <select class="rounded border px-2 py-1"
               onchange={(e) => changeAssist(g.id, (e.currentTarget as HTMLSelectElement).value)}>
               <option value="">{ $t('common.none') }</option>
-              {#each lineupFor(g) as p (p.id)}
+              {#each lineupOptions(g) as p (p.id)}
                 <option value={p.id} selected={p.id === g.assistId}>{p.name}</option>
               {/each}
             </select>
@@ -120,8 +128,8 @@
             <input class="rounded border px-2 py-1 w-20" type="number" min="0" max="200"
               value={g.minute ?? ''} onchange={(e) => changeMinute(g.id, (e.currentTarget as HTMLInputElement).value)} />
 
-            <button class="ml-auto btn btn-danger" onclick={() => removeGoal(g.id)}>
-              {$t('common.delete')}
+            <button class="ml-auto btn btn-danger" onclick={() => removeGoal(g.id)}>-
+              <!-- {$t('common.delete')} -->
             </button>
           </div>
         </li>
