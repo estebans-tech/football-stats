@@ -1,122 +1,179 @@
 <script lang="ts">
-    import { t } from 'svelte-i18n'
-    import type { Writable } from 'svelte/store'
-    import type { PlayerLocal, LineupLocal, TeamAB } from '$lib/types/domain'
-    import { setTeamForPlayer, removePlayer } from '$lib/data/lineups'
-  
-    type Props = {
-      matchId: string
-      players$: Writable<Record<string, PlayerLocal>>
-      lineups$: Writable<LineupLocal[]>
-      half?: 1 | 2
-    }
-    let { matchId, players$, lineups$, half = 1 }: Props = $props()
-  
-    // Sorterad trupp
-    const roster = $derived.by(() => {
-        const all = Object.values($players$ ?? {})
-        const assigned = new Set(Object.keys(membershipById)) // visa inaktiva om de redan är placerade
-        return all
-            .filter(p => ((p.active && !p.deletedAtLocal) || assigned.has(p.id)))
-            .sort((a, b) => a.name.localeCompare(b.name))
-    })
-  
-    // playerId -> team ('A' | 'B') för aktuell halvlek; undefined = bänk
-    const membershipById = $derived.by((): Record<string, TeamAB | undefined> => {
-        const m: Record<string, TeamAB | undefined> = {}
-        for (const l of ($lineups$ ?? [])) {
-            if (!l.deletedAtLocal && l.half === half) m[l.playerId] = l.team
+  import { onMount } from 'svelte'
+  import { t } from 'svelte-i18n'
+  import type { Writable } from 'svelte/store'
+  import type { PlayerLocal, LineupLocal, TeamAB, Half, ULID } from '$lib/types/domain'
+  import { addLineup, deleteLineup, updateLineup, sanitizeLocalLineupsForMatch } from '$lib/data/lineups'
+
+  type Props = {
+    matchId: string
+    players$: Writable<Record<string, PlayerLocal>>
+    lineups$: Writable<LineupLocal[]>
+    half?: Half
+  }
+  let { matchId, players$, lineups$, half = 1 }: Props = $props()
+
+  const busyByPlayer = new Map<ULID, boolean>()
+
+  // Sorted roster
+  const roster = $derived.by(() => {
+    const all = Object.values($players$ ?? {})
+    const assigned = new Set(Object.keys(membershipById)) // show inactive if already placed
+      return all
+        .filter(p => ((p.active && !p.deletedAt) || assigned.has(p.id)))
+        .sort((a, b) => a.name.localeCompare(b.name))
+  })
+
+  // playerId -> team ('A' | 'B') för aktuell halvlek; undefined = bänk
+  const membershipById = $derived.by((): Record<string, TeamAB | undefined> => {
+      const m: Record<string, TeamAB | undefined> = {}
+      for (const lineup of ($lineups$ ?? [])) {
+        if (lineup.deletedAt == null && lineup.op !== 'delete' && lineup.half === half){
+          m[lineup.playerId] = lineup.team
         }
-        return m
-    })
- 
-    // counts per team for the selected half
-    const totalRedPlayers   = $derived.by(() =>
+      }
+
+      return m
+  })
+
+  // counts per team for the selected half
+  const totalRedPlayers = $derived.by(() =>
     Object.values(membershipById).filter((t) => t === 'A').length
-    )
-    const totalBlackPlayers = $derived.by(() =>
+  )
+  const totalBlackPlayers = $derived.by(() =>
     Object.values(membershipById).filter((t) => t === 'B').length
+  )
+  // sum of both
+  const totalPlayers = $derived(totalRedPlayers + totalBlackPlayers)
+  const isInactive = (pid: string) => !$players$?.[pid]?.active
+  const isBenched  = (pid: string) => membershipById[pid] === undefined
+  const canAssign  = (pid: string, team: TeamAB) => membershipById[pid] !== team && !isInactive(pid)  
+  // --- actions
+  // remove a player's assignment for a given half+team (hard/soft handled by deleteLineup)
+  async function removeTeamPlayer(matchId: ULID, playerId: ULID, team: TeamAB, half: Half) {
+    const rows = ($lineups$ ?? []).filter(l =>
+    l.matchId === matchId &&
+    l.playerId === playerId &&
+    l.half === half &&
+    l.team === team &&
+    l.deletedAt == null &&
+    l.op !== 'delete'
+  )
+ 
+  if (!rows.length) return
+    await Promise.allSettled(rows.map(r => deleteLineup(r.id)))
+  }
+
+  async function setTeamForPlayer(matchId: ULID, playerId: ULID, team: TeamAB, half: Half) {
+    const existing = ($lineups$ ?? []).filter(l =>
+      l.matchId === matchId &&
+      l.playerId === playerId &&
+      l.half === half &&
+      l.deletedAt == null &&
+      l.op !== 'delete'
     )
-    // sum of both
-    const totalPlayers = $derived(totalRedPlayers + totalBlackPlayers)
-    const isInactive = (pid: string) => !$players$?.[pid]?.active
-    const isBenched  = (pid: string) => membershipById[pid] === undefined
-    const canAssign  = (pid: string, team: TeamAB) =>
 
-    membershipById[pid] !== team && !isInactive(pid)  
-    // --- actions
-    async function assign(pid: string, team: TeamAB) {
-        if (membershipById[pid] === team) return
-        // 1) rensa eventuella dubbletter
-        await Promise.allSettled([
-            removePlayer(matchId, pid, 'A', half),
-            removePlayer(matchId, pid, 'B', half),
-        ])
-        // 2) lägg i önskat lag
-        await setTeamForPlayer(matchId, pid, team, half)
-        }
-
-        async function toBench(pid: string) {
-        // bänk = ta bort ALLA placeringar (A & B) för halvleken
-        await Promise.allSettled([
-            removePlayer(matchId, pid, 'A', half),
-            removePlayer(matchId, pid, 'B', half),
-        ])
+    if (existing.length === 0) {
+      await addLineup({ matchId, half, team, playerId })
+      return
     }
 
-    // --- UI helpers
-    function rowClass(pid: string) {
-      const team = membershipById[pid]
-      return [
-        'flex items-center justify-between rounded border px-3 py-2 transition-colors',
-        team === 'A' ? 'bg-red-800 text-white border-red-700' : '',
-        team === 'B' ? 'bg-neutral-900 text-white border-neutral-900' : '',
-        !team ? 'bg-white text-black border-gray-300' : ''
-      ].join(' ')
+    const [head, ...rest] = existing.sort((a, b) => (b.updatedAtLocal ?? 0) - (a.updatedAtLocal ?? 0))
+
+    if (head.team !== team) {
+      await updateLineup(head.id, { team })
     }
 
-    // ---- Button style helpers (Tailwind)
-  const redBtnClass = (disabled: boolean) =>
-    [
-      'w-10 h-9 rounded-lg inline-flex items-center justify-center text-base',
-      disabled
-        // ghost på färgad rad – vit kant + svag bakgrund + ring
-        ? 'bg-red-800 text-white/80 border border-white/30 ring-1 ring-white/40 cursor-default'
-        // solid röd – funkar även på svart/vit rad
-        : 'bg-red-800 hover:bg-red-700 text-white border border-white/10 shadow-xs',
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80'
+    if (rest.length) {
+      await Promise.allSettled(rest.map(r => deleteLineup(r.id)))
+    }
+  }
+
+  async function assign(pid: string, team: TeamAB) {
+    await setTeamForPlayer(matchId, pid, team, half)
+  }
+
+  async function toBench(pid: ULID) {
+    await Promise.allSettled([
+      removeTeamPlayer(matchId, pid, 'A', half),
+      removeTeamPlayer(matchId, pid, 'B', half)
+    ])
+  }
+
+  function guard(fn: () => Promise<void>, pid: ULID) {
+    if (busyByPlayer.get(pid)) return
+    busyByPlayer.set(pid, true)
+    fn().finally(() => busyByPlayer.set(pid, false))
+  }
+
+  // --- UI helpers
+  function rowClass(pid: string) {
+    const team = membershipById[pid]
+    return [
+      'flex flex-1',
+      team === 'A' ? 'justify-start text-white border-red-700' : '',
+      team === 'B' ? 'justify-end text-white border-neutral-900' : '',
+      !team ? 'justify-center bg-white text-black border-gray-300' : ''
     ].join(' ')
+  }
+  function pillClass(pid: string) {
+    const team = membershipById[pid]
+    return [
+      'text-center rounded border px-3 py-2 transition-colors',
+      team === 'A' ? 'basis-1/2 bg-red-800 text-white border-red-700' : '',
+      team === 'B' ? 'basis-1/2 bg-neutral-900 text-white border-neutral-900' : '',
+      !team ? 'basis-full bg-white text-black border-gray-300' : ''
+    ].join(' ')
+  }
+
+  // ---- Button style helpers (Tailwind)
+  const redBtnClass = (disabled: boolean) =>
+  [
+    'btn',
+    disabled
+      // ghost på färgad rad – vit kant + svag bakgrund + ring
+      ? 'btn-danger bg-red-800 text-white/80 border border-white/30 ring-1 ring-white/40 cursor-default'
+      // solid röd – funkar även på svart/vit rad
+      : 'btn-danger bg-red-800 hover:bg-red-700 text-white border border-white/10 shadow-xs',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80'
+  ].join(' ')
 
   const blackBtnClass = (disabled: boolean) =>
-    [
-      'w-10 h-9 rounded-lg inline-flex items-center justify-center text-base',
-      disabled
-        ? 'bg-white/5 text-white/80 border border-white/30 ring-1 ring-white/40 cursor-default'
-        : 'bg-neutral-900 hover:bg-black text-white border border-white/30 shadow-xs',
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80'
-    ].join(' ')
+  [
+    'btn',
+    disabled
+      ? '!bg-gray-400 text-white border border-white/30 ring-1 ring-white/40 cursor-default'
+      : '!bg-black hover:bg-gray-800 !text-white border border-white/10 shadow-xs cursor',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80'
+  ].join(' ')
 
   const benchBtnClass =
-    'w-10 h-9 rounded-lg inline-flex items-center justify-center text-base ' +
-    'bg-white text-black border border-gray-300 hover:bg-gray-50 shadow-xs ' +
+    'btn ' +
+    'btn-outline bg-white text-black border border-gray-300 hover:bg-gray-50 shadow-xs ' +
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40'
-  
+
   </script>
   
-  <section class="rounded-xl border bg-white p-4">
-    <h3 class="mb-3 font-semibold">{$t('match_day.match.lineups.available')}</h3>
+  <h3 class="mb-4 font-semibold">{$t('match_day.match.lineups.available')}</h3>
+  <section class="rounded-xl border rounded-sm border-gray-300 bg-white p-2 py-3 md:p-4">
   
-    <ul class="space-y-2 max-h-[520px] overflow-auto pr-1">
+    <ul class="space-y-2 pr-1">
+    
       {#each roster as p (p.id)}
-        <li class={rowClass(p.id)}>
-            <span class="truncate">{p.nickname ?? p.name}</span>
-            {#if isInactive(p.id)}
-              <span class="ml-2 text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded
-                           border border-white/30 bg-white/15 text-white/90">
-                Inactive
-              </span>
-            {/if}  
-          <div class="flex items-center gap-2">
+        <!-- <li class={rowClass(p.id)}> -->
+        <li class="flex items-center justify-between gap-x-3">
+          <div class={rowClass(p.id)}>
+            <div class={pillClass(p.id)}>
+              <span class="truncate">{p.nickname ?? p.name}</span>
+              {#if isInactive(p.id)}
+                <span class="mt-1 inline-block text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded
+                            border border-white/30 text-white/90">
+                  Inactive
+                </span>
+              {/if}
+            </div>
+          </div>
+          <div class="flex items-center gap-1 sm:gap-2">
             <!-- RED + (disabled om redan röd) -->
             <button
             type="button"
