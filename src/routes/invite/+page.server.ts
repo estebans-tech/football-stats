@@ -3,7 +3,6 @@ import type { Actions, PageServerLoad } from './$types';
 import { redeemInviteAction } from '$lib/auth/index';
 
 export const load: PageServerLoad = async ({ locals }) => {
-  console.log('locals', locals)
   if (locals.user) throw redirect(302, '/');
   return {};
 };
