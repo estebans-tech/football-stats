@@ -198,7 +198,6 @@ export async function pushMatchCreates(
 
   const payload = matches.map(match => toCloudMatch(match, club_id))
 
-  console.log('push creates ids', matches.map(m => m.id))
   const { data, error } = await sb
     .from('matches')
     .upsert(payload, { onConflict: 'id' })

@@ -215,7 +215,6 @@ export async function pushSessions() {
   // DELETE (mjuk delete i molnet)
   if (deletes.length) {
     const deletedIds = await pushSoftDeletes(sb, club_id, deletes);
-    console.log('?deletedAfterPush=', deletedIds, '?from=', deletes)
     await acknowledgeDeletes(db, deletedIds);
     pushed += deletedIds.length;
   }

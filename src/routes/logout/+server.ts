@@ -13,7 +13,6 @@ export const POST: RequestHandler = async (event) => {
   event.cookies.delete('inv_id', { path: '/' });
 
   const ref = event.request.headers.get('referer');
-  console.log('event from server', event.request)
   let to = '/';
   if (ref) {
     try {
