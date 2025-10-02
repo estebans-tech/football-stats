@@ -1,7 +1,7 @@
 
 import { get } from 'svelte/store';
 import { role, session, profile } from '$lib/auth/store'
-import { canEditFromRole, isAdmin as isAdminFromRole } from './helpers';
+import { canEditFromRole, isAdmin as isAdminFromRole } from '$lib/auth/helpers';
 import type { Session } from '@supabase/supabase-js';
 import type { Profile, Role } from '$lib/auth/types';
 import { browser } from '$app/environment';
