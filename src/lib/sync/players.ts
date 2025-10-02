@@ -5,7 +5,7 @@ import { readProfileFromLS } from '$lib/auth/profileStorage'
 import { toMs } from '$lib/utils/utils'
 
 // Types
-import type { PlayerLocal } from '$lib/types/domain';
+import type { PlayerLocal, ULID } from '$lib/types/domain';
 import type { CloudPlayer } from '$lib/types/cloud';
 
 const tableKey = 'sync.players'
@@ -45,7 +45,51 @@ const readClubId = async (): Promise<string> => {
   return data.club_id as string
 }
   
+export async function fetchCloudPlayersSince(
+  sb: any,
+  club_id?: ULID | null,
+  sinceIso?: string
+): Promise<CloudPlayer[]> {
 
+  let query = sb
+    .from('players')
+    .select('id, name,nickname,active,created_at,updated_at,deleted_at')
+    .order('updated_at', { ascending: true })
+
+  if (club_id) query = query.eq('club_id', club_id)
+  if (sinceIso) query = query.gt('updated_at', sinceIso)
+
+  // Sortera så watermark blir sista posten med giltig updated_at
+  const { data, error } = await query
+  if (error) throw error
+
+  return (data ?? []) as CloudPlayer[]
+}
+
+
+export function preloadLocalPlayers(rows: CloudPlayer[]) {
+  const mapped: PlayerLocal[] = rows.map((r: CloudPlayer) => {
+    const createdAt = toMs(r.created_at)
+    const updatedAt = toMs(r.updated_at)
+    const deletedAt = toMs(r.deleted_at)
+    return {
+      id: r.id as string,
+      name: (r.name ?? '') as string,
+      nickname: (r.nickname ?? null) as string | null,
+      active: !!r.active,
+      // cloud-mirroring
+      createdAt,
+      deletedAt,
+      updatedAt,
+      // local metadata (inte satta av pull)
+      updatedAtLocal: 0,
+      // push-status
+      dirty: false
+    }
+  })
+
+  return mapped
+}
 export const pushPlayers = async () => {
   const sb = await ensureSession()
   const club_id = await readClubId()
@@ -81,37 +125,41 @@ export const pullPlayers = async () => {
   const sb = await ensureSession()
   const club_id = await readClubId()
 
-  const { data, error } = await sb
-    .from('players')
-    .select('id, name, nickname, active, created_at, updated_at, deleted_at')
-    .eq('club_id', club_id)
-    .order('created_at', { ascending: true })
+  const rows = await fetchCloudPlayersSince(sb, club_id)
 
-  if (error) throw error
-  const rows = data || []
+  // const { data, error } = await sb
+  //   .from('players')
+  //   .select('id, name, nickname, active, created_at, updated_at, deleted_at')
+  //   .eq('club_id', club_id)
+  //   .order('created_at', { ascending: true })
+
+  // if (error) throw error
+  // const rows = data || []
 
   // robust tidsparser: ISO/string/Date -> ms epoch | null
-  const db = assertDb()
-  const mapped = rows.map((r: CloudPlayer) => {
-    const createdAt = toMs(r.created_at)
-    const updatedAt = toMs(r.updated_at)
-    const deletedAt = toMs(r.deleted_at)
+  // const mapped = rows.map((r: CloudPlayer) => {
+  //   const createdAt = toMs(r.created_at)
+  //   const updatedAt = toMs(r.updated_at)
+  //   const deletedAt = toMs(r.deleted_at)
 
-    return {
-      id: r.id as string,
-      name: (r.name ?? '') as string,
-      nickname: (r.nickname ?? null) as string | null,
-      active: !!r.active,
-      // cloud-mirroring
-      createdAt,
-      deletedAt,
-      updatedAt,
-      // local metadata (inte satta av pull)
-      createdAtLocal: null,
-      // push-status
-      dirty: false
-    }
-  }) as PlayerLocal[]
+  //   return {
+  //     id: r.id as string,
+  //     name: (r.name ?? '') as string,
+  //     nickname: (r.nickname ?? null) as string | null,
+  //     active: !!r.active,
+  //     // cloud-mirroring
+  //     createdAt,
+  //     deletedAt,
+  //     updatedAt,
+  //     // local metadata (inte satta av pull)
+  //     updatedAtLocal: updatedAt,
+  //     // push-status
+  //     dirty: false
+  //   }
+  // }) as PlayerLocal[]
+  const db = assertDb()
+  const mapped = preloadLocalPlayers(rows)
+  await db.players_local.bulkPut(mapped)
 
   // snabbare och enklare än transaction+loop
   await db.players_local.bulkPut(mapped)
@@ -123,6 +171,6 @@ export const pullPlayers = async () => {
 export const syncPlayers = async () => {
   const resPush = await pushPlayers()
   const resPull = await pullPlayers()
-  // return { pushed: 0, pulled: resPull.pulled }
+
   return { pushed: resPush.pushed, pulled: resPull.pulled }
 }

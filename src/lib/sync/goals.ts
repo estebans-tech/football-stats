@@ -13,8 +13,8 @@ const syncPrefix = 'sync.goals'
 // includes soft-deleted rows so the client can hard-delete locally when needed
 export async function fetchCloudGoalsSince(
   sb: any,
-  club_id: ULID,
-  lastIso: string | null
+  club_id?: ULID | null,
+  lastIso?: string | null
 ): Promise<CloudGoal[]> {
   const pageSize = 1000
   const rows: CloudGoal[] = []
@@ -26,22 +26,23 @@ export async function fetchCloudGoalsSince(
     let q = sb
       .from('goals')
       .select('id, club_id, match_id, half, team, scorer_id, assist_id, minute, created_at, updated_at, deleted_at')
-      .eq('club_id', club_id)
+      .is('deleted_at', null)
       .order('updated_at', { ascending: true })
 
+    if (club_id) q = q.eq('club_id', club_id)
     if (lastIso) q = q.gt('updated_at', lastIso)
 
     const { data, error } = await q.range(from, to)
     if (error) throw new Error(`fetchCloudGoalsSince failed: ${error.message}`)
 
-    if (!data || data.length === 0) break
+    const batch = (data ?? []) as CloudGoal[]
+    if (batch.length === 0) break
 
-    rows.push(...(data as CloudGoal[]))
-
-    if (data.length < pageSize) break
+    rows.push(...batch)
+    if (batch.length < pageSize) break
 
     from += pageSize
-    to += pageSize
+    to   += pageSize
   }
 
   return rows

@@ -32,25 +32,21 @@ const syncPrefix = 'sync.matches'
 //
 export async function fetchCloudMatchesSince(
   sb: any,                      // SupabaseClient
-  clubId: string,               // ULID
-  lastIso: string | null        // ISO timestamp or null
+  clubId?: ULID| null,          // ULID
+  lastIso?: string | null       // ISO timestamp or null
 ): Promise<CloudMatch[]> {
   // Base query: limit to club and order by updated_at ASC for deterministic application
   let query = sb
     .from('matches')
-    .select('id, club_id, session_id, order_no, created_at, updated_at, deleted_at')
-    .eq('club_id', clubId)
-    .order('updated_at', { ascending: true })
+    .select('id,club_id,session_id,order_no,created_at,updated_at,deleted_at')
 
-  // Incremental filter: only rows strictly newer than last checkpoint
-  if (lastIso) {
-    query = query.gt('updated_at', lastIso)
-  }
+    if (clubId) query = query.eq('club_id', clubId)
+    if (lastIso) query = query.gt('updated_at', lastIso)
 
-  const { data, error } = await query
-  if (error) throw error
-
-  return (data ?? []) as CloudMatch[]
+    const { data, error } = await query.order('updated_at', { ascending: true, nullsFirst: false })
+    if (error) throw error
+  
+    return (data ?? []) as CloudMatch[]
 }
 
 // Preload a set of local matches by id into a Map for O(1) lookups during apply.

@@ -15,3 +15,13 @@ export async function getPullCheckpoint(key: string) {
 export async function updatePullCheckpoint(key: string, maxMs: number) {
   if (maxMs > 0) await setLastSync(key, maxMs)
 }
+
+/**
+ * Skriv anon-sync meta till localStorage.
+ * - Skriver precis payloaden, inget extra.
+ */
+export function updateAnonSyncMeta(key: string, payload: string | object): void {
+  if (typeof payload === 'object') payload = JSON.stringify(payload)
+
+  localStorage.setItem(key, payload)
+}

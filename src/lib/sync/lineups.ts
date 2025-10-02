@@ -11,8 +11,8 @@ const syncPrefix = 'sync.lineups'
 // --- Help functions - Pull Lineups ---
 export async function fetchCloudLineupsSince(
   sb: any,
-  club_id: ULID,
-  lastIso: string | null
+  club_id?: ULID | null,
+  lastIso?: string | null
 ): Promise<CloudLineup[]> {
   const pageSize = 1000
   const rows: CloudLineup[] = []
@@ -24,22 +24,24 @@ export async function fetchCloudLineupsSince(
     let q = sb
       .from('lineups')
       .select('id, club_id, match_id, half, team, player_id, created_at, updated_at, deleted_at')
-      .eq('club_id', club_id)
-      .order('updated_at', { ascending: true })
+      .order('updated_at', { ascending: true, nullsFirst: false })
+      .is('deleted_at', null)
 
+    if (club_id) q = q.eq('club_id', club_id)
     if (lastIso) q = q.gt('updated_at', lastIso)
 
     const { data, error } = await q.range(from, to)
     if (error) throw new Error(`fetchCloudLineupsSince failed: ${error.message}`)
+  
+    const batch = (data ?? []) as CloudLineup[]
+    if (batch.length === 0) break
+  
+    rows.push(...batch)
 
-    if (!data || data.length === 0) break
+    if (batch.length < pageSize) break
 
-    rows.push(...(data as CloudLineup[]))
-
-    if (data.length < pageSize) break
-
-    from += pageSize
-    to += pageSize
+      from += pageSize
+      to += pageSize
   }
 
   return rows

@@ -2,14 +2,13 @@ import { assertDb } from '$lib/db/dexie'
 import { ensureSession, readClubId } from '$lib/sync/common'
 import { getPullCheckpoint, updatePullCheckpoint } from '$lib/sync/state'
 
-// import type { CloudSession} from '$lib/types/cloud'
-import type { SessionLocal} from '$lib/types/domain'
+import type { SessionLocal, ULID} from '$lib/types/domain'
 import type { CloudSession, CloudAck } from '$lib/types/cloud'
 import { toMs } from '$lib/utils/utils'
 
 const syncPrefix = 'sync.sessions'
 
-async function preloadLocalSessions(
+export async function preloadLocalSessions(
   db: any,
   ids: string[]
 ): Promise<Map<string, SessionLocal>> {
@@ -24,19 +23,24 @@ async function preloadLocalSessions(
   return map
 }
 
-async function fetchCloudSessionsSince(
+export async function fetchCloudSessionsSince(
   sb: any,
-  club_id: string,
-  sinceIso: string
+  club_id?: ULID | null,
+  sinceIso?: string
 ): Promise<CloudSession[]> {
-  const { data, error } = await sb
-    .from('sessions')
-    .select('id, date, status, created_at, updated_at, deleted_at')
-    .eq('club_id', club_id)
-    .gt('updated_at', sinceIso)
-    .order('updated_at', { ascending: true })
 
-  if (error) throw error;
+  let query = sb
+    .from('sessions')
+    .select('id,date,status,updated_at,deleted_at') // matcha CloudSession
+    .is('deleted_at', null)
+
+  if (club_id) query = query.eq('club_id', club_id)
+  if (sinceIso) query = query.gt('updated_at', sinceIso)
+
+  // Sortera så watermark blir sista posten med giltig updated_at
+  const { data, error } = await query.order('updated_at', { ascending: true, nullsFirst: false })
+  if (error) throw error
+
   return (data ?? []) as CloudSession[]
 }
 
@@ -57,7 +61,7 @@ function shouldOverwriteLocal(local: SessionLocal, serverUpdatedAtMs: number) {
   return serverUpdatedAtMs > localServerStamp
 }
 
-async function applyCloudRowToLocal(
+export async function applyCloudRowToLocal(
   db: any,
   r: CloudSession,
   local: SessionLocal | undefined
