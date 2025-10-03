@@ -5097,6 +5097,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lucide-svelte@npm:^0.544.0":
+  version: 0.544.0
+  resolution: "lucide-svelte@npm:0.544.0"
+  peerDependencies:
+    svelte: ^3 || ^4 || ^5.0.0-next.42
+  checksum: 10c0/058ac5baf7535e7029a3d50f6933e66129a2b48a697931bcc480c2fc51f17c1bdeb9d6a7c6ebf2c5c56d6500f1f905e9e13b2332b60f59f5755aae9fa8290a16
+  languageName: node
+  linkType: hard
+
 "magic-string@npm:^0.25.0, magic-string@npm:^0.25.7":
   version: 0.25.9
   resolution: "magic-string@npm:0.25.9"
@@ -6617,6 +6626,7 @@ __metadata:
     eslint-config-prettier: "npm:^10.0.1"
     eslint-plugin-svelte: "npm:^3.0.0"
     globals: "npm:^16.0.0"
+    lucide-svelte: "npm:^0.544.0"
     prettier: "npm:^3.4.2"
     prettier-plugin-svelte: "npm:^3.3.3"
     prettier-plugin-tailwindcss: "npm:^0.6.11"
