@@ -37,10 +37,11 @@
   })
 </script>
 
-
 <Header onSync={handleSync} syncBusy={syncing} />
 
-<main class="max-w-3xl mx-auto px-4 py-6">
-  <ToastHost />
+<main class="mx-auto w-full max-w-screen-sm md:max-w-2xl lg:max-w-3xl px-4 md:px-6">
   <slot />
 </main>
+
+<footer></footer>
+<ToastHost />

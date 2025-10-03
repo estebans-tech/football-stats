@@ -1,5 +1,5 @@
 {
-  "brand": { "title": "Käfigkicker - Stats" },
+  "brand": { "title": "Käfigkicker - Statistik" },
   "lang": { "en": "Englisch", "de": "Deutsch", "sv": "Schwedisch" },
   "a11y": { "close": "Close" },
   "header": {
@@ -62,7 +62,8 @@
       "lock": "Lock",
       "unlock": "Unlock",
       "open": "Open",
-      "delete": "Delete"
+      "delete": "Delete",
+      "ctaOpen": "Tap to view details"
     },
     "toast": {
       "locked": "Matchday on {date} locked.",
@@ -87,6 +88,7 @@
     "statistics": {
       "title": "Matchday stats",
       "match_numbered": "Match {num}",
+      "match": "Match",
       "cards": {
         "matches": "Matches",
         "goals_total": "Goals (total)",
