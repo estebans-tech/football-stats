@@ -3,8 +3,9 @@
   import { writable } from 'svelte/store'
   import { t } from 'svelte-i18n'
   import type { PageData } from './$types'
-   import LineupBuilder from '$lib/components/match/LineupBuilder.svelte'
-   import GoalsEditor from '$lib/components/match/GoalsEditor.svelte'
+  import LineupBuilder from '$lib/components/match/LineupBuilder.svelte'
+  import GoalsEditor from '$lib/components/match/GoalsEditor.svelte'
+  import Heading from '$lib/components/Heading.svelte'
   import { db } from '$lib/db/dexie'
 
   import { observeLocalMatch } from '$lib/data/matches'
@@ -81,12 +82,14 @@
 
 <section class="mx-auto max-w-4xl w-full space-y-6">
   <header class="flex items-center justify-between">
-    <h1 class="text-xl font-semibold">
+    <Heading level={1} underline>
       {$t('match_day.match.numbered', {
         values: { num: $match$?.orderNo ?? '?' }
       })}
-    </h1>
-    <a href="/" class="text-sm underline hover:no-underline">{$t('common.back')}</a>
+    </Heading>
+    <a href="/" class="self-start md:self-auto btn btn-outline text-sm active:scale-95">
+      {$t('common.back')}
+    </a>
   </header>
 
   {#await ready}{:then}

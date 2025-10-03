@@ -4,6 +4,7 @@
   import AddPlayerForm from '$lib/components/players/AddPlayerForm.svelte'
   import { observeLocalPlayersMap } from '$lib/data/players'
   import type { PlayerLocal } from '$lib/types/domain'
+  import Heading from '$lib/components/Heading.svelte'
 
   // store with all players
   const players$ = observeLocalPlayersMap()
@@ -37,8 +38,10 @@
 
 <div class="mx-auto max-w-3xl space-y-4">
   <header class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-    <h1 class="text-xl font-semibold">{$t('players.title')}</h1>
-
+    <Heading level={1} underline>
+      {$t('players.title')}
+    </Heading>
+  
     <label class="inline-flex items-center gap-2 text-sm">
       <input
         type="checkbox"

@@ -3,6 +3,7 @@
   import { browser } from '$app/environment'
   import { readable, type Readable } from 'svelte/store'
   import { canEdit } from '$lib/auth/client'
+  import Heading from '$lib/components/Heading.svelte'
 
   // Types
   import type { PageLoad, PageData } from './$types'
@@ -56,10 +57,12 @@
     <div class="rounded-xl border bg-white p-6 text-red-600">{$t('common.not_found')}</div>
   {:else}
     <header class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold">
+      <Heading level={1} underline>
         {$t('match_day.match.numbered', { values: { num: $matchStore.orderNo } })}
-      </h1>
-      <a href="/#sessions" class="text-sm underline hover:no-underline">{$t('common.back')}</a>
+      </Heading>
+      <a href="/" class="self-start md:self-auto btn btn-outline text-sm active:scale-95">
+        {$t('common.back')}
+      </a>
     </header>
 
     <!-- Lineups -->
