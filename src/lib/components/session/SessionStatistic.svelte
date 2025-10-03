@@ -1,6 +1,10 @@
 <script lang="ts">
   import { t } from 'svelte-i18n'
-  import type { MatchLocal, GoalLocal, LineupLocal, PlayerLocal } from '$lib/types/domain'
+  import type { MatchLocal, GoalLocal, LineupLocal, PlayerLocal, AppearanceRow } from '$lib/types/domain'
+  import MetricTile from '$lib/components/session/MetricTile.svelte'
+  import ScorerAssistCard from '$lib/components/session/ScorerAssistCard.svelte'
+  import MatchResultCard from '$lib/components/session/MatchResultCard.svelte'
+  import AppearancesCard from '$lib/components/session/AppearancesCard.svelte'
 
   // ------- props (runes)
   type Props = {
@@ -8,8 +12,9 @@
     goals: GoalLocal[]
     lineups: LineupLocal[]
     players: Record<string, PlayerLocal>
+    appearance: AppearanceRow[]
   }
-  let { matches, goals, lineups, players }: Props = $props()
+  let { matches, goals, lineups, players, appearance }: Props = $props()
 
   // ------- helpers (pure)
   type Score  = { A: number; B: number }
@@ -17,7 +22,7 @@
   type Totals = { A: number; B: number; total: number }
   type Summary = { nMatches: number; goalsTotal: number; A: number; B: number; avg: number }
 
-  const nameOf = (id: string) => players[id]?.name ?? id
+  const nameOf = (id: string) => players[id]?.nickname ?? players[id]?.name ?? id
 
   function computeMatchScores(goals: GoalLocal[]): Record<string, Score> {
     const out: Record<string, Score> = {}
@@ -95,118 +100,33 @@
 </script>
 
 <!-- Summary cards -->
-<div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-  <div class="rounded-lg border p-3">
-    <div class="text-xs text-gray-500">{$t('session.statistics.cards.matches')}</div>
-    <div class="text-2xl font-semibold">{summary.nMatches}</div>
-  </div>
-  <div class="rounded-lg border p-3">
-    <div class="text-xs text-gray-500">{$t('session.statistics.cards.goals_total')}</div>
-    <div class="text-2xl font-semibold">{summary.goalsTotal}</div>
-  </div>
-  <div class="rounded-lg border p-3">
-    <div class="text-xs text-gray-500">{$t('session.statistics.cards.red')}</div>
-    <div class="text-2xl font-semibold">{summary.A}</div>
-  </div>
-  <div class="rounded-lg border p-3">
-    <div class="text-xs text-gray-500">{$t('session.statistics.cards.black')}</div>
-    <div class="text-2xl font-semibold">{summary.B}</div>
-  </div>
-  <div class="rounded-lg border p-3">
-    <div class="text-xs text-gray-500">{$t('session.statistics.cards.avg_per_match')}</div>
-    <div class="text-2xl font-semibold">{summary.avg.toFixed(2)}</div>
-  </div>
+<div class="mx-auto max-w-screen-sm grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+  <MetricTile value={String(summary.goalsTotal)} label={$t('session.statistics.cards.matches')} />
+  <MetricTile value={String(summary.nMatches)} label={$t('session.statistics.cards.goals_total')} />
+  <MetricTile value={String(summary.A)} label={$t('session.statistics.cards.red')} />
+  <MetricTile value={String(summary.B)} label={$t('session.statistics.cards.black')} />
 </div>
 
 <!-- Results -->
-<div class="rounded-xl border bg-white p-4 mt-4">
-  <h2 class="text-base font-semibold mb-3">{$t('session.statistics.results')}</h2>
-  {#if matches.length === 0}
-    <div class="text-sm text-gray-600">{$t('session.statistics.empty.matches')}</div>
-  {:else}
-    <ul class="space-y-2">
-      {#each matches as m (m.id)}
-        {@const score = matchScores[m.id] ?? { A: 0, B: 0 }}
-        <li class="flex items-center justify-between border-b px-3 py-2">
-          <div class="text-sm text-gray-600">
-            {$t('session.statistics.match_numbered', { values: { num: m.orderNo ?? '–' } })}
-          </div>
-          <div class="font-semibold">
-            {$t('session.statistics.cards.red')} {score.A} — {score.B} {$t('session.statistics.cards.black')}
-          </div>
-        </li>
-      {/each}
-    </ul>
-  {/if}
-</div>
+<MatchResultCard
+  title={$t('session.statistics.results')}
+  textLabels={ { empty: $t('session.statistics.empty.matches'), teamA: $t('session.statistics.cards.red'), teamB: $t('session.statistics.cards.black'), match: $t('session.statistics.match')}}
+  matches={matches}
+  scores={matchScores}
+/>
 
 <!-- Leaderboards -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+
   <!-- Top scorers -->
-  <div class="rounded-xl border bg-white p-4">
-    <h3 class="font-semibold mb-2">{$t('session.statistics.boards.top_scorers')}</h3>
-    {#if leaderboard.length === 0}
-      <div class="text-sm text-gray-600">{$t('session.statistics.empty.goals')}</div>
-    {:else}
-      <ol class="space-y-1">
-        {#each leaderboard.slice(0, 10) as r (r.id)}
-          <li class="flex items-center justify-between border-b px-2 py-1">
-            <span class="truncate">{r.name}</span>
-            <span class="tabular-nums">{r.goals}</span>
-          </li>
-        {/each}
-      </ol>
-    {/if}
-  </div>
+  <ScorerAssistCard title={$t('session.statistics.boards.top_scorers')} leaderboard={leaderboard} emptyLabel={$t('session.statistics.empty.goals')} />
 
   <!-- Top assists -->
-  <div class="rounded-xl border bg-white p-4">
-    <h3 class="font-semibold mb-2">{$t('session.statistics.boards.top_assists')}</h3>
-    {#if topAssists.length === 0}
-      <div class="text-sm text-gray-600">{$t('session.statistics.empty.assists')}</div>
-    {:else}
-      <ol class="space-y-1">
-        {#each topAssists.slice(0, 10) as r (r.id)}
-          <li class="flex items-center justify-between border-b px-2 py-1">
-            <span class="truncate">{r.name}</span>
-            <span class="tabular-nums">{r.assists}</span>
-          </li>
-        {/each}
-      </ol>
-    {/if}
-  </div>
+  <ScorerAssistCard title={$t('session.statistics.boards.top_assists')} leaderboard={topAssists} emptyLabel={$t('session.statistics.empty.assists')} mode="assists" />
 
   <!-- Goal involvements -->
-  <div class="rounded-xl border bg-white p-4">
-    <h3 class="font-semibold mb-2">{$t('session.statistics.boards.goal_involvements')}</h3>
-    {#if topGA.length === 0}
-      <div class="text-sm text-gray-600">{$t('session.statistics.empty.data')}</div>
-    {:else}
-      <ol class="space-y-1">
-        {#each topGA.slice(0, 10) as r (r.id)}
-          <li class="flex items-center justify-between border-b px-2 py-1">
-            <span class="truncate">{r.name}</span>
-            <span class="tabular-nums">{r.ga}</span>
-          </li>
-        {/each}
-      </ol>
-    {/if}
-  </div>
+  <ScorerAssistCard title={$t('session.statistics.boards.goal_involvements')} leaderboard={topGA}  emptyLabel={$t('session.statistics.empty.data')} mode="ga" />
 </div>
 
 <!-- Appearances -->
-<div class="rounded-xl border bg-white p-4 mt-4">
-  <h3 class="font-semibold mb-2 border-b">{$t('session.statistics.boards.appearances')}</h3>
-  {#if lineups.length === 0}
-    <div class="text-sm text-gray-600">{$t('session.statistics.empty.lineups')}</div>
-  {:else}
-    <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-      {#each Array.from(appearances.entries()).sort((a, b) => b[1] - a[1]) as [pid, apps] (pid)}
-        <li class="flex items-center justify-between border-b px-2 py-1">
-          <span class="truncate">{nameOf(pid)}</span>
-          <span class="tabular-nums">{apps}</span>
-        </li>
-      {/each}
-    </ul>
-  {/if}
-</div>
+<AppearancesCard title={$t('session.statistics.boards.appearances')} appearances={appearance} emptyLabel={$t('session.statistics.empty.lineups')} />
