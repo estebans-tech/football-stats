@@ -20,7 +20,7 @@
 
   {#if open}
     <ul
-      class="absolute right-0 mt-1 w-40 rounded-sm border border-gray-300 bg-white"
+      class="absolute right-0 mt-1 w-40 rounded-sm border border-gray-300 bg-black"
       role="listbox"
       aria-label={$t('header.nav.language')}
     >
