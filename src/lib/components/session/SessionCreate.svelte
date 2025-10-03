@@ -44,7 +44,7 @@
       }
     }
   
-    const onSubmit = (e: SubmitEvent) => {
+    const handleSubmit = (e: SubmitEvent) => {
       e.preventDefault()
       submit()
     }
@@ -55,46 +55,60 @@
     })
   </script>
   
-  <section class="mx-auto max-w-md w-full rounded-2xl border p-6 bg-white shadow-sm mb-6">
-    <!-- <h1 class="text-xl font-semibold mb-2">{$t('session.create.title')}</h1> -->
-    <!-- <p class="text-sm text-gray-600 mb-6">{$t('session.create.intro')}</p> -->
-  
-    <form class="space-y-4" on:submit={onSubmit} novalidate>
-      <div>
-        <label class="block text-sm font-medium mb-1" for="session-date">
-          {$t('session.create.label_date')}
-        </label>
-        <input
-          id="session-date"
-          name="date"
-          class="w-full rounded-lg border px-3 py-2"
-          type="date"
-          bind:value={date}
-          required
-          aria-invalid={errorMessage ? 'true' : 'false'}
-        />
-      </div>
-  
-      {#if errorMessage}
-        <div class="text-sm text-red-600" role="alert" aria-live="assertive">{errorMessage}</div>
-      {/if}
-      {#if successMessage}
-        <div class="text-sm text-green-700" role="status" aria-live="polite">{successMessage}</div>
-      {/if}
-  
-      <button
-        type="submit"
-        class="btn btn-primary w-full justify-center"
-        disabled={busy}
-        aria-busy={busy ? 'true' : 'false'}
+  <section class="mx-auto mt-4">
+    <div class="relative overflow-hidden rounded-2xl bg-white ring-1 ring-black/10">
+      <form
+        class="grid gap-3 md:gap-4 p-4 md:p-5 md:grid-cols-[1fr_auto] md:items-end"
+        on:submit|preventDefault={handleSubmit}
       >
-        {#if busy}
-          <span class="inline-block h-4 w-4 mr-2 animate-spin rounded-full border-2 border-gray-200 border-t-transparent"></span>
-          {$t('session.create.submitting')}
-        {:else}
-          {$t('session.create.submit')}
-        {/if}
-      </button>
-    </form>
+        <!-- Date -->
+        <div class="md:col-span-1">
+          <label for="session-date" class="mb-1 block text-sm font-medium text-black/70">
+            {$t('session.create.label_date')}
+          </label>
+  
+          <input
+            id="session-date"
+            name="date"
+            type="date"
+            bind:value={date}
+            required
+            aria-invalid={!!errorMessage}
+            aria-describedby="session-date-help session-date-feedback"
+            class="w-full h-11 rounded-xl bg-white px-3 ring-1 ring-black/15
+                   focus:outline-none focus:ring-2 focus:ring-red-900/40"
+          />
+          <!-- TODO: liten format-hjälp (alltid) -->
+          <!-- <p id="session-date-help" class="mt-1 text-xs text-black/45">
+            {$t('common.format')}: YYYY-MM-DD
+          </p> -->
+  
+          <!-- feedback (visas direkt under fältet och tar inte extra kolumn) -->
+          {#if errorMessage}
+            <p id="session-date-feedback" class="mt-1 text-sm text-red-600" role="alert" aria-live="assertive">
+              {errorMessage}
+            </p>
+          {:else if successMessage}
+            <p id="session-date-feedback" class="mt-1 text-sm text-emerald-700" role="status" aria-live="polite">
+              {successMessage}
+            </p>
+          {/if}
+        </div>
+  
+        <!-- Submit -->
+        <button
+          type="submit"
+          class="btn btn-primary-rosso md:w-auto w-full"
+          disabled={busy}
+          aria-busy={busy}
+        >
+          {#if busy}
+            <span class="spinner mr-2"></span>{$t('session.create.submitting')}
+          {:else}
+            {$t('session.create.submit')}
+          {/if}
+        </button>
+      </form>
+    </div>
   </section>
   
