@@ -32,7 +32,7 @@
     </a>
 
     <!-- Desktop-nav -->
-    <nav class="hidden md:flex items-center gap-1">
+    <nav class="hidden sm:flex items-center gap-1 whitespace-nowrap">
       {#each nav as item}
         <a
           href={item.href}
@@ -54,7 +54,7 @@
 
       {#if role !== 'anon'}
         <form method="POST" action="/logout">
-          <button class="mx-2 btn btn-danger btn-block btn-sm" aria-label={$t('header.actions.sync')}>
+          <button class="btn btn-danger btn-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40 focus-visible:ring-offset-2" aria-label={$t('header.actions.sync')}>
             {$t('header.actions.logout')}
           </button>
         </form>
