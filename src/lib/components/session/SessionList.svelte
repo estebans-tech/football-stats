@@ -24,7 +24,7 @@
   
   <section>
     {#if $sessions.length === 0}
-    <div class="rounded-xl border border-gray-300 p-4 text-sm text-gray-600 bg-white">
+    <div class="mt-6 rounded-xl border border-gray-300 p-4 text-sm text-gray-600 bg-white">
       {$t('session.list.empty')}
     </div>
     {:else}

@@ -53,8 +53,8 @@
       {/if}
 
       {#if role !== 'anon'}
-        <form method="POST" action="/logout" class="mt-2">
-          <button class="px-3 py-3 rounded-xl text-sm hover:bg-white/10 btn-danger btn-block btn-sm" aria-label={$t('header.actions.sync')}>
+        <form method="POST" action="/logout">
+          <button class="mx-2 btn btn-danger btn-block btn-sm" aria-label={$t('header.actions.sync')}>
             {$t('header.actions.logout')}
           </button>
         </form>
@@ -97,7 +97,7 @@
 
         {#if role !== 'anon'}
         <form method="POST" action="/logout" class="mt-2">
-          <button class="mt-2 btn btn-danger btn-block btn-sm" aria-label={$t('header.actions.sync')}>
+          <button class="my-1 btn btn-danger btn-block btn-sm" aria-label={$t('header.actions.sync')}>
             {$t('header.actions.logout')}
           </button>
         </form>
