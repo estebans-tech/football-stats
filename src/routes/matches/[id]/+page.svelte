@@ -93,7 +93,7 @@
 </script>
 
 <!-- Header -->
-<header class="flex items-center justify-between">
+<header class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-4">
   <Heading level={1} underline>
     {$t('match_day.match.numbered', { values: { num: match.matchNumber } })}
       {#if !match.matchNumber}<span class="spinner mr-1"></span>{/if}
