@@ -101,8 +101,8 @@
 
 <!-- Summary cards -->
 <div class="mx-auto max-w-screen-sm grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-  <MetricTile value={String(summary.goalsTotal)} label={$t('session.statistics.cards.matches')} />
-  <MetricTile value={String(summary.nMatches)} label={$t('session.statistics.cards.goals_total')} />
+  <MetricTile value={String(summary.nMatches)} label={$t('session.statistics.cards.matches')} />
+  <MetricTile value={String(summary.goalsTotal)} label={$t('session.statistics.cards.goals_total')} />
   <MetricTile value={String(summary.A)} label={$t('session.statistics.cards.red')} />
   <MetricTile value={String(summary.B)} label={$t('session.statistics.cards.black')} />
 </div>
