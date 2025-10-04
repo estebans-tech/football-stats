@@ -1,144 +1,108 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
-  import NavLink from '$lib/components/NavLink.svelte'
+  import { afterNavigate } from '$app/navigation'
   import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte'
-  import { goto } from '$app/navigation'
-  import { page } from '$app/state'
   import { t } from 'svelte-i18n'
-  import { isAdmin, canEditFromRole } from '$lib/auth/helpers';
-
+  import { Menu } from 'lucide-svelte' // valfritt, byt ikon om du vill
   import type { Role } from '$lib/types/auth'
 
-  export const syncBusy: boolean = false
-  export let onSync: (() => void) | undefined = undefined
-
-  let open = false
-
-  $: currentRole = ((page.data.role ?? 'anon') as Role); // cast as rRole
-  $: showAdmin = isAdmin(currentRole);
-  $: showEditor = !showAdmin && canEditFromRole(page.data.role);
-  $: showBoth = showAdmin || showEditor;
-
-  $: items = (
-    showAdmin ? [
-      { href: '/admin/players', labelKey: 'header.nav.players' },
-      { href: '/admin', labelKey: 'header.nav.admin' },
-      { href: '/settings', labelKey: 'header.nav.settings' }
-    ]
-    : showEditor ? [
-      { href: '/admin/players', labelKey: 'header.nav.players' }
-    ]
-    : [
-      { href: '/invite', labelKey: 'header.nav.invite' }
-    ]
-  )
-
-  async function handleLogout() {
-    // await signOut()
-    await goto('/')  // tillbaka till start
+  type Props = {
+    title?: string
+    current?: string
+    nav?: { href: string; label: string, labelKey?: string }[]
+    open?: boolean
+    syncBusy?: boolean
+    role: Role
+    onSync?: () => void  | undefined
   }
 
-  let scrolled = false
+  let { title = '', nav = [], current = '/', open = $bindable(), role = 'anon', onSync, syncBusy = false }: Props = $props()
 
-  onMount(() => {
-    const onScroll = () => (scrolled = window.scrollY > 4)
-    onScroll()
-    addEventListener('scroll', onScroll, { passive: true })
-    return () => removeEventListener('scroll', onScroll)
+  afterNavigate(() => {
+    open = false;
   })
+  const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') open = false; }
 </script>
 
-<!-- <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b"> -->
-<header class="sticky top-0 z-40 bg-[var(--kk-black)] text-[var(--kk-ivory)]" style="padding-top: env(safe-area-inset-top)">
-  
-  <div
-    class="px-4 flex items-center justify-between"
-    class:py-3={scrolled}
-    class:py-5.5={!scrolled}>
-    <!-- Brand -->
-    <a href="/" class="flex items-center text-[var(--kk-ivory)] gap-2 font-semibold text-base tracking-wide" aria-label={$t('brand.title')}>
-      <!-- <div class="size-6 rounded-full ring-1 ring-[var(--kk-ivory)]/40 overflow-hidden bg-[var(--kk-black)] text-center" class:opacity-0={scrolled}> -->
-      <!-- </div> -->
-      <div class="flex items-center gap-3 min-w-0">
-        <span class="rounded-full transition-opacity duration-200">⚽</span>
-        <h1 class="truncate tracking-wide transition-[letter-spacing,font-weight] duration-200 text-base"
-        class:font-semibold={!scrolled}
-        class:font-bold={scrolled}>{$t('brand.title')}</h1>        
-      </div>
-
+<svelte:window on:keydown={onKey} />
+<header class="sticky top-0 z-40 bg-black text-white">
+  <div class="mx-auto w-full max-w-screen-sm md:max-w-2xl lg:max-w-3xl px-4 md:px-6 h-14 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2 font-semibold">
+      <span class="inline-grid size-5 place-items-center rounded-full bg-white text-black text-[14px] ring ring-1 ring-black/80">⚽</span>
+      <span>{title}</span>
     </a>
 
-    <!-- Desktop nav -->
-    <nav class="hidden md:flex items-center gap-1" aria-label={$t('header.a11y.primary_navigation')}>
-      {#each items as n}
-        <NavLink href={n.href} labelKey={n.labelKey} />
+    <!-- Desktop-nav -->
+    <nav class="hidden md:flex items-center gap-1">
+      {#each nav as item}
+        <a
+          href={item.href}
+          class="px-3 py-2 rounded-xl text-sm text-white/90 hover:bg-white/10
+                 {current === item.href ? 'font-semibold bg-white/10' : ''}">
+          {item.label}
+        </a>
       {/each}
-    </nav>
 
-    <div class="hidden md:flex items-center gap-2">
-      {#if showBoth}
-        <!-- Uses your .btn class from app.css -->
-        <button class="btn btn-outline !text-white" aria-label={$t('header.actions.sync')} onclick={() => onSync?.()}>
-          {$t('header.actions.sync')}
+      {#if role === 'admin' || role === 'editor'}
+        <button type="button" class="btn btn-utility btn-block btn-sm hover:!bg-red-600/20 hover:!text-white/90" aria-label={$t('header.actions.sync')} onclick={() => onSync?.()}>
+          {#if syncBusy}<span class="spinner mr-1"></span>{/if}{$t('header.actions.sync')}
         </button>
       {/if}
-      {#if showAdmin}
+
+      {#if role === 'admin'}
         <LanguageSwitcher />
       {/if}
 
-      {#if showBoth}
-        <form method="POST" action="/logout">
-          <button class="btn btn-danger w-full active:translate-y-[1px]
-          focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/60 focus-visible:ring-offset-2
-          transition-colors disabled:opacity-50 disabled:pointer-events-none" aria-label={$t('header.actions.sync')}>
+      {#if role !== 'anon'}
+        <form method="POST" action="/logout" class="mt-2">
+          <button class="px-3 py-3 rounded-xl text-sm hover:bg-white/10 btn-danger btn-block btn-sm" aria-label={$t('header.actions.sync')}>
             {$t('header.actions.logout')}
           </button>
         </form>
       {/if}
+    </nav>
 
-    </div>
-
-    <!-- Mobile menu button -->
-    <button class="md:hidden h-8 w-8 grid place-content-center rounded-lg
-             ring-1 ring-red-900/45 bg-black/40
-             transition duration-150 active:scale-95
-             focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-900
-             hover:shadow-[0_0_0_3px_rgba(127,29,29,.20)]"
-      aria-label={$t('header.a11y.menu_button')}
-      onclick={() => (open = !open)}
-    >
-      <div class="w-4 h-[2px] bg-red-700 mb-1"></div>
-      <div class="w-4 h-[2px] bg-red-700 mb-1"></div>
-      <div class="w-4 h-[2px] bg-red-700"></div>
+    <!-- Mobile toggle -->
+    <button
+      type="button"
+      class="md:hidden inline-flex items-center justify-center size-10 rounded-lg border border-white/10 hover:bg-white/5 active:scale-[.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+      aria-label="Open menu"
+      aria-expanded={open}
+      onclick={() => (open = !open)}>
+      <Menu size={20} />
     </button>
   </div>
 
   <!-- Mobile drawer -->
   {#if open}
-    <div class="md:hidden">
-      <nav class="px-4 py-3 flex flex-col gap-1" aria-label={$t('header.a11y.primary_navigation')}>
-        {#each items as n}
-          <NavLink href={n.href} labelKey={n.labelKey} />
+    <div class="md:hidden border-t border-white/10">
+      <nav class="mx-auto w-full max-w-screen-sm md:max-w-2xl lg:max-w-3xl px-4 md:px-6 py-2 flex flex-col gap-1">
+        {#each nav as item}
+          <a
+            href={item.href}
+            class="px-3 py-2 rounded-xl text-sm text-white/90 hover:bg-white/10
+                   {current === item.href ? 'font-semibold bg-white/10' : ''}">
+            {item.label}
+          </a>
         {/each}
-        <div class="pt-2 flex items-center gap-2">
-          {#if showAdmin}
-            <button class="btn w-full" aria-label={$t('header.actions.sync')} onclick={() => onSync?.()}>
-              {$t('header.actions.sync')}
-            </button>
-          {/if}
-          {#if showBoth}
-            <form method="POST" action="/logout">
-              <button class="btn btn-danger w-full" aria-label={$t('header.actions.sync')} onclick={handleLogout}>
-                {$t('header.actions.logout')}
-              </button>
-            </form>
-          {/if}
-          {#if showAdmin}
-            <LanguageSwitcher />
-          {/if}
-        </div>
+
+        {#if role === 'admin' || role === 'editor'}
+          <button type="button" class="btn btn-utility btn-block btn-sm  hover:!bg-red-600/20 hover:!text-white/90" aria-label={$t('header.actions.sync')} onclick={() => onSync?.()}>
+            {#if syncBusy}<span class="spinner mr-1"></span>{/if}{$t('header.actions.sync')}
+          </button>
+        {/if}
+
+        {#if role === 'admin'}
+          <LanguageSwitcher />
+        {/if}
+
+        {#if role !== 'anon'}
+        <form method="POST" action="/logout" class="mt-2">
+          <button class="mt-2 btn btn-danger btn-block btn-sm" aria-label={$t('header.actions.sync')}>
+            {$t('header.actions.logout')}
+          </button>
+        </form>
+        {/if}
       </nav>
     </div>
   {/if}
-  <div class="h-px bg-[var(--kk-ivory)]/10"></div>
 </header>
