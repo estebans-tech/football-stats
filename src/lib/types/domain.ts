@@ -98,3 +98,23 @@ export interface KeyValLocal {
 export type Player = { name: string; nickname?: string | null; active: boolean }
 
 export type AppearanceRow = { id: string; player: PlayerLocal; appearances: number }
+
+export type Scorer = {scorer: string }
+export type MatchTotals = { red: number; black: number; match: number; }
+export type ScoresByHalf = { scorersRed: Scorer[]; scorersBlack: Scorer[]; totalRed: number;  totalBlack: number }
+export type LineupsName = { red: string[]; black: string[] }
+export interface ScoreByMinute extends GoalLocal {
+  scorer: string;
+  assist: string;
+}
+
+export type MatchData = {
+  matchNumber: number | undefined;
+  total: MatchTotals;
+  scoresByHalf: {
+    first: ScoresByHalf;
+    second: ScoresByHalf
+  };
+  lineups: LineupsName;
+  scoreByMinute: ScoreByMinute[];
+}

@@ -105,9 +105,9 @@
       },
       "empty": {
         "matches": "Noch keine Spiele.",
-        "goals": "Noch keine Tore.",
-        "assists": "Noch keine Vorlagen.",
-        "data": "Noch keine Daten.",
+        "goals": "keine Tore.",
+        "assists": "keine Vorlagen.",
+        "data": "keine Daten.",
         "lineups": "Noch keine Aufstellungen."
       }
     }
@@ -117,8 +117,10 @@
       "numbered": "Spiel {num}",
       "lineups": { "title": "Aufstellungen", "empty": "Noch keine Aufstellungen.", "available": "Verfügbare Spieler" },
       "half_label": "Halbzeit",
+      "first_label": "Erste",
+      "second_label": "Zweite",
       "select_player": "Spieler auswählen",
-      "goals": { "scorer": "Torschütze", "assist": "Vorlage", "minute": "Minute", "title": "Tore", "empty": "Noch keine Tore." },
+      "goals": { "scorer": "Torschütze", "assist": "Vorlage", "minute": "Minute", "title": "Tore", "empty": "keine Tore." },
       "team": { "label": "Team", "home": "Heim", "away": "Auswärts", "red": "Rot", "black": "Schwarz", "add_one": "1" },
       "half": "H{n}",
       "actions": { "copy_h1_h2": "Kopiere H{from} → H{to}", "copy_team": "Kopiere {from} → {to}", "swap_teams": "Rot ↔ Schwarz" }

@@ -116,8 +116,10 @@
       "numbered": "Match {num}",
       "lineups": { "title": "Uppställningar", "empty": "Inga uppställningar ännu.", "available": "Tillgängliga spelare" },
       "half_label": "Halvlek",
+      "first_label": "första",
+      "second_label": "andra",
       "select_player": "Välj spelare",
-      "goals": { "scorer": "Målskytt", "assist": "Assist", "minute": "Minut", "title": "Mål", "empty": "Inga mål ännu." },
+      "goals": { "scorer": "Målskytt", "assist": "Assist", "minute": "Minut", "title": "Mål", "empty": "Inga mål." },
       "team": { "label": "Lag", "home": "Hemma", "away": "Borta", "red": "Röd", "black": "Svart", "add_one": "1" },
       "half": "H{n}",
       "actions": { "copy_h1_h2": "Kopiera H{from} → H{to}", "copy_team": "Kopiera {from} → {to}", "swap_teams": "Byt lag (Röd ↔ Svart)" }

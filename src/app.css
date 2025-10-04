@@ -44,11 +44,11 @@
          transition-colors disabled:opacity-50 disabled:pointer-events-none;
 }
 
-  /* Primary (du har ev. redan denna – behåll din om du vill) */
-  .btn-primary {
-    @apply bg-blue-600 text-white shadow-sm hover:bg-blue-700 active:bg-blue-800
-           focus-visible:ring-blue-500/60;
-  }
+/* Primary (du har ev. redan denna – behåll din om du vill) */
+.btn-primary {
+  @apply bg-blue-600 text-white shadow-sm hover:bg-blue-700 active:bg-blue-800
+          focus-visible:ring-blue-500/60;
+}
 
   /* Destructive / Delete */
   .btn-danger {

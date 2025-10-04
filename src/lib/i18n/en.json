@@ -105,7 +105,7 @@
       },
       "empty": {
         "matches": "No matches yet.",
-        "goals": "No goals yet.",
+        "goals": "No goals.",
         "assists": "No assists yet.",
         "data": "No data yet.",
         "lineups": "No lineups yet."
@@ -117,8 +117,10 @@
       "numbered": "Match {num}",
       "lineups": { "title": "Lineups", "empty": "No lineups yet.", "available": "Available players" },
       "half_label": "Half",
+      "first_label": "1st",
+      "second_label": "2nd",
       "select_player": "Select player",
-      "goals": { "scorer": "Scorer", "assist": "Assist", "minute": "Minute", "title": "Goals", "empty": "No goals yet." },
+      "goals": { "scorer": "Scorer", "assist": "Assist", "minute": "Minute", "title": "Goals", "empty": "No goals." },
       "team": { "label": "Team", "home": "Home", "away": "Away", "red": "Red", "black": "Black", "add_one": "1"  },
       "half": "H{n}",
       "actions": { "copy_h1_h2": "Copy H{from} → H{to}", "copy_team": "Copy {from} → {to}", "swap_teams": "Swap Red ↔ Black" }
