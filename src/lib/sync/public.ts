@@ -13,6 +13,8 @@ import { toMs } from '$lib/utils/utils'
 
 import type { CloudSession } from '$lib/types/cloud'
 import type { PublicPullResult } from '$lib/types/sync'
+// TODO: flytta
+export type PublicTable = 'sessions' | 'matches' | 'lineups' | 'goals'
 
 
 /** Nyckel för anon latest sync i localStorage */
@@ -22,6 +24,7 @@ const SCHEMA_VERSION = 1
 
 /** Körbar TTL (ms) – justera fritt */
 const DEFAULT_TTL = 15 * 60 * 1000 // 15 min
+const RECON_TTL = 24 * 60 * 60 * 1000 // 1 dygn
 
 /** Enkel semafor så vi inte kör parallella pulls */
 let anonBusy = false
@@ -84,6 +87,7 @@ export function updateAnonMetaAfterSuccess(
   nextWatermarks: AnonWatermarks
 ): void {
   const next: AnonSyncMeta = {
+    ...prevMeta,
     lastSyncedAt: Date.now(),
     watermarks: { ...prevMeta.watermarks, ...nextWatermarks },
     schemaVersion: prevMeta.schemaVersion ?? 1
@@ -110,13 +114,27 @@ export async function ensureAnonData(metaKey?: string, ttlMs?: number): Promise<
 
   try {
     const meta = readAnonSyncMeta(metaKey)
+    // ① Reconcile har egen TTL och ska kunna köras oberoende av pull
+    const now = Date.now()
+    const needsRecon = now - (meta.lastReconciledAt ?? 0) >= RECON_TTL
+    if (needsRecon) {
+      const remoteSessionIds = await fetchAllIds('sessions')
+      const removedSessions  = await reconcileLocal('sessions', remoteSessionIds)
+      if (removedSessions.length) await cascadeDeleteLocalForSessions(removedSessions)
+
+      meta.lastReconciledAt = now
+      // Viktigt: spara meta även om vi inte gör pull
+      updateAnonSyncMeta(metaKey, meta)
+    }
+
+    // ② Vanlig pull enligt egen TTL
     if (!shouldAnonPull(metaKey, ttlMs)) return { pulled: 0 }
 
     const { nextWatermarks, wrote } = await doAnonPull(meta)
 
     // Uppdatera meta om något skrevs ELLER om någon watermark flyttades fram
-    const advanced = Object.values(nextWatermarks ?? {}).some(Boolean)
-    if (wrote > 0 || advanced) {
+    const advanced = wrote > 0 || Object.values(nextWatermarks ?? {}).some(Boolean)
+    if (advanced || wrote) {
       updateAnonMetaAfterSuccess(metaKey, meta, nextWatermarks as AnonWatermarks)
     }
 
@@ -125,6 +143,90 @@ export async function ensureAnonData(metaKey?: string, ttlMs?: number): Promise<
     anonBusy = false
   }
 }
+
+/**
+ * Hämtar ALLA id:n för en tabell via RLS (anon).
+ * - Paginering (range) för stora tabeller
+ * - Returnerar Set<string> med unika id:n
+ */
+export async function fetchAllIds(table: PublicTable): Promise<Set<string>> {
+  const sb = getSupabase()
+  if (!sb) return new Set()
+
+  const pageSize = 1000
+  const ids: string[] = []
+  let from = 0
+  let to = pageSize - 1
+
+  for (;;) {
+    const { data, error } = await sb
+      .from(table)
+      .select('id')
+      .order('id', { ascending: true })
+      .range(from, to)
+
+    if (error) throw new Error(`fetchAllIds(${table}) failed: ${error.message}`)
+
+    const batch = (data ?? []).map((r: any) => String(r.id))
+    if (batch.length === 0) break
+
+    ids.push(...batch)
+    if (batch.length < pageSize) break
+
+    from += pageSize
+    to += pageSize
+  }
+
+  return new Set(ids)
+}
+
+async function getAllLocalIds(table: PublicTable): Promise<string[]> {
+  const db = assertDb()
+  switch (table) {
+    case 'sessions': return db.sessions_local.toCollection().primaryKeys() as Promise<string[]>
+    case 'matches':  return db.matches_local.toCollection().primaryKeys()  as Promise<string[]>
+    case 'lineups':  return db.lineups_local.toCollection().primaryKeys()  as Promise<string[]>
+    case 'goals':    return db.goals_local.toCollection().primaryKeys()    as Promise<string[]>
+  }
+}
+export async function reconcileLocal(table: PublicTable, remoteIds: Set<string>): Promise<string[]> {
+  const db = assertDb()
+  const localIds = new Set(await getAllLocalIds(table))
+  const toRemove: string[] = []
+  for (const id of localIds) if (!remoteIds.has(id)) toRemove.push(id)
+
+  if (toRemove.length === 0) return []
+
+  switch (table) {
+    case 'sessions': await db.sessions_local.bulkDelete(toRemove); break
+    case 'matches':  await db.matches_local.bulkDelete(toRemove);  break
+    case 'lineups':  await db.lineups_local.bulkDelete(toRemove);  break
+    case 'goals':    await db.goals_local.bulkDelete(toRemove);    break
+  }
+  return toRemove
+}
+
+export async function cascadeDeleteLocalForSessions(sessionIds: string[]): Promise<void> {
+  if (!sessionIds.length) return
+  const db = assertDb()
+
+  const matchIds = (await db.matches_local
+    .where('session_id')  // kräver index i Dexie
+    .anyOf(sessionIds)
+    .primaryKeys()) as string[]
+
+  await db.transaction('rw', db.matches_local, db.lineups_local, db.goals_local, async () => {
+    if (matchIds.length) {
+      const lineupIds = (await db.lineups_local.where('match_id').anyOf(matchIds).primaryKeys()) as string[]
+      const goalIds   = (await db.goals_local.where('match_id').anyOf(matchIds).primaryKeys())   as string[]
+
+      if (lineupIds.length) await db.lineups_local.bulkDelete(lineupIds)
+      if (goalIds.length)   await db.goals_local.bulkDelete(goalIds)
+      await db.matches_local.bulkDelete(matchIds)
+    }
+  })
+}
+
 /** 1) Sessions (public) */
 export async function pullSessionsPublic(sinceIso?: string): Promise<PublicPullResult> {
   const sb = getSupabase()

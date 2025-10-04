@@ -96,3 +96,5 @@ export interface KeyValLocal {
 }
 
 export type Player = { name: string; nickname?: string | null; active: boolean }
+
+export type AppearanceRow = { id: string; player: PlayerLocal; appearances: number }

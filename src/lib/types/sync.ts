@@ -10,6 +10,7 @@ export type AnonSyncMeta = {
   lastSyncedAt: number | null
   watermarks: AnonWatermarks
   schemaVersion: number
+  lastReconciledAt?: number | null
 }
 
 export type DoPullResult = {
