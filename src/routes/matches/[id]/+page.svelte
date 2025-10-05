@@ -19,7 +19,7 @@
   import { observeLocalMatch } from '$lib/data/matches'
   import { observeLocalGoalsForMatch } from '$lib/data/goals'
   import { observeLocalLineupsForMatch } from '$lib/data/lineups'
-  import { observeLocalActivePlayersMap } from '$lib/data/players'
+  import { observeLocalPlayersMap } from '$lib/data/players'
 
   export const load: PageLoad = ({ params }) => {
     return { id: params.id }; // <-- makes PageData = { id: string }
@@ -35,7 +35,7 @@
   const lineupsStore: Readable<LineupLocal[]> =
     browser ? observeLocalLineupsForMatch(data.id) : readable<LineupLocal[]>([])
   const playersMap: Readable<Record<string, PlayerLocal>> =
-    browser ? observeLocalActivePlayersMap() : readable<Record<string, PlayerLocal>>({})
+    browser ? observeLocalPlayersMap() : readable<Record<string, PlayerLocal>>({})
 
   // små helpers
   const nameOf = (id: string) => ($playersMap[id]?.nickname) ?? ($playersMap[id]?.name) ?? id
