@@ -22,7 +22,7 @@ let { title = '', emptyLabel ='', appearances = [] }: Props = $props()
     <ol class="divide-y divide-black/10">
       {#each appearances.sort((a, b) => b.appearances - a.appearances) as row (row.id)}
         <li class="px-4 py-3 flex items-center">
-          <span class="text-black/80">{row.player.nickname }</span>
+          <span class="text-black/80">{row.player.nickname ?? row.player.name }</span>
           <span class="ml-auto font-medium tabular-nums">
             {row.appearances}
           </span>
