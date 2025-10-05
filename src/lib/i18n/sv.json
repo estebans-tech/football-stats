@@ -90,7 +90,11 @@
         "match": "Match",
         "cards": {
           "matches": "Matcher",
-          "goals_total": "Mål (totalt)",
+          "goals_total": "Mål totalt",
+          "team_goals_paren": "Mål ({team})",
+          "team_goals_dash": "{team} – mål",
+          "goals_red": "Mål (Röd)",
+          "goals_black": "Mål (Svart)", 
           "red": "Röd",
           "black": "Svart",
           "avg_per_match": "Snitt / match"

@@ -91,7 +91,11 @@
       "match": "Match",
       "cards": {
         "matches": "Matches",
-        "goals_total": "Goals (total)",
+        "goals_total": "Total goals",
+        "team_goals_paren": "Goals ({team})",
+        "team_goals_dash": "{team} – goals",
+        "goals_red": "Goals (Red)",
+        "goals_black": "Goals (Black)",
         "red": "Red",
         "black": "Black",
         "avg_per_match": "Avg / match"

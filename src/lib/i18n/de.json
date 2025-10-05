@@ -91,7 +91,11 @@
       "match": "Spiel",
       "cards": {
         "matches": "Spiele",
-        "goals_total": "Tore (gesamt)",
+        "goals_total": "Gesamttore",
+        "team_goals_paren": "Tore ({team})",
+        "team_goals_dash": "{team} – Tore",
+        "goals_red": "Tore (Rot)",
+        "goals_black": "Tore (Schwarz)",
         "red": "Rot",
         "black": "Schwarz",
         "avg_per_match": "Schnitt / Spiel"
