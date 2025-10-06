@@ -3,6 +3,7 @@
   // import Header from '$lib/components/HeaderLegacy.svelte'
   import Header from '$lib/components/Header.svelte'
   import ToastHost from '$lib/ui/toast/ToastHost.svelte'
+  import PwaToaster from '$lib/ui/toast/PwaToaster.svelte'
   import { toasts as toast } from '$lib/ui/toast/store'
   import { syncPlayers } from '$lib/sync/players' 
   import { profile } from '$lib/auth/store'
@@ -68,3 +69,4 @@
 
 <footer></footer>
 <ToastHost />
+<PwaToaster />
