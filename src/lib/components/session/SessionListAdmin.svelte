@@ -209,7 +209,7 @@
       {/if}
 
       <!-- Footer / Stats-länk: förenklad label + preload -->
-      <footer class="px-4 md:px-5 py-3">
+      <footer class="flex justify-center px-4 md:px-5 py-3">
         <a
           class="inline-flex items-center gap-2 text-black/70 hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40 focus-visible:ring-offset-2 rounded-md"
           href={`/sessions/${s.id}/stats`}
