@@ -184,5 +184,9 @@
       "done": "Games synced. Uploaded: {pushed}, Fetched: {pulled}."
     },
     "error": "Sync failed. Please try again."
+  },
+  "pwa": {
+    "update_available": "New version available. Update now?",
+    "offline_ready": "The app is ready to work offline"
   }
 }

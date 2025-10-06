@@ -184,5 +184,9 @@
       "done": "Spiele synchronisiert. Hochgeladen: {pushed}, Abgerufen: {pulled}."
     },
     "error": "Synchronisierung fehlgeschlagen. Bitte erneut versuchen."
+  },
+  "pwa": {
+    "update_available": "Neue Version verfügbar. Jetzt aktualisieren?",
+    "offline_ready": "App ist offline einsatzbereit"
   }
 }

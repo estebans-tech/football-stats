@@ -1,31 +1,32 @@
 <script lang="ts">
-    import { onMount, onDestroy } from 'svelte';
-    import { toasts } from '$lib/ui/toast/store';
-  
-    // 1) Ny version finns → visa toast + fråga om uppdatering
-    function onUpdateAvailable() {
-      const msg = 'Ny version finns. Uppdatera nu?';
-      toasts.info(msg, 6000);          // din store: (message, timeout?)
-  
-      // enkel “action” via confirm (eftersom toasten saknar knappar)
-      if (confirm(msg)) {
-        // satt i hooks.client.ts
-        (window as any).$pwaUpdate?.();
-      }
+  import { onMount, onDestroy } from 'svelte';
+  import { browser } from '$app/environment';
+  import { t } from 'svelte-i18n';
+  import { toasts } from '$lib/ui/toast/store';
+
+  function onUpdateAvailable() {
+    const msg = $t('pwa.update_available') ?? 'New version available. Update now?';
+    toasts.info(msg, 6000);
+    if (typeof window !== 'undefined' && confirm(msg)) {
+      (window as any).$pwaUpdate?.();
     }
-  
-    // 2) Offline redo → informativ toast
-    function onOfflineReady() {
-      toasts.success('Appen är redo att användas offline', 4000);
-    }
-  
+  }
+
+  function onOfflineReady() {
+    const msg = $t('pwa.offline_ready') ?? 'App is ready to work offline';
+    toasts.success(msg, 4000);
+  }
+
+  // Kör endast i browsern
+  if (browser) {
     onMount(() => {
       window.addEventListener('pwa:update-available', onUpdateAvailable);
       window.addEventListener('pwa:offline-ready', onOfflineReady);
-    });
-  
+    })
+
     onDestroy(() => {
       window.removeEventListener('pwa:update-available', onUpdateAvailable);
       window.removeEventListener('pwa:offline-ready', onOfflineReady);
-    });
+    })
+  }
   </script>

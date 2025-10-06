@@ -183,5 +183,9 @@
       "done": "Matcher synkade. Uppladdat: {pushed}, Hämtat: {pulled}."
     },
     "error": "Synken misslyckades. Försök igen."
+  },
+  "pwa": {
+    "update_available": "Ny version finns. Uppdatera nu?",
+    "offline_ready": "Appen är redo att användas offline"
   }
 }
