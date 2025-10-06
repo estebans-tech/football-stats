@@ -87,11 +87,10 @@
         values: { num: $match$?.orderNo ?? '?' }
       })}
     </Heading>
-    <a href="/" class="self-start md:self-auto btn btn-outline text-sm active:scale-95">
+    <a href="/" class="self-start md:self-auto btn btn-outline text-sm active:scale-95 mt-auto">
       {$t('common.back')}
     </a>
   </header>
-
   {#await ready}{:then}
     <!-- Team builder (whole game) -->
     <!-- NEW: lineup UI lives in the component -->
