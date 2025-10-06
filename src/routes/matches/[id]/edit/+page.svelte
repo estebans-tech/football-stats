@@ -93,7 +93,6 @@
   </header>
   {#await ready}{:then}
     <!-- Team builder (whole game) -->
-    <!-- NEW: lineup UI lives in the component -->
     <LineupBuilder matchId={data.id} {players$} {lineups$} />
 
     <GoalsEditor
