@@ -30,6 +30,9 @@
   type Props = { data: PageData, isEditor: boolean }
   let { data }: Props = $props()
 
+  let backUrl = $state('/')
+
+
   // SSR-safe fallbacks: deklarera alltid stores på top level
 
   const lineupsStore: Readable<LineupLocal[]> =
@@ -90,6 +93,12 @@
         scoreByMinute: valid.map(g => ({...g, scorer: nameOf(g.scorerId), assist: g.assistId ? nameOf(g.assistId) : '' }))
       }
    }) satisfies MatchData
+
+
+   $effect(() => {
+    if (!!$currentMatch?.sessionId) backUrl = `/sessions/${$currentMatch?.sessionId}/stats`
+  })
+  
 </script>
 
 <!-- Header -->
@@ -98,7 +107,7 @@
     {$t('match_day.match.numbered', { values: { num: match.matchNumber } })}
       {#if !match.matchNumber}<span class="spinner mr-1"></span>{/if}
   </Heading>
-  <a href="javascript:history.back()" class="self-start md:self-auto btn btn-outline text-sm active:scale-95">
+  <a href="{backUrl}" class="self-start md:self-auto btn btn-outline text-sm active:scale-95">
     {$t('common.back')}
   </a>
 </header>
