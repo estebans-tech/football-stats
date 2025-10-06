@@ -82,7 +82,7 @@
   const removeGoal = async (id: ULID) => deleteGoal(id)
 </script>
 
-<div class="rounded-2xl bg-white ring-1 ring-black/10 p-4 space-y-4">
+<div class="rounded-xl bg-white ring-1 ring-black/10 p-4 space-y-4">
   <!-- Sticky tools row -->
   <header
     class="sticky top-14 z-10 -mx-4 px-4 py-2 bg-white/85 supports-[backdrop-filter]:bg-white/60 backdrop-blur flex items-center gap-3 border-b border-black/5"
