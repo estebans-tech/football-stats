@@ -129,7 +129,7 @@
   // ---- Button style helpers (Tailwind)
   const redBtnClass = (disabled: boolean) =>
   [
-    'btn',
+    'btn btn-sm',
     disabled
       // ghost på färgad rad – vit kant + svag bakgrund + ring
       ? 'btn-danger bg-red-800 text-white/80 border border-white/30 ring-1 ring-white/40 cursor-default'
@@ -140,7 +140,7 @@
 
   const blackBtnClass = (disabled: boolean) =>
   [
-    'btn',
+    'btn btn-sm',
     disabled
       ? '!bg-gray-400 text-white border border-white/30 ring-1 ring-white/40 cursor-default'
       : '!bg-black hover:bg-gray-800 !text-white border border-white/10 shadow-xs cursor',
@@ -148,17 +148,15 @@
   ].join(' ')
 
   const benchBtnClass =
-    'btn ' +
+    'btn btn-sm' +
     'btn-outline bg-white text-black border border-gray-300 hover:bg-gray-50 shadow-xs ' +
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40'
 
   </script>
   
   <h3 class="mb-4 font-semibold">{$t('match_day.match.lineups.available')}</h3>
-  <section class="rounded-xl border rounded-sm border-gray-300 bg-white p-2 py-3 md:p-4">
-  
-    <ul class="space-y-2 pr-1">
-    
+  <section class="rounded-xl border rounded-sm border-gray-300 bg-white p-2 py-3 md:p-4">  
+    <ul class="space-y-2 pr-1">    
       {#each roster as p (p.id)}
         <!-- <li class={rowClass(p.id)}> -->
         <li class="flex items-center justify-between gap-x-3">
@@ -183,7 +181,7 @@
             disabled={!canAssign(p.id, 'A')}
             onclick={() => assign(p.id, 'A')}
             >＋</button>
-  
+
             <!-- BLACK + (disabled om redan svart) -->
             <button
             type="button"
@@ -193,7 +191,7 @@
             disabled={!canAssign(p.id, 'B')}
             onclick={() => assign(p.id, 'B')}
           >＋</button>
-  
+
             <!-- BENCHED − (visas bara om spelaren är i röd/svart) -->
             <!-- {#if !isBenched(p.id)} -->
             <button
@@ -208,14 +206,11 @@
         </li>
       {/each}
     </ul>
-  
+
     <div class="mt-3 flex items-center justify-end gap-4 text-sm">
-        <span>{$t('match_day.match.team.red')}: {totalRedPlayers}</span>
-        <span>{$t('match_day.match.team.black')}: {totalBlackPlayers}</span>
-        <span class="opacity-70">Total: {totalPlayers}</span>
-      </div>
-    <!-- <p class="mt-2 text-xs text-gray-500">
-      {$t('match_day.match.select_player')}
-    </p> -->
+      <span>{$t('match_day.match.team.red')}: {totalRedPlayers}</span>
+      <span>{$t('match_day.match.team.black')}: {totalBlackPlayers}</span>
+      <span class="opacity-70">Total: {totalPlayers}</span>
+    </div>
   </section>
   

@@ -50,11 +50,11 @@
           focus-visible:ring-blue-500/60;
 }
 
-  /* Destructive / Delete */
-  .btn-danger {
-    @apply bg-red-600 text-white shadow-sm hover:bg-red-700 active:bg-red-800
-           focus-visible:ring-red-500/60;
-  }
+/* Destructive / Delete */
+.btn-danger {
+  @apply bg-red-600 text-white shadow-sm hover:bg-red-700 active:bg-red-800
+          focus-visible:ring-red-500/60;
+}
 
   /* Valfria util-varianter */
   .btn-outline { @apply border border-gray-300 bg-transparent hover:bg-black/5; }
@@ -146,6 +146,7 @@
          border-2 border-current/60 border-t-transparent;
 }
   /* Storlekar */
-.btn-sm { @apply h-8  px-3 text-xs rounded-lg; }
-.btn-lg { @apply h-12 px-5 text-base; }
+.btn-sm      { @apply h-8  px-3 text-xs rounded-lg; }
+.btn-normal  { @apply h-11 px-4 text-sm rounded-xl; }
+.btn-lg      { @apply h-12 px-5 text-base; }
 
