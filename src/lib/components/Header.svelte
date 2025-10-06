@@ -64,7 +64,7 @@
     <!-- Mobile toggle -->
     <button
       type="button"
-      class="md:hidden inline-flex items-center justify-center size-10 rounded-lg border border-white/10 hover:bg-white/5 active:scale-[.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+      class="sm:hidden inline-flex items-center justify-center size-10 rounded-lg border border-white/10 hover:bg-white/5 active:scale-[.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
       aria-label="Open menu"
       aria-expanded={open}
       onclick={() => (open = !open)}>
