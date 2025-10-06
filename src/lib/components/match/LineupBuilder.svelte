@@ -163,7 +163,7 @@
     <h2 class="text-base font-semibold">{$t('match_day.match.lineups.title')}</h2>
   </header>
   <div class="{collapsed ? 'max-h-40 pb-5 overflow-scroll [mask-image:linear-gradient(to_bottom,black_90%,transparent)]' : ''}">
-    <ul class="space-y-2 pr-1">    
+    <ul id="lineups" class="space-y-2 pr-1">    
       {#each roster as p (p.id)}
         <!-- <li class={rowClass(p.id)}> -->
         <li class="flex items-center justify-between gap-x-3">
@@ -223,7 +223,12 @@
 
     <!-- Toggle under lineups -->
     <div class="mt-1 flex justify-center">
-      <button class="btn btn-sm btn-soft" onclick={() => (collapsed = !collapsed)}>
+      <button
+        class="btn btn-sm btn-soft"
+        onclick={() => (collapsed = !collapsed)}
+        aria-expanded={!collapsed}
+        aria-controls="lineups"
+        >
         {collapsed ? $t('common.expand') : $t('common.collapse')}
       </button>
     </div>
