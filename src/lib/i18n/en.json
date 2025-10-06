@@ -163,7 +163,16 @@
     "not_found": "Not found.", 
     "save": "Save",
     "cancel": "Cancel",
-    "toggle": "Toggle", "add": "Add", "remove": "Remove", "delete": "Delete", "none": "None", "back": "Back" 
+    "toggle": "Toggle",
+    "show": "Show",
+    "hide": "Hide",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "add": "Add",
+    "remove": "Remove",
+    "delete": "Delete",
+    "none": "None",
+    "back": "Back" 
   },
   "sync": {
     "players": {

@@ -162,8 +162,16 @@
     "not_found": "Hittades inte.",
     "save": "Spara",
     "cancel": "Avbryt",
-    "toggle": "Toggle", "add": "Add", "remove": "Remove", "delete": "Delete", "none": "None", "back": "Tillbaka" 
-
+    "toggle": "Toggle",
+    "show": "Visa",
+    "hide": "Dölj",
+    "collapse": "Fäll ihop",
+    "expand": "Fäll ut",
+    "add": "Add",
+    "remove": "Remove",
+    "delete": "Delete",
+    "none": "None",
+    "back": "Tillbaka"
   },
   "sync": {
     "players": {

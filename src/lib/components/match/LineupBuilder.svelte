@@ -14,7 +14,7 @@
   let { matchId, players$, lineups$, half = 1 }: Props = $props()
 
   const busyByPlayer = new Map<ULID, boolean>()
-
+  let collapsed = $state(false)
   // Sorted roster
   const roster = $derived.by(() => {
     const all = Object.values($players$ ?? {})
@@ -152,10 +152,17 @@
     'btn-outline bg-white text-black border border-gray-300 hover:bg-gray-50 shadow-xs ' +
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40'
 
+  $effect(() => {
+    if (totalRedPlayers + totalBlackPlayers === roster.length) collapsed = true
+  })
   </script>
   
-  <h3 class="mb-4 font-semibold">{$t('match_day.match.lineups.available')}</h3>
-  <section class="rounded-xl border rounded-sm border-gray-300 bg-white p-2 py-3 md:p-4">  
+  <section class="rounded-xl bg-white ring-1 ring-black/10 p-4 py-3 space-y-4">
+      <!-- Sticky tools row -->
+  <header class="sticky top-14 z-10 -mx-4 px-4 py-2 bg-white/85 supports-[backdrop-filter]:bg-white/60 backdrop-blur flex items-center gap-3 border-b border-black/5">
+    <h2 class="text-base font-semibold">{$t('match_day.match.lineups.title')}</h2>
+  </header>
+  <div class="{collapsed ? 'max-h-40 pb-5 overflow-scroll [mask-image:linear-gradient(to_bottom,black_90%,transparent)]' : ''}">
     <ul class="space-y-2 pr-1">    
       {#each roster as p (p.id)}
         <!-- <li class={rowClass(p.id)}> -->
@@ -206,11 +213,19 @@
         </li>
       {/each}
     </ul>
+  </div>
 
     <div class="mt-3 flex items-center justify-end gap-4 text-sm">
       <span>{$t('match_day.match.team.red')}: {totalRedPlayers}</span>
       <span>{$t('match_day.match.team.black')}: {totalBlackPlayers}</span>
       <span class="opacity-70">Total: {totalPlayers}</span>
+    </div>
+
+    <!-- Toggle under lineups -->
+    <div class="mt-1 flex justify-center">
+      <button class="btn btn-sm btn-soft" onclick={() => (collapsed = !collapsed)}>
+        {collapsed ? $t('common.expand') : $t('common.collapse')}
+      </button>
     </div>
   </section>
   
