@@ -1,0 +1,21 @@
+[build]
+command = "yarn build"
+publish = "build"
+
+[build.environment]
+NODE_VERSION = "22"
+
+[[headers]]
+for = "/sw.js"
+  [headers.values]
+  Cache-Control = "no-cache"
+
+[[headers]]
+for = "/workbox-*.js"
+  [headers.values]
+  Cache-Control = "no-cache"
+
+[[headers]]
+for = "/manifest.webmanifest"
+  [headers.values]
+  Cache-Control = "no-cache"
