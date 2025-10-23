@@ -133,6 +133,7 @@
   "players": {
     "title": "Spelare",
     "hide_archived": "Dölj arkiverade",
+    "hide_inactive": "Dölj inaktiva",
     "form": {
       "name": "Namn",
       "nickname": "Smeknamn",

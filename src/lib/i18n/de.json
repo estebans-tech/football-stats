@@ -133,6 +133,7 @@
   "players": {
     "title": "Spieler",
     "hide_archived": "Archivierte ausblenden",
+    "hide_inactive": "Inaktive ausblenden",
     "form": {
       "name": "Name",
       "nickname": "Spitzname",

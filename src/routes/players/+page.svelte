@@ -10,22 +10,26 @@
   const players$ = observeLocalPlayersMap()
 
   // default: show ALL; user can hide archived
-  let hideArchived = $state(false)
+  let hideArchived = $state(true)
+  let hideActive = $state(false)
 
-  const isArchived = (p: PlayerLocal) => Boolean(p.deletedAtLocal)
+  const isArchived = (p: PlayerLocal) => Boolean(p.deletedAtLocal) || Boolean(p.deletedAt)
 
   const playersArr = $derived.by(() =>
     Object.values($players$ ?? {}).sort((a, b) => a.name.localeCompare(b.name))
   )
 
   const visible = $derived.by(() =>
-    hideArchived ? playersArr.filter((p) => !isArchived(p)) : playersArr
+  hideActive ? playersArr.filter((p) => p.active) : hideArchived ? playersArr.filter((p) => !isArchived(p)) : playersArr
   )
 
   const counts = $derived.by(() => {
-    let active = 0, archived = 0
-    for (const p of playersArr) (isArchived(p) ? archived++ : active++)
-    return { active, archived, total: playersArr.length }
+    let active = 0, archived = 0, inactive = 0
+    for (const p of playersArr) {
+      if (isArchived(p)) { archived++; continue; }
+      (p.active === true) ? active++ : inactive++
+    }
+    return { active, archived, inactive, total: playersArr.length }
   })
 
   // optional: flash the newly created row briefly
@@ -41,7 +45,12 @@
     <Heading level={1} underline>
       {$t('players.title')}
     </Heading>
-  
+    </header>
+
+  <!-- Add form as separate component -->
+  <AddPlayerForm onCreated={handleCreated} />
+
+  <div class="flex gap-2 justify-end">
     <label class="inline-flex items-center gap-2 text-sm">
       <input
         type="checkbox"
@@ -50,10 +59,15 @@
       />
       <span>{$t('players.hide_archived')}</span>
     </label>
-  </header>
-
-  <!-- Add form as separate component -->
-  <AddPlayerForm onCreated={handleCreated} />
+    <label class="inline-flex items-center gap-2 text-sm">
+      <input
+        type="checkbox"
+        checked={hideActive}
+        onchange={(e) => (hideActive = (e.target as HTMLInputElement).checked)}
+      />
+      <span>{$t('players.hide_inactive')}</span>
+    </label>
+  </div>
 
   <!-- List (PlayerRow renders its own <ul><li>, so don't wrap with <ul> here) -->
   <div class="space-y-0 mt-6">
@@ -70,6 +84,7 @@
   <!-- Footer counts -->
   <div class="pt-2 text-sm text-right text-gray-700">
     <span class="mr-4">{$t('players.counts.active')}: {counts.active}</span>
+    <span class="mr-4">{$t('players.actions.inactive')}: {counts.inactive}</span>
     <span class="mr-4">{$t('players.counts.archived')}: {counts.archived}</span>
     <span class="opacity-70">{$t('players.counts.total')}: {counts.total}</span>
   </div>

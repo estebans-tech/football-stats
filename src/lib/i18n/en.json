@@ -133,6 +133,7 @@
   "players": {
     "title": "Players",
     "hide_archived": "Hide archived",
+    "hide_inactive": "Hide inactive",
     "form": {
       "name": "Name",
       "nickname": "Nickname",
