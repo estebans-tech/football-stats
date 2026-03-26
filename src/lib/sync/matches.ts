@@ -1,5 +1,6 @@
 import { assertDb } from '$lib/db/dexie'
 import { ensureSession, readClubId, msFromIso, bulkPutIfNewer, optMs } from './common'
+import { pushSessions } from './sessions'
 
 import { getLastSync, setLastSync, getPullCheckpoint, updatePullCheckpoint } from '$lib/sync/state'
 import type { MatchRow, CloudMatch, CloudSession } from '$lib/types/cloud'
@@ -332,6 +333,7 @@ export async function pushMatches() {
   const club_id = await readClubId()
   const db = assertDb()
 
+  await pushSessions()
   // 1) always refresh first to avoid stale conflicts
   await pullMatches()
 
