@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  // import Header from '$lib/components/HeaderLegacy.svelte'
   import Header from '$lib/components/Header.svelte'
   import ToastHost from '$lib/ui/toast/ToastHost.svelte'
   import PwaToaster from '$lib/ui/toast/PwaToaster.svelte'
@@ -63,10 +62,11 @@
 
 <Header {nav} title={$t('brand.title')} role={data.role} {current} onSync={() => {handleSync()}} syncBusy={syncing} bind:open={menuOpen} />
 
-<main class="mx-auto w-full max-w-screen-sm md:max-w-2xl lg:max-w-3xl px-4 md:px-6">
+<main class="w-full">
    {@render children()}
 </main>
 
 <footer></footer>
 <ToastHost />
 <PwaToaster />
+

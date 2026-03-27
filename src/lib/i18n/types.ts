@@ -6,3 +6,4 @@ export const FALLBACK_LOCALE: LocaleCode = 'de'
 
 export const isSupportedLocale = (val: unknown): val is LocaleCode =>
   typeof val === 'string' && (SUPPORTED_LOCALES as readonly string[]).includes(val)
+

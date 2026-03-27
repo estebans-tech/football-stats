@@ -1,192 +1,227 @@
 {
-  "brand": { "title": "Käfigkicker - Statistik" },
-  "lang": { "en": "Engelska", "de": "Tyska", "sv": "Svenska" },
-  "a11y": { "close": "Stäng" },
-  "header": {
-    "nav": {
-      "home": "Hem",
-      "invite": "Inbjudan",
-      "backup": "Backup",
-      "players": "Spelare",
-      "admin": "Admin",
-      "settings": "Inställningar",
-      "language": "Språk"
-    },
-    "actions": {
-      "sync": "Synka",
-      "logout": "Logga ut"
-    },
-    "a11y": {
-      "menu_button": "Öppna meny",
-      "language_button": "Öppna språkmeny",
-      "primary_navigation": "Primär navigering"
-    }
-  },
-  "invite": {
-      "title": "Inbjudan",
-      "intro": "Ange din inbjudningskod för att få åtkomst.",
-      "label_code": "Inbjudningskod",
-      "placeholder": "t.ex. KICKER-2024 oder KAEFIG-2024",
-      "submit": "Logga in",
-      "submitting": "Loggar in…",
-      "success_admin": "Välkommen! Admin-behörighet aktiverad.",
-      "success_editor": "Välkommen! Editor-behörighet aktiverad.",
-      "redirecting": "Omdirigerar…",
-      "errors": {
-        "EMPTY": "Fyll i en kod.",
-        "INVITE_INVALID": "Ogiltig inbjudningskod.",
-        "GENERIC": "Något gick fel. Försök igen."
-      }
-    },
-  "session": {
-    "create": {
-      "title": "Ny matchdag",
-      "intro": "Välj ett datum och skapa en matchdag i den lokala databasen.",
-      "label_date": "Datum",
-      "label_status": "Status",
-      "status_open": "Öppen",
-      "status_locked": "Låst",
-      "submit": "Skapa matchdag",
-      "submitting": "Skapar…",
-      "success": "Matchdag skapad.",
-      "errors": {
-        "date_required": "Välj ett datum.",
-        "db": "Kunde inte spara. Försök igen.",
-        "duplicate_date": "Matchdag för det här datumet är redan skapad."
-      }
-    },
-    "status": { "locked": "Låst" },
-    "list": {
-      "title": "Matchdagar",
-      "empty": "Inga matchdagar ännu.",
-      "open": "Öppna",
-      "delete": "Ta bort",
-      "lock": "Lås",
-      "unlock": "Lås upp",
-      "ctaOpen": "Tryck för att visa detaljer"
-    },
-    "toast": {
-      "locked": "Matchdag {date} låst.",
-      "unlocked": "Matchdag {date} upplåst.",
-      "error": "Kunde inte ändra status. Försök igen."
-    },
-    "match": {
-        "count": "{n} matcher",
-        "toast": {
-          "added_one": "La till 1 match.",
-          "added_four": "La till 4 matcher.",
-          "error": "Kunde inte lägga till matcher. Försök igen.",
-          "removed_one": "Tog bort 1 match.",
-          "nothing_to_remove": "Det finns inga matcher att ta bort."
-        },
-        "hint": {
-          "add_four_disabled": "Du kan bara lägga till fyra när det inte finns några matcher.",
-          "remove_one_disabled": "Det finns inga matcher att ta bort."
-        }
-    },
-    "statistics": {
-        "title": "Matchdag – statistik",
-        "match_numbered": "Match {num}",
-        "match": "Match",
-        "cards": {
-          "matches": "Matcher",
-          "goals_total": "Mål totalt",
-          "team_goals_paren": "Mål ({team})",
-          "team_goals_dash": "{team} – mål",
-          "goals_red": "Mål (Röd)",
-          "goals_black": "Mål (Svart)", 
-          "red": "Röd",
-          "black": "Svart",
-          "avg_per_match": "Snitt / match"
-        },
-        "results": "Resultat",
-        "boards": {
-          "top_scorers": "Skytteliga",
-          "top_assists": "Assists",
-          "goal_involvements": "Målbidrag (M+A)",
-          "appearances": "Matcher spelade"
-        },
-        "empty": {
-          "matches": "Inga matcher ännu.",
-          "goals": "Inga mål ännu.",
-          "assists": "Inga assists ännu.",
-          "data": "Inga data ännu.",
-          "lineups": "Inga lineups ännu."
-          }
-    }
-  },
-  "match_day": {
-    "match": {
-      "numbered": "Match {num}",
-      "lineups": { "title": "Uppställningar", "empty": "Inga uppställningar ännu.", "available": "Tillgängliga spelare" },
-      "half_label": "Halvlek",
-      "first_label": "första",
-      "second_label": "andra",
-      "select_player": "Välj spelare",
-      "goals": { "scorer": "Målskytt", "assist": "Assist", "minute": "Minut", "title": "Mål", "empty": "Inga mål." },
-      "team": { "label": "Lag", "home": "Hemma", "away": "Borta", "red": "Röd", "black": "Svart", "add_one": "1" },
-      "half": "H{n}",
-      "actions": { "copy_h1_h2": "Kopiera H{from} → H{to}", "copy_team": "Kopiera {from} → {to}", "swap_teams": "Byt lag (Röd ↔ Svart)" }
-    },
-    "common": { "stats": "Statistik" }
-  },
-  "players": {
-    "title": "Spelare",
-    "hide_archived": "Dölj arkiverade",
-    "hide_inactive": "Dölj inaktiva",
-    "form": {
-      "name": "Namn",
-      "nickname": "Smeknamn",
-      "add_button": "Lägg till spelare",
-      "validation": {
-        "name_required": "Ange ett namn."
-      }
-    },
-    "list": {
-      "empty": "Inga spelare ännu."
-    },
-    "actions": {
-      "active": "Aktiv",
-      "inactive": "Inaktiv",
-      "archive": "Arkivera",
-      "unarchive": "Återställ"
-    },
-    "counts": {
-      "active": "Aktiva",
-      "archived": "Arkiverade",
-      "total": "Totalt"
-    }
-  },
-  "common": {
-    "edit": "Redigera",
-    "loading": "Laddar…",
-    "not_found": "Hittades inte.",
-    "save": "Spara",
-    "cancel": "Avbryt",
-    "toggle": "Toggle",
-    "show": "Visa",
-    "hide": "Dölj",
-    "collapse": "Fäll ihop",
-    "expand": "Fäll ut",
-    "add": "Add",
-    "remove": "Remove",
-    "delete": "Delete",
-    "none": "None",
-    "back": "Tillbaka"
-  },
-  "sync": {
-    "players": {
-      "start": "Synkar spelare…",
-      "done": "Spelare synkade. Uppladdat: {pushed}, Hämtat: {pulled}."
-    },
-    "games": {
-      "start": "Synkar match…",
-      "done": "Matcher synkade. Uppladdat: {pushed}, Hämtat: {pulled}."
-    },
-    "error": "Synken misslyckades. Försök igen."
-  },
-  "pwa": {
-    "update_available": "Ny version finns. Uppdatera nu?",
-    "offline_ready": "Appen är redo att användas offline"
-  }
+	"brand": { "title": "Käfigkicker - Statistik" },
+	"lang": { "en": "Engelska", "de": "Tyska", "sv": "Svenska" },
+	"a11y": { "close": "Stäng" },
+	"header": {
+		"nav": {
+			"home": "Hem",
+			"invite": "Inbjudan",
+			"backup": "Backup",
+			"players": "Spelare",
+			"admin": "Admin",
+			"settings": "Inställningar",
+			"language": "Språk"
+		},
+		"actions": {
+			"sync": "Synka",
+			"logout": "Logga ut"
+		},
+		"a11y": {
+			"menu_button": "Öppna meny",
+			"language_button": "Öppna språkmeny",
+			"primary_navigation": "Primär navigering"
+		}
+	},
+	"invite": {
+		"title": "Inbjudan",
+		"intro": "Ange din inbjudningskod för att få åtkomst.",
+		"label_code": "Inbjudningskod",
+		"placeholder": "t.ex. KICKER-2024 oder KAEFIG-2024",
+		"submit": "Logga in",
+		"submitting": "Loggar in…",
+		"success_admin": "Välkommen! Admin-behörighet aktiverad.",
+		"success_editor": "Välkommen! Editor-behörighet aktiverad.",
+		"redirecting": "Omdirigerar…",
+		"errors": {
+			"EMPTY": "Fyll i en kod.",
+			"INVITE_INVALID": "Ogiltig inbjudningskod.",
+			"GENERIC": "Något gick fel. Försök igen."
+		}
+	},
+	"session": {
+		"create": {
+			"title": "Ny matchdag",
+			"intro": "Välj ett datum och skapa en matchdag i den lokala databasen.",
+			"label_date": "Datum",
+			"label_status": "Status",
+			"status_open": "Öppen",
+			"status_locked": "Låst",
+			"submit": "Skapa matchdag",
+			"submitting": "Skapar…",
+			"success": "Matchdag skapad.",
+			"errors": {
+				"date_required": "Välj ett datum.",
+				"db": "Kunde inte spara. Försök igen.",
+				"duplicate_date": "Matchdag för det här datumet är redan skapad."
+			}
+		},
+		"status": { "locked": "Låst" },
+		"list": {
+			"title": "Matchdagar",
+			"empty": "Inga matchdagar ännu.",
+			"open": "Öppna",
+			"delete": "Ta bort",
+			"lock": "Lås",
+			"unlock": "Lås upp",
+			"ctaOpen": "Tryck för att visa detaljer",
+			"latest": "Senaste speldag",
+			"latest_badge": "Senaste",
+			"previous": "Tidigare speldagar",
+			"matches": "matcher",
+			"goals": "mål",
+			"statistics": "Statistiken",
+			"show_more": "Visa mer"
+		},
+		"toast": {
+			"locked": "Matchdag {date} låst.",
+			"unlocked": "Matchdag {date} upplåst.",
+			"error": "Kunde inte ändra status. Försök igen."
+		},
+		"match": {
+			"count": "{n} matcher",
+			"toast": {
+				"added_one": "La till 1 match.",
+				"added_four": "La till 4 matcher.",
+				"error": "Kunde inte lägga till matcher. Försök igen.",
+				"removed_one": "Tog bort 1 match.",
+				"nothing_to_remove": "Det finns inga matcher att ta bort."
+			},
+			"hint": {
+				"add_four_disabled": "Du kan bara lägga till fyra när det inte finns några matcher.",
+				"remove_one_disabled": "Det finns inga matcher att ta bort."
+			}
+		},
+		"statistics": {
+			"title": "Matchdag – statistik",
+			"match_numbered": "Match {num}",
+			"match": "Match",
+			"cards": {
+				"matches": "Matcher",
+				"goals_total": "Mål totalt",
+				"team_goals_paren": "Mål ({team})",
+				"team_goals_dash": "{team} – mål",
+				"goals_red": "Mål (Röd)",
+				"goals_black": "Mål (Svart)",
+				"red": "Röd",
+				"black": "Svart",
+				"avg_per_match": "Snitt / match"
+			},
+			"results": "Resultat",
+			"boards": {
+				"top_scorers": "Skytteliga",
+				"top_assists": "Assists",
+				"goal_involvements": "Målbidrag (M+A)",
+				"appearances": "Matcher spelade"
+			},
+			"empty": {
+				"matches": "Inga matcher ännu.",
+				"goals": "Inga mål ännu.",
+				"assists": "Inga assists ännu.",
+				"data": "Inga data ännu.",
+				"lineups": "Inga lineups ännu."
+			}
+		}
+	},
+	"match_day": {
+		"match": {
+			"numbered": "Match {num}",
+			"lineups": {
+				"title": "Uppställningar",
+				"empty": "Inga uppställningar ännu.",
+				"available": "Tillgängliga spelare"
+			},
+			"half_label": "Halvlek",
+			"first_label": "första",
+			"second_label": "andra",
+			"select_player": "Välj spelare",
+			"goals": {
+				"scorer": "Målskytt",
+				"assist": "Assist",
+				"minute": "Minut",
+				"title": "Mål",
+				"empty": "Inga mål."
+			},
+			"team": {
+				"label": "Lag",
+				"home": "Hemma",
+				"away": "Borta",
+				"red": "Röd",
+				"black": "Svart",
+				"add_one": "1"
+			},
+			"half": "H{n}",
+			"actions": {
+				"copy_h1_h2": "Kopiera H{from} → H{to}",
+				"copy_team": "Kopiera {from} → {to}",
+				"swap_teams": "Byt lag (Röd ↔ Svart)"
+			}
+		},
+		"common": { "stats": "Statistik" }
+	},
+	"players": {
+		"title": "Spelare",
+		"hide_archived": "Dölj arkiverade",
+		"hide_inactive": "Dölj inaktiva",
+		"form": {
+			"name": "Namn",
+			"nickname": "Smeknamn",
+			"add_button": "Lägg till spelare",
+			"validation": {
+				"name_required": "Ange ett namn."
+			}
+		},
+		"list": {
+			"empty": "Inga spelare ännu."
+		},
+		"actions": {
+			"active": "Aktiv",
+			"inactive": "Inaktiv",
+			"archive": "Arkivera",
+			"unarchive": "Återställ"
+		},
+		"counts": {
+			"active": "Aktiva",
+			"archived": "Arkiverade",
+			"total": "Totalt"
+		}
+	},
+	"season_summary": {
+		"label": "Säsong {year}",
+		"goals_total": "mål totalt",
+		"matches": "Matcher",
+		"players": "Spelare",
+		"top_scorer": "Toppskytt"
+	},
+	"common": {
+		"edit": "Redigera",
+		"loading": "Laddar…",
+		"not_found": "Hittades inte.",
+		"save": "Spara",
+		"cancel": "Avbryt",
+		"toggle": "Toggle",
+		"show": "Visa",
+		"hide": "Dölj",
+		"collapse": "Fäll ihop",
+		"expand": "Fäll ut",
+		"add": "Add",
+		"remove": "Remove",
+		"delete": "Delete",
+		"none": "None",
+		"back": "Tillbaka"
+	},
+	"sync": {
+		"players": {
+			"start": "Synkar spelare…",
+			"done": "Spelare synkade. Uppladdat: {pushed}, Hämtat: {pulled}."
+		},
+		"games": {
+			"start": "Synkar match…",
+			"done": "Matcher synkade. Uppladdat: {pushed}, Hämtat: {pulled}."
+		},
+		"error": "Synken misslyckades. Försök igen."
+	},
+	"pwa": {
+		"update_available": "Ny version finns. Uppdatera nu?",
+		"offline_ready": "Appen är redo att användas offline"
+	}
 }
