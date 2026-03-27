@@ -79,8 +79,8 @@
 </script>
 
 <PageContainer>
-  <header class="flex flex-col gap-2 my-6 md:flex-row md:items-center md:justify-between md:gap-4">
-    <Heading level={1} underline>
+  <header class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-4">
+    <Heading level={1} underline className="text-white">
       {#if session}{fmt(session.date)}{:else}…{/if}
     </Heading>
     <a href="/" class="self-start md:self-auto btn btn-outline text-sm active:scale-95">

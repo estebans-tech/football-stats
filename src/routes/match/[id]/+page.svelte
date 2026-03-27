@@ -4,6 +4,7 @@
   import { t } from 'svelte-i18n'
   import Heading from '$lib/components/Heading.svelte'
   import MatchStatistic from '$lib/components/match/MatchStatistic.svelte'
+  import PageContainer from '$lib/components/PageContainer.svelte'
 
   // Types
   import type { PageLoad, PageData } from './$types'
@@ -101,15 +102,19 @@
   
 </script>
 
-<!-- Header -->
-<header class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-4">
-  <Heading level={1} underline>
-    {$t('match_day.match.numbered', { values: { num: match.matchNumber } })}
+<PageContainer>
+  <!-- Header -->
+  <header class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-4">
+    <Heading level={1} underline className="text-white">
+      {$t('match_day.match.numbered', { values: { num: match.matchNumber } })}
       {#if !match.matchNumber}<span class="spinner mr-1"></span>{/if}
-  </Heading>
-  <a href="{backUrl}" class="self-start md:self-auto btn btn-outline text-sm active:scale-95">
-    {$t('common.back')}
-  </a>
-</header>
+    </Heading>
+    <a href="{backUrl}" class="self-start md:self-auto btn btn-outline text-sm active:scale-95">
+      {$t('common.back')}
+    </a>
+  </header>
 
-<MatchStatistic {match} />
+  <MatchStatistic {match} />
+
+</PageContainer>
+
