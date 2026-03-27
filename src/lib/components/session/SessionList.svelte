@@ -1,6 +1,9 @@
 <script lang="ts">
     import { t, locale } from 'svelte-i18n'
+    import Card from '$lib/components/Card.svelte'
+    import { formatDate} from '$lib/utils/utils'
     import { getSessionList } from '$lib/db/queries'
+
     import type { SessionListItem } from '$lib/types/views'
 
     const INITIAL_COUNT = 3
@@ -19,35 +22,28 @@
 
   $effect(() => {
     load()
- })
+   })
 
-  function formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString($locale, {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    })
-  }
- </script>
+    const fmt = $derived((iso: string) => formatDate(iso, $locale))
+</script>
   
   <section>
-{#if sessions.length === 0}
-  <p class="text-muted-foreground py-8 text-center text-sm">
-    {$t('session.list.empty')}
-  </p>
-{:else}
+  {#if sessions.length === 0}
+    <p class="text-muted-foreground py-8 text-center text-sm">
+      {$t('session.list.empty')}
+    </p>
+  {:else}
 
   <!-- Latest matchday -->
   {#if latest}
-    <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-foreground/50">
+    <h3 class="mb-2 text-xs font-semibold uppercase tracking-widest text-white/35">
       {$t('session.list.latest')}
-    </p>
+    </h3>
 
-    <div class="mb-8 rounded-xl border border-border bg-card p-4">
+    <Card class="mb-8">
       <div class="mb-3 flex items-center justify-between">
-        <div>
-          <p class="font-semibold capitalize">{formatDate(latest.date)}</p>
+        <div class="text-white">
+          <p class="font-semibold capitalize">{fmt(latest.date)}</p>
           <p class="text-sm text-foreground/50">
             {latest.matchCount} {$t('session.list.matches')} · {latest.totalGoals} {$t('session.list.goals')}
           </p>
@@ -57,7 +53,7 @@
         </span>
       </div>
 
-      <div class="mb-3 flex flex-wrap gap-2">
+      <div class="mb-3 flex flex-wrap gap-2 text-white">
         {#each latest.results as result}
           <span class="rounded-full border border-border px-3 py-1 text-sm font-medium">
             {result.red}–{result.black}
@@ -68,50 +64,50 @@
       <a href="/session/{latest.id}/statistics" class="text-sm font-medium text-red-700 hover:underline">
         {$t('session.list.statistics')} →
       </a>
-    </div>
+    </Card>
   {/if}
 
-  <!-- Previous matchdays -->
-  {#if previous.length > 0}
-    <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-foreground/50">
-      {$t('session.list.previous')}
-    </p>
+    <!-- Previous matchdays -->
+    {#if previous.length > 0}
+      <h3 class="mb-2 text-xs font-semibold uppercase tracking-widest text-white/35">
+        {$t('session.list.previous')}
+      </h3>
 
-    <div class="flex flex-col gap-3">
-      {#each visible as session (session.id)}
-        <div class="rounded-xl border border-border bg-card p-4">
-          <div class="mb-3">
-            <p class="font-semibold capitalize">{formatDate(session.date)}</p>
-            <p class="text-sm text-foreground/50">
-              {session.matchCount} {$t('session.list.matches')} · {session.totalGoals} {$t('session.list.goals')}
-            </p>
-          </div>
+      <div class="flex flex-col gap-3">
+        {#each visible as session (session.id)}
+          <Card>
+            <div class="mb-3 text-white">
+              <p class="font-semibold capitalize">{fmt(session.date)}</p>
+              <p class="text-sm text-foreground/50">
+                {session.matchCount} {$t('session.list.matches')} · {session.totalGoals} {$t('session.list.goals')}
+              </p>
+            </div>
 
-          <div class="mb-3 flex flex-wrap gap-2">
-            {#each session.results as result}
-              <span class="rounded-full border border-border px-3 py-1 text-sm font-medium">
-                {result.red}–{result.black}
-              </span>
-            {/each}
-          </div>
+            <div class="mb-3 flex flex-wrap gap-2 text-white">
+              {#each session.results as result}
+                <span class="rounded-full border border-border px-3 py-1 text-sm font-medium">
+                  {result.red}–{result.black}
+                </span>
+              {/each}
+            </div>
 
-          <a href="/session/{session.id}/statistics" class="text-sm font-medium text-red-700 hover:underline">
-            {$t('session.list.statistics')} →
-          </a>
-        </div>
-      {/each}
-    </div>
+            <a href="/session/{session.id}/statistics" class="text-sm font-medium text-red-700 hover:underline">
+              {$t('session.list.statistics')} →
+            </a>
+          </Card>
+        {/each}
+      </div>
 
-    {#if hasMore}
-      <button
-        onclick={() => showAll = true}
-        class="mt-4 w-full py-3 text-sm font-medium text-red-700 hover:underline"
-      >
-        {$t('session.list.show_more')}
-      </button>
+      {#if hasMore}
+        <button
+          onclick={() => showAll = true}
+          class="mt-4 w-full py-3 text-sm font-medium text-red-700 hover:underline"
+        >
+          {$t('session.list.show_more')}
+        </button>
+      {/if}
     {/if}
+  
   {/if}
-
-{/if}
   </section>
   

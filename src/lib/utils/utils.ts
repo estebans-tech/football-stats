@@ -29,3 +29,13 @@ export const toMs = (v: unknown): number | null => {
     const t = new Date(v as any).getTime()
     return Number.isFinite(t) ? t : null
   }
+
+export function formatDate(iso: string, locale: string): string {
+    return new Date(iso).toLocaleDateString(locale, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+  }
+ 
