@@ -1,18 +1,20 @@
 <script lang="ts">
-type Props = {
-  label: string
-  value: string
-  tag?: keyof HTMLElementTagNameMap
-}
+  type Props = {
+    label: string
+    value: string
+    variant?: 'default' | 'red' | 'muted'
+  }
 
-let { label = '', value = '', tag = 'div' }: Props = $props()
+  let { label, value, variant = 'default' }: Props = $props()
+
+  const valueColor =
+    variant === 'red'   ? 'text-red-400' :
+    variant === 'muted' ? 'text-white/45' :
+                          'text-white'
 </script>
 
-<svelte:element this={tag}
-  class="rounded-2xl bg-white ring-1 ring-black/5 shadow-sm px-4 py-3 relative overflow-hidden">
-    
-  <span class="absolute left-0 top-2 bottom-2 w-1.5 rounded-full
-  bg-gradient-to-b from-red-900 to-red-800"></span>
-  <p class="text-[11px] uppercase tracking-wide text-black/55">{label}</p>
-  <p class="mt-0.5 text-[1.65rem] leading-none font-semibold tabular-nums">{value}</p>
-</svelte:element>
+<div class="rounded-xl bg-white/5 border border-white/8 px-3 py-3 text-center">
+  <p class="text-[22px] font-bold leading-none tabular-nums {valueColor}">{value}</p>
+  <p class="mt-1.5 text-[10px] uppercase tracking-wider text-white/40">{label}</p>
+</div>
+

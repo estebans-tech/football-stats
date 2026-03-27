@@ -100,11 +100,11 @@
 </script>
 
 <!-- Summary cards -->
-<div class="mx-auto max-w-screen-sm grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-  <MetricTile value={String(summary.nMatches)} label={$t('session.statistics.cards.matches')} />
+<div class="my-6 mx-auto max-w-screen-sm grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+  <MetricTile value={String(summary.nMatches)}   label={$t('session.statistics.cards.matches')} />
   <MetricTile value={String(summary.goalsTotal)} label={$t('session.statistics.cards.goals_total')} />
-  <MetricTile value={String(summary.A)} label={$t('session.statistics.cards.goals_red')} />
-  <MetricTile value={String(summary.B)} label={$t('session.statistics.cards.goals_black')} />
+  <MetricTile value={String(summary.A)}          label={$t('session.statistics.cards.goals_red')}   variant="red" />
+  <MetricTile value={String(summary.B)}          label={$t('session.statistics.cards.goals_black')} variant="muted" />
 </div>
 
 <!-- Results -->
@@ -116,7 +116,7 @@
 />
 
 <!-- Leaderboards -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-4">
 
   <!-- Top scorers -->
   <ScorerAssistCard title={$t('session.statistics.boards.top_scorers')} leaderboard={leaderboard} emptyLabel={$t('session.statistics.empty.goals')} />
@@ -130,3 +130,4 @@
 
 <!-- Appearances -->
 <AppearancesCard title={$t('session.statistics.boards.appearances')} appearances={appearance} emptyLabel={$t('session.statistics.empty.lineups')} />
+

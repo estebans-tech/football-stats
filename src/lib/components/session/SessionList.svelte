@@ -27,7 +27,7 @@
     const fmt = $derived((iso: string) => formatDate(iso, $locale))
 </script>
   
-  <section>
+  <section class="py-6">
   {#if sessions.length === 0}
     <p class="text-muted-foreground py-8 text-center text-sm">
       {$t('session.list.empty')}
@@ -44,7 +44,7 @@
       <div class="mb-3 flex items-center justify-between">
         <div class="text-white">
           <p class="font-semibold capitalize">{fmt(latest.date)}</p>
-          <p class="text-sm text-foreground/50">
+          <p class="text-sm text-white/50">
             {latest.matchCount} {$t('session.list.matches')} · {latest.totalGoals} {$t('session.list.goals')}
           </p>
         </div>
@@ -55,7 +55,7 @@
 
       <div class="mb-3 flex flex-wrap gap-2 text-white">
         {#each latest.results as result}
-          <span class="rounded-full border border-border px-3 py-1 text-sm font-medium">
+          <span class="rounded-full border border-white/50 px-3 py-1 text-sm font-medium">
             {result.red}–{result.black}
           </span>
         {/each}
@@ -78,14 +78,14 @@
           <Card>
             <div class="mb-3 text-white">
               <p class="font-semibold capitalize">{fmt(session.date)}</p>
-              <p class="text-sm text-foreground/50">
+              <p class="text-sm text-white/50">
                 {session.matchCount} {$t('session.list.matches')} · {session.totalGoals} {$t('session.list.goals')}
               </p>
             </div>
 
             <div class="mb-3 flex flex-wrap gap-2 text-white">
               {#each session.results as result}
-                <span class="rounded-full border border-border px-3 py-1 text-sm font-medium">
+                <span class="rounded-full border border-white/50 px-3 py-1 text-sm font-medium">
                   {result.red}–{result.black}
                 </span>
               {/each}
