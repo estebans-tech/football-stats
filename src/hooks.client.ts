@@ -13,6 +13,6 @@ const updateSW = registerSW({
 });
 
 // gör enkel åtkomst från UI
-(window as any).$pwaUpdate = updateSW;
+(window as any).$pwaUpdate = updateSW
 
-export {};
+export {}

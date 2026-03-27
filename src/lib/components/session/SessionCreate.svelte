@@ -43,48 +43,43 @@
 </script>
 <Card class="my-8">
   <div class="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+      <div>
+        <label for="session-date" class="mb-1 block text-xs font-medium uppercase tracking-wider text-white/50">
+          {$t('session.create.label_date')}
+        </label>
 
-    <div>
-      <label for="session-date" class="mb-1 block text-xs font-medium uppercase tracking-wider text-white/50">
-        {$t('session.create.label_date')}
-      </label>
+        <input
+          id="session-date"
+          name="date"
+          type="date"
+          bind:value={date}
+          required
+          aria-invalid={!!errorMessage}
+          class="w-full rounded-xl border border-white/15 bg-white/5 px-3 h-11 text-white
+                 focus:outline-none focus:ring-2 focus:ring-red-700/50"
+        />
+      </div>
 
-      <input
-        id="session-date"
-        name="date"
-        type="date"
-        bind:value={date}
-        required
-        aria-invalid={!!errorMessage}
-        class="w-full rounded-xl border border-white/15 bg-white/5 px-3 h-11 text-white
-               focus:outline-none focus:ring-2 focus:ring-red-700/50"
-      />
-
-      {#if errorMessage}
-        <p class="mt-1 text-sm text-red-400" role="alert" aria-live="assertive">
-          {errorMessage}
-        </p>
-      {:else if successMessage}
-        <p class="mt-1 text-sm text-emerald-400" role="status" aria-live="polite">
-          {successMessage}
-        </p>
-      {/if}
+      <button
+        type="button"
+        class="btn btn-success md:w-auto w-full"
+        disabled={busy}
+        aria-busy={busy}
+        onclick={submit}
+      >
+        {#if busy}
+          <span class="spinner mr-2"></span>{$t('session.create.submitting')}
+        {:else}
+          {$t('session.create.submit')}
+        {/if}
+      </button>
     </div>
 
-    <button
-      type="button"
-      class="btn btn-success md:w-auto w-full"
-      disabled={busy}
-      aria-busy={busy}
-      onclick={submit}
-    >
-      {#if busy}
-        <span class="spinner mr-2"></span>{$t('session.create.submitting')}
-      {:else}
-        {$t('session.create.submit')}
-      {/if}
-    </button>
-
-  </div>
+    <!-- Feedback utanför gridet -->
+    {#if errorMessage}
+      <p class="mt-2 text-sm text-red-400" role="alert" aria-live="assertive">{errorMessage}</p>
+    {:else if successMessage}
+      <p class="mt-2 text-sm text-emerald-400" role="status" aria-live="polite">{successMessage}</p>
+    {/if}
 </Card>
 

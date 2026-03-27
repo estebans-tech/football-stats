@@ -1,6 +1,8 @@
 <script lang="ts">
     import { t, locale } from 'svelte-i18n'
     import Card from '$lib/components/Card.svelte'
+    import { BarChart2 } from 'lucide-svelte'
+
     import { formatDate} from '$lib/utils/utils'
     import { getSessionList } from '$lib/db/queries'
 
@@ -26,8 +28,8 @@
 
     const fmt = $derived((iso: string) => formatDate(iso, $locale))
 </script>
-  
-  <section class="py-6">
+
+<section class="py-6">
   {#if sessions.length === 0}
     <p class="text-muted-foreground py-8 text-center text-sm">
       {$t('session.list.empty')}
@@ -61,10 +63,17 @@
         {/each}
       </div>
 
-      <a href="/session/{latest.id}/statistics" class="text-sm font-medium text-red-700 hover:underline">
-        {$t('session.list.statistics')} →
+     <a 
+        href="/session/{latest.id}/statistics"
+        data-sveltekit-preload-data
+        class="inline-flex items-center gap-2 text-sm text-slate-200 hover:underline"
+        aria-label="{$t('session.list.statistics')}: {latest.date}"
+      >
+        <BarChart2 size={16} aria-hidden="true" />
+          {$t('session.list.statistics')}
       </a>
-    </Card>
+
+   </Card>
   {/if}
 
     <!-- Previous matchdays -->
@@ -91,9 +100,16 @@
               {/each}
             </div>
 
-            <a href="/session/{session.id}/statistics" class="text-sm font-medium text-red-700 hover:underline">
-              {$t('session.list.statistics')} →
-            </a>
+            <!-- Footer -->
+             <a 
+                href="/session/{session.id}/statistics"
+                data-sveltekit-preload-data
+                class="inline-flex items-center gap-2 text-sm text-slate-200 hover:underline"
+                aria-label="{$t('session.list.statistics')}: {session.date}"
+              >
+                <BarChart2 size={16} aria-hidden="true" />
+                  {$t('session.list.statistics')}
+              </a>
           </Card>
         {/each}
       </div>

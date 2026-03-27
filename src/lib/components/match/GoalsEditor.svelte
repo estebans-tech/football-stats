@@ -1,61 +1,47 @@
 <script lang="ts">
   import { t } from 'svelte-i18n'
-  import { get } from 'svelte/store'
-  import { derived, type Readable } from 'svelte/store'
   import type { GoalLocal, Half, TeamAB, ULID, LineupLocal } from '$lib/types/domain'
   import { addGoalQuick, updateGoal, deleteGoal } from '$lib/data/goals'
 
-  let adding = false
-
   type Props = {
     matchId: ULID
-    half?: 1 | 2
-    goals: Readable<GoalLocal[]>
-    lineups: Readable<LineupLocal[]>
-    lineupFor: (g: GoalLocal) => Array<{ id: ULID, name: string }>
+    half?: Half
+    goals: GoalLocal[]
+    lineups: LineupLocal[]
+    lineupFor: (g: GoalLocal) => Array<{ id: ULID; name: string }>
   }
 
-  let { matchId, half = 1, goals, lineups, lineupFor }: Props = $props()
+  let { matchId, half = $bindable(1), goals, lineups, lineupFor }: Props = $props()
 
-  // keep only visible goals and de-duplicate by id
-  const goalsUniq: Readable<GoalLocal[]> = derived(goals, $g => {
-    const visible = $g.filter(g => g.deletedAt == null && g.op !== 'delete')
+  let adding = $state(false)
+
+  // Deduplicate and filter visible goals
+  const goalsUniq = $derived.by(() => {
+    const visible = goals.filter(g => g.deletedAt == null && g.op !== 'delete')
     const seen = new Set<ULID>()
     const out: GoalLocal[] = []
     for (const g of visible) {
       if (!seen.has(g.id)) {
         seen.add(g.id)
-        out.push(g)            // ← move inside the if
+        out.push(g)
       }
     }
     return out
   })
 
   function lineupOptions(g: GoalLocal) {
-    const m = new Map<ULID, { id: ULID, name: string }>()
+    const m = new Map<ULID, { id: ULID; name: string }>()
     for (const p of lineupFor(g)) if (!m.has(p.id)) m.set(p.id, p)
     return Array.from(m.values())
   }
 
-  // optional: log duplicates to quickly spot the source
-  $effect(() => {
-    for (const g of $goalsUniq) {
-    const ids = lineupFor(g).map(p => p.id)
-    if (ids.length && new Set(ids).size !== ids.length) {
-      console.warn('duplicate lineup ids for goal', g.id, ids)
-    }
-  }
-  })
-  
-
-  // pick first available player from given team (visible only)
-  const teamPlayers = (team: TeamAB) =>
-    get(lineups)
+  function teamPlayers(team: TeamAB): ULID[] {
+    return lineups
       .filter(l => l.team === team && l.deletedAt == null && l.op !== 'delete')
       .map(l => l.playerId)
+  }
 
-
-  const quickAdd = async (team: TeamAB) => {
+  async function quickAdd(team: TeamAB) {
     if (adding) return
     adding = true
     try {
@@ -68,99 +54,83 @@
     }
   }
 
-  const changeScorer = async (id: ULID, v: string) =>
-    updateGoal(id, { scorerId: v as ULID })
-
-  const changeAssist = async (id: ULID, v: string) =>
-    updateGoal(id, { assistId: v ? (v as ULID) : null })
-
-  const changeMinute = async (id: ULID, v: string) => {
+  const changeScorer = (id: ULID, v: string) => updateGoal(id, { scorerId: v as ULID })
+  const changeAssist = (id: ULID, v: string) => updateGoal(id, { assistId: v ? (v as ULID) : null })
+  const changeMinute = (id: ULID, v: string) => {
     const n = Number(v)
-    await updateGoal(id, { minute: Number.isFinite(n) ? n : null })
+    updateGoal(id, { minute: Number.isFinite(n) ? n : null })
   }
-
-  const removeGoal = async (id: ULID) => deleteGoal(id)
+  const removeGoal = (id: ULID) => deleteGoal(id)
 </script>
 
-<div class="rounded-xl bg-white ring-1 ring-black/10 p-4 space-y-4">
-  <!-- Sticky tools row -->
-  <header
-    class="sticky top-14 z-10 -mx-4 px-4 py-2 bg-white/85 supports-[backdrop-filter]:bg-white/60 backdrop-blur flex items-center gap-3 border-b border-black/5"
-  >
-    <h2 class="text-base font-semibold">{$t('match_day.match.goals.title')}</h2>
+<div class="rounded-xl border border-white/10 bg-white/5 p-4 space-y-4">
 
-    <!-- Segmented H1/H2 (no class: directives) -->
+  <!-- Header -->
+  <header class="sticky top-14 z-10 -mx-4 px-4 py-2 bg-[#1a1212]/90 backdrop-blur flex items-center gap-3 border-b border-white/8">
+    <h2 class="text-base font-semibold text-white">{$t('match_day.match.goals.title')}</h2>
+
+    <!-- H1/H2 segmented control -->
     <div class="shrink-0">
       <input id="half-1" type="radio" value={1} bind:group={half} class="sr-only" />
       <input id="half-2" type="radio" value={2} bind:group={half} class="sr-only" />
-      <div class="inline-flex overflow-hidden rounded-2xl border border-black/10">
+      <div class="inline-flex overflow-hidden rounded-xl border border-white/15">
         <label
           for="half-1"
-          class={`px-3 py-1.5 text-sm cursor-pointer ${half === 1 ? 'bg-black/80 text-white' : 'bg-white text-black'}`}
+          class="px-3 py-1.5 text-sm cursor-pointer transition-colors {half === 1 ? 'bg-white/35 text-white' : 'text-white/50 hover:text-white/80'}"
         >
           H1
         </label>
         <label
           for="half-2"
-          class={`px-3 py-1.5 text-sm cursor-pointer ${half === 2 ? 'bg-black/80 text-white' : 'bg-white text-black'}`}
+          class="px-3 py-1.5 text-sm cursor-pointer transition-colors {half === 2 ? 'bg-white/35 text-white' : 'text-white/50 hover:text-white/80'}"
         >
           H2
         </label>
       </div>
     </div>
 
-    <!-- Quick add buttons -->
-    <div class="flex items-center gap-2  ml-auto">
-      <button type="button" class="btn btn-danger btn-sm" onclick={() => quickAdd('A')}>
+    <!-- Quick add -->
+    <div class="flex items-center gap-2 ml-auto">
+      <button
+        type="button"
+        class="btn btn-danger btn-sm"
+        onclick={() => quickAdd('A')}
+        disabled={adding}
+      >
         + <span class="hidden sm:inline">{$t('match_day.match.team.red')}</span>
       </button>
-      <button type="button" class="btn btn-sm !bg-black !text-white" onclick={() => quickAdd('B')}>
+      <button
+        type="button"
+        class="btn btn-sm hover:!bg-white/90" 
+        onclick={() => quickAdd('B')}
+        disabled={adding}
+      >
         + <span class="hidden sm:inline">{$t('match_day.match.team.black')}</span>
       </button>
     </div>
   </header>
 
-  <!-- Big tap targets on mobile -->
-  <div class="space-y-3 hidden">
-    <button
-      type="button"
-      class="w-full h-12 md:h-12 rounded-2xl bg-red-900 text-white grid place-items-center hover:brightness-110 active:translate-y-px"
-      onclick={() => quickAdd('A')}
-      aria-label={$t('match_day.match.team.red')}
-    >
-      +
-    </button>
-    <button
-      type="button"
-      class="w-full h-12 md:h-12 rounded-2xl bg-black text-white grid place-items-center hover:brightness-110 active:translate-y-px"
-      onclick={() => quickAdd('B')}
-      aria-label={$t('match_day.match.team.black')}
-    >
-      +
-    </button>
-  </div>
-
-  {#if $goalsUniq.length === 0}
-    <div class="text-sm text-gray-600">{$t('match_day.match.goals.empty')}</div>
+  <!-- Goals list -->
+  {#if goalsUniq.length === 0}
+    <p class="text-sm text-white/40">{$t('match_day.match.goals.empty')}</p>
   {:else}
     <ul class="space-y-3">
-      {#each $goalsUniq as g (g.id)}
-        <li class="rounded-2xl border border-black/10 p-3">
+      {#each goalsUniq as g (g.id)}
+        <li class="rounded-xl border border-white/10 bg-white/5 p-3">
           <div class="flex flex-wrap items-center gap-3">
-            <!-- Pill: team + half -->
-            <span class="inline-flex items-center gap-2 text-xs px-2 py-1 rounded-full bg-black/[.03] border border-black/10">
-              <span
-                class={`inline-block size-2.5 rounded-full ${g.team === 'A' ? 'bg-red-900' : 'bg-black/80'}`}
-                aria-hidden="true"
-              ></span>
+
+            <!-- Team + half badge -->
+            <span class="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-full border
+                         {g.team === 'A' ? 'bg-red-900/30 border-red-700/40 text-red-300' : 'bg-white/8 border-white/15 text-white/70'}">
+              <span class="size-2 rounded-full {g.team === 'A' ? 'bg-red-500' : 'bg-white/40'}"></span>
               {g.team === 'A' ? $t('match_day.match.team.red') : $t('match_day.match.team.black')}
-              <span class="text-black/40">·</span>
+              <span class="opacity-40">·</span>
               {$t('match_day.match.half', { values: { n: g.half } })}
             </span>
 
             <!-- Scorer -->
             <select
-              class="rounded-xl border border-black/15 px-3 py-2 text-sm bg-white"
+              class="rounded-xl border border-white/15 bg-white/8 px-3 py-2 text-sm text-white"
               onchange={(e) => changeScorer(g.id, (e.currentTarget as HTMLSelectElement).value)}
             >
               {#each lineupOptions(g) as p (p.id)}
@@ -170,10 +140,10 @@
 
             <!-- Assist -->
             <select
-              class="rounded-xl border border-black/15 px-3 py-2 text-sm bg-white"
+              class="rounded-xl border border-white/15 bg-white/8 px-3 py-2 text-sm text-white"
               onchange={(e) => changeAssist(g.id, (e.currentTarget as HTMLSelectElement).value)}
             >
-              <option value="">{ $t('common.none') }</option>
+              <option value="">{$t('common.none')}</option>
               {#each lineupOptions(g) as p (p.id)}
                 <option value={p.id} selected={p.id === g.assistId}>{p.name}</option>
               {/each}
@@ -181,7 +151,7 @@
 
             <!-- Minute -->
             <input
-              class="rounded-xl border border-black/15 px-3 py-2 w-20 text-sm"
+              class="rounded-xl border border-white/15 bg-white/8 px-3 py-2 w-20 text-sm text-white"
               type="number"
               inputmode="numeric"
               min="0"
@@ -198,8 +168,9 @@
               onclick={() => removeGoal(g.id)}
               aria-label={$t('common.delete')}
             >
-              X
+              ✕
             </button>
+
           </div>
         </li>
       {/each}
