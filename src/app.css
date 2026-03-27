@@ -150,3 +150,6 @@
 .btn-normal  { @apply h-11 px-4 text-sm rounded-xl; }
 .btn-lg      { @apply h-12 px-5 text-base; }
 
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
