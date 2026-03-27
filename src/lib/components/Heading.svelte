@@ -16,8 +16,6 @@
   const tags = ['h1','h2','h3','h4','h5','h6'] as const
   const Tag = tags[level - 1]
 
-  console.log(Tag)
-
   const preset =
     level === 1 ? 'pt-5 md:pt-8 font-semibold tracking-tight leading-tight text-[clamp(28px,3.2vw,40px)]'
   : level === 2 ? 'pt-5 md:pt-6 text-2xl md:text-4xl font-semibold tracking-tight'
