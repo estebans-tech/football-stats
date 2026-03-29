@@ -14,7 +14,8 @@
 		},
 		"actions": {
 			"sync": "Sync",
-			"logout": "Abmelden"
+			"logout": "Abmelden",
+			"redeem": "Code einlösen"
 		},
 		"a11y": {
 			"menu_button": "Menü öffnen",
@@ -226,4 +227,3 @@
 		"offline_ready": "App ist offline einsatzbereit"
 	}
 }
-

@@ -2,7 +2,7 @@
   import { afterNavigate } from '$app/navigation'
   import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte'
   import { t } from 'svelte-i18n'
-  import { Menu } from 'lucide-svelte' // valfritt, byt ikon om du vill
+  import { Menu, Users, RefreshCw, LogOut, Settings } from 'lucide-svelte'
   import type { Role } from '$lib/types/auth'
 
   type Props = {
@@ -20,42 +20,65 @@
   afterNavigate(() => {
     open = false;
   })
+
   const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') open = false; }
 </script>
 
 <svelte:window on:keydown={onKey} />
-<header class="sticky top-0 z-40 bg-slate-950 text-white">
+
+<header class="sticky top-0 z-40 bg-[#1a1a1a] text-white">
   <div class="mx-auto w-full max-w-screen-sm md:max-w-2xl lg:max-w-3xl px-4 md:px-6 h-14 flex items-center justify-between">
+    <!-- Logo -->
     <a href="/" class="flex items-center gap-2 font-semibold uppercase">
       <span class="inline-grid size-5 place-items-center rounded-full bg-red-900 text-black text-[14px] ring ring-1 ring-black/80">⚽</span>
       <span>{title}</span>
     </a>
 
-    <!-- Desktop-nav -->
-    <nav class="hidden sm:flex items-center gap-1 whitespace-nowrap">
-      {#each nav as item}
-        <a
-          href={item.href}
-          class="px-3 py-2 rounded-xl text-sm text-white/90 hover:bg-white/10
-                 {current === item.href ? 'font-semibold bg-white/10' : ''}">
-          {item.label}
+    <!-- Desktop actions -->
+    <nav class="hidden sm:flex items-center gap-2">
+      {#if role === 'anon'}
+        <!-- Redeem button for anonymous users -->
+        <a 
+          href="/invite" 
+          class="px-4 py-2 text-sm font-medium rounded-lg border border-white/20 hover:bg-white/10 transition-colors">
+          {$t('header.actions.redeem')}
         </a>
-      {/each}
+      {:else}
+        <!-- Icon navigation for authenticated users -->
+        <a 
+          href="/players" 
+          class="inline-flex items-center justify-center size-10 rounded-lg hover:bg-white/10 transition-colors"
+          aria-label={$t('header.nav.players')}>
+          <Users size={20} />
+        </a>
 
-      {#if role === 'admin' || role === 'editor'}
-        <button type="button" class="btn btn-utility btn-block btn-sm hover:!bg-red-600/20 hover:!text-white/90" aria-label={$t('header.actions.sync')} onclick={() => onSync?.()}>
-          {#if syncBusy}<span class="spinner mr-1"></span>{/if}{$t('header.actions.sync')}
+        <button 
+          type="button" 
+          onclick={() => onSync?.()} 
+          class="inline-flex items-center justify-center size-10 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50"
+          disabled={syncBusy}
+          aria-label={$t('header.actions.sync')}>
+          <RefreshCw size={20} class={syncBusy ? 'animate-spin' : ''} />
         </button>
-      {/if}
 
-      {#if role === 'admin'}
-        <LanguageSwitcher />
-      {/if}
+        {#if role === 'admin'}
+          <a 
+            href="/settings" 
+            class="inline-flex items-center justify-center size-10 rounded-lg hover:bg-white/10 transition-colors"
+            aria-label={$t('header.nav.settings')}>
+            <Settings size={20} />
+          </a>
 
-      {#if role !== 'anon'}
+          <LanguageSwitcher />
+        {/if}
+
+        <!-- Logout -->
         <form method="POST" action="/logout">
-          <button class="btn btn-danger btn-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40 focus-visible:ring-offset-2" aria-label={$t('header.actions.sync')}>
-            {$t('header.actions.logout')}
+          <button 
+            type="submit"
+            class="inline-flex items-center justify-center size-10 rounded-lg hover:bg-red-600/20 hover:text-red-400 transition-colors"
+            aria-label={$t('header.actions.logout')}>
+            <LogOut size={20} />
           </button>
         </form>
       {/if}
@@ -74,35 +97,54 @@
 
   <!-- Mobile drawer -->
   {#if open}
-    <div class="md:hidden border-t border-white/10">
-      <nav class="mx-auto w-full max-w-screen-sm md:max-w-2xl lg:max-w-3xl px-4 md:px-6 py-2 flex flex-col gap-1">
-        {#each nav as item}
-          <a
-            href={item.href}
-            class="px-3 py-2 rounded-xl text-sm text-white/90 hover:bg-white/10
-                   {current === item.href ? 'font-semibold bg-white/10' : ''}">
-            {item.label}
+    <div class="sm:hidden border-t border-white/10">
+      <nav class="mx-auto w-full max-w-screen-sm px-4 py-3 flex flex-col gap-2">
+        {#if role === 'anon'}
+          <a 
+            href="/invite" 
+            class="px-4 py-3 text-sm font-medium rounded-lg border border-white/20 hover:bg-white/10 transition-colors text-center">
+            {$t('header.actions.redeem')}
           </a>
-        {/each}
+        {:else}
+          <a 
+            href="/players" 
+            class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors">
+            <Users size={20} />
+            <span class="text-sm font-medium">{$t('header.nav.players')}</span>
+          </a>
 
-        {#if role === 'admin' || role === 'editor'}
-          <button type="button" class="btn btn-utility btn-block btn-sm  hover:!bg-red-600/20 hover:!text-white/90" aria-label={$t('header.actions.sync')} onclick={() => onSync?.()}>
-            {#if syncBusy}<span class="spinner mr-1"></span>{/if}{$t('header.actions.sync')}
+          <button 
+            type="button" 
+            onclick={() => onSync?.()} 
+            class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50"
+            disabled={syncBusy}>
+            <RefreshCw size={20} class={syncBusy ? 'animate-spin' : ''} />
+            <span class="text-sm font-medium">{$t('header.actions.sync')}</span>
           </button>
-        {/if}
 
-        {#if role === 'admin'}
-          <LanguageSwitcher />
-        {/if}
+          {#if role === 'admin'}
+            <a 
+              href="/settings" 
+              class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors">
+              <Settings size={20} />
+              <span class="text-sm font-medium">{$t('header.nav.settings')}</span>
+            </a>
 
-        {#if role !== 'anon'}
-        <form method="POST" action="/logout" class="mt-2">
-          <button class="my-1 btn btn-danger btn-block btn-sm" aria-label={$t('header.actions.sync')}>
-            {$t('header.actions.logout')}
-          </button>
-        </form>
+            <LanguageSwitcher variant="list" />
+          {/if}
+
+          <!-- Logout in mobile -->
+          <form method="POST" action="/logout" class="border-t border-white/10 pt-2 mt-2">
+            <button 
+              type="submit"
+              class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-600/20 hover:text-red-400 transition-colors">
+              <LogOut size={20} />
+              <span class="text-sm font-medium">{$t('header.actions.logout')}</span>
+            </button>
+          </form>
         {/if}
       </nav>
     </div>
   {/if}
 </header>
+

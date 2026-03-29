@@ -14,7 +14,8 @@
 		},
 		"actions": {
 			"sync": "Synka",
-			"logout": "Logga ut"
+			"logout": "Logga ut",
+			"redeem": "Lös in kod"
 		},
 		"a11y": {
 			"menu_button": "Öppna meny",
