@@ -13,7 +13,10 @@ export const ssr = true
 export const prerender = false
 
 export const load = (async ({ data }) => {
-  startI18n(data.locale, FALLBACK_LOCALE);
+  const savedLocale = browser ? localStorage.getItem('locale') : null
+  const userLocale = (savedLocale || data.locale) as import('$lib/i18n/types').LocaleCode
+ 
+  startI18n(userLocale, FALLBACK_LOCALE)
   
   await waitLocale()
 
@@ -37,3 +40,4 @@ export const load = (async ({ data }) => {
 
   return data // <-- return data (avoids flickering caused by waitLocale() from +layout.server.ts
 }) satisfies LayoutLoad
+
