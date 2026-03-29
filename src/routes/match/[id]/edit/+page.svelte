@@ -5,7 +5,6 @@
   import type { PageData } from './$types'
   import LineupBuilder from '$lib/components/match/LineupBuilder.svelte'
   import GoalsEditor from '$lib/components/match/GoalsEditor.svelte'
-  import VoiceCommand from '$lib/components/VoiceCommand.svelte'
   import Heading from '$lib/components/Heading.svelte'
   import { db } from '$lib/db/dexie'
 

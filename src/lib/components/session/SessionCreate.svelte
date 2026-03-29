@@ -41,7 +41,7 @@
     }
   }
 </script>
-<Card class="my-8">
+<Card class="my-8 bg-white/10">
   <div class="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
       <div>
         <label for="session-date" class="mb-1 block text-xs font-medium uppercase tracking-wider text-white/50">

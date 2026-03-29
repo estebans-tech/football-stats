@@ -103,11 +103,11 @@
       {@const count = counts[s.id] ?? 0}
       {@const matches = matchesBySession[s.id] ?? []}
 
-      <Card>
+      <Card class="bg-white/10">
         <!-- Header -->
         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div class="flex items-center gap-2">
-            <span class="h-4 w-1.5 rounded-full {s.status === 'open' ? 'bg-red-700' : 'bg-white/20'}"></span>
+            <span class="h-4 w-1.5 rounded-full {s.status === 'open' ? 'bg-orange-300' : 'bg-white/20'}"></span>
             <h3 class="text-base font-semibold text-white">{fmt(s.date)}</h3>
             {#if s.status === 'locked'}
               <span class="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-xs text-white/60">
@@ -201,7 +201,7 @@
         {/if}
 
         <!-- Footer -->
-        <div class="mt-3 border-t border-white/8 pt-3">
+        <footer class="flex justify-center mt-3 border-t border-white/8 pt-3">
          <a 
             href="/session/{s.id}/statistics"
             data-sveltekit-preload-data
@@ -211,7 +211,7 @@
             <BarChart2 size={16} aria-hidden="true" />
             {$t('session.common.stats')}
           </a>
-        </div>
+        </footer>
       </Card>
     {/each}
   {/if}

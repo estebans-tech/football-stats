@@ -62,7 +62,7 @@
 
 <Header {nav} title={$t('brand.title')} role={data.role} {current} onSync={() => {handleSync()}} syncBusy={syncing} bind:open={menuOpen} />
 
-<main class="w-full py-3">
+<main class="w-full">
    {@render children()}
 </main>
 

@@ -39,7 +39,7 @@
       {$t('session.list.latest')}
     </h3>
 
-    <Card class="mb-6">
+    <Card class="mb-6 bg-white/10">
       <div class="mb-3 flex items-center justify-between">
         <div class="text-white">
           <p class="font-semibold capitalize">{fmt(latest.date)}</p>
@@ -81,7 +81,7 @@
 
     <div class="flex flex-col gap-6">
       {#each visible as session (session.id)}
-        <Card>
+        <Card class="bg-white/10">
           <div class="mb-3 text-white">
             <p class="font-semibold capitalize">{fmt(session.date)}</p>
             <p class="text-sm text-white/50">
