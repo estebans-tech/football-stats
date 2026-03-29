@@ -14,6 +14,7 @@
 		},
 		"actions": {
 			"sync": "Sync",
+			"redeem": "Redeem",
 			"logout": "Log out"
 		},
 		"a11y": {

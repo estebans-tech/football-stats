@@ -9,7 +9,6 @@
   import { writeProfileToLS } from '$lib/auth/profileStorage' 
   import { syncGames } from '$lib/sync/games'
   import { t } from 'svelte-i18n'
-  import { page } from '$app/state'
 
   import type { Snippet } from 'svelte'
   // Styles
@@ -19,19 +18,6 @@
     data: { role: 'anon' | 'viewer' | 'editor' | 'admin' }
     children: Snippet
   }>()
-  const current = $derived(page.url.pathname)
-  type NavItem = { href: string; labelKey: string; label?: string }
-  const baseNav: NavItem[]  = [{ href: '/',        labelKey: 'Home' }]
-  const nonAuthNav: NavItem[]  = [{ href: '/invite',  labelKey: 'header.nav.invite' }]
-  const editorNav: NavItem[]= [{ href: '/players', labelKey: 'header.nav.players' }]
-  const adminNav: NavItem[] = [{ href: '/settings',labelKey: 'header.nav.settings' }]
-
-  const nav = $derived([
-    ...baseNav,
-    ...(data.role !== 'anon' ? [] : nonAuthNav),
-    ...(data.role === 'editor' || data.role === 'admin' ? editorNav : []),
-    ...(data.role === 'admin' ? adminNav : [])
-  ].map(i => ({ ...i, label: $t ? $t(i.labelKey) : i.labelKey })))
 
   let syncing = $state(false)
   let menuOpen = $state(false)
@@ -60,7 +46,7 @@
   })
 </script>
 
-<Header {nav} title={$t('brand.title')} role={data.role} {current} onSync={() => {handleSync()}} syncBusy={syncing} bind:open={menuOpen} />
+<Header title={$t('brand.title')} role={data.role} onSync={() => {handleSync()}} syncBusy={syncing} bind:open={menuOpen} />
 
 <main class="w-full py-3">
    {@render children()}
