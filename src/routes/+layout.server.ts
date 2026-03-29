@@ -3,7 +3,7 @@ import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async (event) => {
   const supa = getServerSupabase(event)
-  const { data: { session } } = await supa.auth.getSession()
+  const { data: { user } } = await supa.auth.getUser()
 
   const data = {
     user: event.locals.user ?? null,
@@ -11,8 +11,9 @@ export const load: LayoutServerLoad = async (event) => {
     canEdit: !!event.locals.canEdit,
     profile: event.locals.profile ?? null,
     locale: event.locals.locale,    // <- add this line
-    session
+    user 
   }
 
   return data
 }
+

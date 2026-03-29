@@ -11,7 +11,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: false,
       devOptions: {
-        enabled: true,       // så du kan testa “Add to Home Screen” lokalt
+        enabled: true, // to test "Add to Homescreen" locally
         type: 'module',
       },
       includeAssets: [
@@ -43,6 +43,7 @@ export default defineConfig({
         clientsClaim: true,
         skipWaiting: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globIgnores: ['prerendered/**/*'],
         runtimeCaching: [
           // Sidor/navigering: försök nät först, cacha som fallback (bra offline-upplevelse)
           {

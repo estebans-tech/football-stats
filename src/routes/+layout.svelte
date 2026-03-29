@@ -48,7 +48,7 @@
 
 <Header title={$t('brand.title')} role={data.role} onSync={() => {handleSync()}} syncBusy={syncing} bind:open={menuOpen} />
 
-<main class="w-full py-3">
+<main class="w-full pb-3">
    {@render children()}
 </main>
 

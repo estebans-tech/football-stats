@@ -4,7 +4,6 @@ import { startI18n } from '$lib/i18n';
 import { getSupabase } from '$lib/supabase/client'
 import { applyAuthFromLoad } from '$lib/auth/client'
 
-
 // Types
 import type { LayoutLoad } from './$types'
 import { FALLBACK_LOCALE } from '$lib/i18n/types';
@@ -13,10 +12,7 @@ export const ssr = true
 export const prerender = false
 
 export const load = (async ({ data }) => {
-  const savedLocale = browser ? localStorage.getItem('locale') : null
-  const userLocale = (savedLocale || data.locale) as import('$lib/i18n/types').LocaleCode
- 
-  startI18n(userLocale, FALLBACK_LOCALE)
+  startI18n(data.locale, FALLBACK_LOCALE)
   
   await waitLocale()
 
