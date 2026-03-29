@@ -7,33 +7,11 @@
 }
 :root { font-variant-numeric: tabular-nums; }
 
-/* .btn {
-  @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition cursor-pointer disabled:opacity-50;
+body {
+  background-color: #0f0a0a;
+  color-scheme: dark;
 }
 
-.btn-outline {
-  @apply border hover:bg-gray-100 text-black border-gray-100;
-}
-
-.btn-primary {
-  @apply bg-black text-white hover:bg-gray-800;
-}
-
-.btn-danger {
-  @apply border border-amber-100 text-red-600 hover:bg-red-100;
-}
-
-.btn-success {
-  @apply text-white  hover:bg-gray-600 bg-green-700;
-}
-
-.btn-report {
-  @apply border border-blue-300 text-blue-600 hover:bg-blue-50;
-}
-
-.btn-icon {
-  @apply inline-flex items-center gap-2;
-} */
 /* Base button */
 .btn{
   @apply inline-flex items-center justify-center gap-2
@@ -56,37 +34,37 @@
           focus-visible:ring-red-500/60;
 }
 
-  /* Valfria util-varianter */
-  .btn-outline { @apply border border-gray-300 bg-transparent hover:bg-black/5; }
-  .btn-ghost   { @apply border-transparent bg-transparent hover:bg-black/5; }
-  .btn-block   { @apply w-full justify-center; }
-  .btn-sm      { @apply px-2 py-1 text-xs rounded-lg; }
+/* Valfria util-varianter */
+.btn-outline { @apply border border-gray-300 bg-transparent hover:bg-black/5; }
+.btn-ghost   { @apply border-transparent bg-transparent hover:bg-black/5; }
+.btn-block   { @apply w-full justify-center; }
+.btn-sm      { @apply px-2 py-1 text-xs rounded-lg; }
 
-  .btn-icon {
-    @apply inline-flex items-center gap-2;
-  }
+.btn-icon {
+  @apply inline-flex items-center gap-2;
+}
 
 
-  .btn-warning {
-    @apply bg-amber-500 text-white shadow-sm
-           hover:bg-amber-600 active:bg-amber-700
-           focus-visible:ring-amber-500/60;
-  }
+.btn-warning {
+  @apply bg-amber-500 text-white shadow-sm
+       hover:bg-amber-600 active:bg-amber-700
+       focus-visible:ring-amber-500/60;
+}
 
-  /* Success (grön) – bra för "Unlock" */
-  .btn-success {
-    @apply bg-emerald-600 text-white shadow-sm
-           hover:bg-emerald-700 active:bg-emerald-800
-           focus-visible:ring-emerald-500/60;
-  }
+/* Success (grön) – bra för "Unlock" */
+.btn-success {
+  @apply bg-emerald-600 text-white shadow-sm
+       hover:bg-emerald-700 active:bg-emerald-800
+       focus-visible:ring-emerald-500/60;
+}
 
-  /* Info/neutral soft – om du vill ha en mild variant */
-  .btn-soft {
-    @apply border border-gray-300 bg-gray-50 text-gray-900
-           hover:bg-gray-100 active:bg-gray-200
-           focus-visible:ring-gray-400/50;
-  }
-  
+/* Info/neutral soft – om du vill ha en mild variant */
+.btn-soft {
+  @apply border border-gray-300 bg-gray-50 text-gray-900
+       hover:bg-gray-100 active:bg-gray-200
+       focus-visible:ring-gray-400/50;
+}
+
 /* Primär – Rosso */
 .btn-primary-rosso{
   @apply bg-red-900 text-white shadow-sm
@@ -126,6 +104,7 @@
   @apply absolute inset-0 rounded-md ring-2 ring-red-900/40;
   animation: pulse-att 1.6s ease-in-out infinite;
 }
+
 @keyframes pulse-att {
   0%, 100% { transform: scale(1); opacity: .4; }
   50%      { transform: scale(1.04); opacity: .2; }
@@ -153,3 +132,4 @@
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
+

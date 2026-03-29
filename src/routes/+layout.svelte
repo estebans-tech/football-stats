@@ -62,11 +62,11 @@
 
 <Header {nav} title={$t('brand.title')} role={data.role} {current} onSync={() => {handleSync()}} syncBusy={syncing} bind:open={menuOpen} />
 
-<main class="w-full bg-black py-3">
+<main class="w-full py-3">
    {@render children()}
 </main>
 
-<footer></footer>
+<footer class="h-24"></footer>
 <ToastHost />
 <PwaToaster />
 

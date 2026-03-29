@@ -4,6 +4,9 @@ import { assertDb } from '$lib/db/dexie'
 import { uid } from '$lib/utils/utils'
 import type { Half, TeamAB, LineupLocal, DedupeMode, ULID } from '$lib/types/domain'
 
+// Always write whole-game lineup
+const WHOLE_GAME_HALF: Half = 1
+
 export function observeLocalLineupsForMatch(matchId: string) {
   const db = assertDb()
 
@@ -250,4 +253,32 @@ export async function normalizeLocalLineupsOpsForMatch(matchId: ULID, half: Half
   })
 
   return { normalized }
+}
+
+export async function setTeamForPlayerWholeGame(
+  matchId: ULID,
+  playerId: ULID,
+  team: TeamAB
+) {
+  const db = assertDb()
+  const existing: LineupLocal[] = await db.lineups_local
+    .where('matchId')
+    .equals(matchId)
+    .and(l => l.playerId === playerId && l.half === WHOLE_GAME_HALF && l.deletedAt == null && l.op !== 'delete')
+    .toArray()
+
+  if (existing.length === 0) {
+    await addLineup({ matchId, half: WHOLE_GAME_HALF, team, playerId })
+    return
+  }
+
+  const [head, ...rest] = existing.sort((a, b) => (b.updatedAtLocal ?? 0) - (a.updatedAtLocal ?? 0))
+
+  if (head.team !== team) {
+    await updateLineup(head.id, { team })
+  }
+
+  if (rest.length) {
+    await Promise.allSettled(rest.map(r => deleteLineup(r.id)))
+  }
 }
