@@ -117,7 +117,6 @@
 
 <!-- Leaderboards -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-4">
-
   <!-- Top scorers -->
   <ScorerAssistCard title={$t('session.statistics.boards.top_scorers')} leaderboard={leaderboard} emptyLabel={$t('session.statistics.empty.goals')} />
 

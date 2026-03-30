@@ -104,12 +104,12 @@
 
 <PageContainer>
   <!-- Header -->
-  <header class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-4">
+  <header class="flex flex-row items-center justify-between gap-4 py-3">
     <Heading level={1} underline className="text-white">
       {$t('match_day.match.numbered', { values: { num: match.matchNumber } })}
       {#if !match.matchNumber}<span class="spinner mr-1"></span>{/if}
     </Heading>
-    <a href="{backUrl}" class="self-start md:self-auto btn btn-utility text-sm active:scale-95"> 
+    <a href="{backUrl}" class="self-auto btn btn-utility text-sm active:scale-95"> 
       {$t('common.back')}
     </a>
   </header>
