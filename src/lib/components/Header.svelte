@@ -26,11 +26,11 @@
 
 <svelte:window on:keydown={onKey} />
 
-<header class="sticky top-0 z-40 bg-[#1a1a1a] text-white">
+<header class="sticky top-0 z-40 bg-[#8B1A1A] text-white">
   <div class="mx-auto w-full max-w-screen-sm md:max-w-2xl lg:max-w-3xl px-4 md:px-6 h-14 flex items-center justify-between">
     <!-- Logo -->
     <a href="/" class="flex items-center gap-2 font-semibold uppercase">
-      <span class="inline-grid size-5 place-items-center rounded-full bg-red-900 text-black text-[14px] ring ring-1 ring-black/80">⚽</span>
+      <span class="inline-grid size-5 place-items-center rounded-full bg-red-900 text-black text-[14px] ring ring-1 ring-red-900/80">⚽</span>
       <span>{title}</span>
     </a>
 

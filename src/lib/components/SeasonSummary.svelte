@@ -5,7 +5,7 @@
   const { data } = $props<{ data: SeasonSummaryData }>()
 </script>
 
-<section class="w-full bg-[#8B1A1A] px-4 py-12">
+<section class="w-full bg-white/5 px-4 py-12">
   <div class="mx-auto w-full max-w-screen-sm md:max-w-2xl lg:max-w-3xl">
 
     <p class="mb-1 text-xs font-semibold uppercase tracking-widest text-red-300/70">
@@ -14,12 +14,12 @@
 
     <div class="flex items-baseline gap-3">
       <span class="text-6xl font-black text-white">{data.totalGoals}</span>
-      <span class="text-sm text-red-200/80">{$t('season_summary.goals_total')}</span>
+      <span class="text-sm text-red-300/70">{$t('season_summary.goals_total')}</span>
     </div>
 
-    <div class="mt-2 h-px w-8 bg-red-400/60"></div>
+    <div class="my-2 h-px w-8 bg-[#8B1A1A]"></div>
 
-    <div class="mt-5 flex gap-6">
+    <div class="mt-6 flex gap-6">
 
       <div>
         <p class="text-xl font-bold text-white">{data.matchCount}</p>

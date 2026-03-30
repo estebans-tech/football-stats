@@ -32,9 +32,9 @@ export const toMs = (v: unknown): number | null => {
 
 export function formatDate(iso: string, locale: string): string {
     return new Date(iso).toLocaleDateString(locale, {
-      weekday: 'long',
+      weekday: 'short',
       day: 'numeric',
-      month: 'long',
+      month: 'short',
       year: 'numeric'
     })
   }
