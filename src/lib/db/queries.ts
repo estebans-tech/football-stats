@@ -45,10 +45,12 @@ export async function getSeasonSummary(): Promise<SeasonSummaryData> {
   }
 
   let topScorer: string | null = null
+  let topScorerGoals = 0
   if (tally.size > 0) {
-    const [topId] = [...tally.entries()].sort((a, b) => b[1] - a[1])[0]
+    const [topId, goals] = [...tally.entries()].sort((a, b) => b[1] - a[1])[0]
     const player = await db.players_local.get(topId)
     topScorer = player ? (player.nickname ?? player.name) : null
+    topScorerGoals = goals
   }
 
   return {
@@ -56,6 +58,7 @@ export async function getSeasonSummary(): Promise<SeasonSummaryData> {
     matchCount: matches.length,
     playerCount,
     topScorer,
+    topScorerGoals,
     year: latestYear
   }
 }

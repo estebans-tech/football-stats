@@ -1,5 +1,6 @@
 <script lang="ts">
   import { t } from 'svelte-i18n'
+  import Card from '$lib/components/Card.svelte'
   import type { MatchData } from '$lib/types/domain'
 
   const halves = ['first', 'second'] as const
@@ -17,7 +18,7 @@
   <!-- Resultat + halvlek -->
   <div class="grid grid-cols-2 gap-3">
 
-    <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+    <Card class="bg-white/10">
       <h2 class="mb-3 text-[10px] uppercase tracking-widest text-white/35">
         {$t('session.statistics.results')}
       </h2>
@@ -36,9 +37,9 @@
           <span class="size-2 rounded-full bg-white/35 shrink-0"></span>
         </div>
       {/if}
-    </div>
+    </Card>
 
-    <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+    <Card class="bg-white/10">
       <h2 class="mb-3 text-[10px] uppercase tracking-widest text-white/35">
         {$t('match_day.match.half_label')}
       </h2>
@@ -67,12 +68,12 @@
           {/each}
         </div>
       {/if}
-    </div>
+    </Card>
   </div>
 
   <!-- Uppställningar -->
   <div class="grid grid-cols-2 gap-3">
-    <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+    <Card class="bg-white/10">
       <div class="flex items-center gap-2 mb-3">
         <span class="size-2 rounded-full bg-red-700 shrink-0"></span>
         <h2 class="text-xs font-semibold uppercase tracking-wide text-white">
@@ -89,9 +90,9 @@
           {/each}
         </ul>
       {/if}
-    </div>
+    </Card>
 
-    <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+    <Card class="bg-white/10">
       <div class="flex items-center gap-2 mb-3">
         <span class="size-2 rounded-full bg-white/35 shrink-0"></span>
         <h2 class="text-xs font-semibold uppercase tracking-wide text-white">
@@ -108,11 +109,11 @@
           {/each}
         </ul>
       {/if}
-    </div>
+    </Card>
   </div>
 
   <!-- Mål tidslinje -->
-  <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+  <Card class="bg-white/10">
     <h2 class="mb-4 text-[10px] uppercase tracking-widest text-white/35">
       {$t('match_day.match.goals.title')}
     </h2>
@@ -155,6 +156,6 @@
         {/each}
       </ol>
     {/if}
-  </div>
+  </Card>
 </section>
 

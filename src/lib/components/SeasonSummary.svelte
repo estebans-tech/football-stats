@@ -5,7 +5,7 @@
   const { data } = $props<{ data: SeasonSummaryData }>()
 </script>
 
-<section class="w-full bg-[#8B1A1A] px-4 py-8">
+<section class="w-full bg-[#8B1A1A] px-4 py-12">
   <div class="mx-auto w-full max-w-screen-sm md:max-w-2xl lg:max-w-3xl">
 
     <p class="mb-1 text-xs font-semibold uppercase tracking-widest text-red-300/70">
@@ -41,9 +41,9 @@
         <div class="w-px bg-red-400/30"></div>
 
         <div>
-          <p class="text-xl font-bold text-white">{data.topScorer}</p>
+          <p class="text-xl font-bold text-white">{data.topScorer} </p>
           <p class="text-[11px] uppercase tracking-wider text-red-300/70">
-            {$t('season_summary.top_scorer')}
+            {$t('season_summary.top_scorer')} ({data.topScorerGoals})
           </p>
         </div>
       {/if}

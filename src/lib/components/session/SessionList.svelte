@@ -60,15 +60,17 @@
         {/each}
       </div>
 
-     <a 
-        href="/session/{latest.id}/statistics"
-        data-sveltekit-preload-data
-        class="inline-flex items-center gap-2 text-sm text-slate-200 hover:underline"
-        aria-label="{$t('session.list.statistics')}: {latest.date}"
-      >
-        <BarChart2 size={16} aria-hidden="true" />
-          {$t('session.list.statistics')}
-      </a>
+      <footer class="flex justify-center">
+       <a 
+          href="/session/{latest.id}/statistics"
+          data-sveltekit-preload-data
+          class="inline-flex items-center gap-2 text-sm text-slate-200 hover:underline"
+          aria-label="{$t('session.list.statistics')}: {latest.date}"
+        >
+          <BarChart2 size={16} aria-hidden="true" />
+            {$t('session.list.statistics')}
+        </a>
+      </footer>
 
    </Card>
   {/if}
@@ -98,7 +100,8 @@
           </div>
 
           <!-- Footer -->
-           <a 
+          <footer class="flex justify-center">
+            <a 
               href="/session/{session.id}/statistics"
               data-sveltekit-preload-data
               class="inline-flex items-center gap-2 text-sm text-slate-200 hover:underline"
@@ -107,6 +110,7 @@
               <BarChart2 size={16} aria-hidden="true" />
                 {$t('session.list.statistics')}
             </a>
+          </footer>
         </Card>
       {/each}
     </div>

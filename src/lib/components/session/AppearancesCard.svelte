@@ -17,7 +17,7 @@
 </script>
 
 <section>
-  <div class="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+  <div class="rounded-xl border border-white/10 bg-white/10 overflow-hidden">
     <header class="px-4 py-3 border-b border-white/10">
       <span class="text-sm font-semibold text-white">{title}</span>
     </header>

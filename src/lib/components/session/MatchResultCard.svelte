@@ -23,7 +23,7 @@
     <p class="mb-2 text-[10px] uppercase tracking-widest text-white/35">{title}</p>
   {/if}
 
-  <div class="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+  <div class="rounded-xl border border-white/10 bg-white/10 overflow-hidden">
     {#if matches.length === 0}
       <p class="px-4 py-3 text-sm text-white/40">{textLabels.empty}</p>
     {:else}

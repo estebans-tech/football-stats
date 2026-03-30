@@ -3,6 +3,7 @@ export type SeasonSummaryData = {
   matchCount: number
   playerCount: number
   topScorer: string | null
+  topScorerGoals: number
   year: number
 }
 

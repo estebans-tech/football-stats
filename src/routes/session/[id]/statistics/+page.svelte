@@ -83,7 +83,7 @@
     <Heading level={1} underline className="text-white">
       {#if session}{fmt(session.date)}{:else}…{/if}
     </Heading>
-    <a href="/" class="self-start md:self-auto btn btn-outline text-sm active:scale-95">
+    <a href="/" class="self-start md:self-auto btn btn-utility text-sm active:scale-95">
       {$t('common.back')}
     </a>
   </header>

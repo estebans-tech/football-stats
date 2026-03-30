@@ -13,7 +13,7 @@
                           'text-white'
 </script>
 
-<div class="rounded-xl bg-white/5 border border-white/8 px-3 py-3 text-center">
+<div class="rounded-xl bg-white/10 border border-white/8 px-3 py-3 text-center">
   <p class="text-[22px] font-bold leading-none tabular-nums {valueColor}">{value}</p>
   <p class="mt-1.5 text-[10px] uppercase tracking-wider text-white/40">{label}</p>
 </div>

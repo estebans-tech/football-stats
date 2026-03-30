@@ -109,7 +109,7 @@
       {$t('match_day.match.numbered', { values: { num: match.matchNumber } })}
       {#if !match.matchNumber}<span class="spinner mr-1"></span>{/if}
     </Heading>
-    <a href="{backUrl}" class="self-start md:self-auto btn btn-outline text-sm active:scale-95">
+    <a href="{backUrl}" class="self-start md:self-auto btn btn-utility text-sm active:scale-95"> 
       {$t('common.back')}
     </a>
   </header>
