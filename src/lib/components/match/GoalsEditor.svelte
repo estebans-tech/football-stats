@@ -76,13 +76,13 @@
       <div class="inline-flex overflow-hidden rounded-xl border border-white/15">
         <label
           for="half-1"
-          class="px-3 py-1.5 text-sm cursor-pointer transition-colors {half === 1 ? 'bg-white/35 text-white' : 'text-white/50 hover:text-white/80'}"
+          class="px-3 py-1.5 text-sm cursor-pointer transition-colors {half === 1 ? 'bg-white text-black' : 'text-white/50 hover:text-white/80'}"
         >
           H1
         </label>
         <label
           for="half-2"
-          class="px-3 py-1.5 text-sm cursor-pointer transition-colors {half === 2 ? 'bg-white/35 text-white' : 'text-white/50 hover:text-white/80'}"
+          class="px-3 py-1.5 text-sm cursor-pointer transition-colors {half === 2 ? 'bg-white text-black' : 'text-white/50 hover:text-white/80'}"
         >
           H2
         </label>

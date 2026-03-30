@@ -1,6 +1,5 @@
 <script lang="ts">
   import { browser } from '$app/environment'
-  import { writable } from 'svelte/store'
   import { t, locale } from 'svelte-i18n'
   import type { PageData } from './$types'
   import LineupBuilder from '$lib/components/match/LineupBuilder.svelte'
@@ -22,34 +21,34 @@
     TeamAB,
   } from '$lib/types/domain'
 
-  // ---------- props (runes mode)
+  // Props (runes mode)
   type Props = { data: PageData }
   let { data }: Props = $props()
 
-  // ---------- local snapshot writables used by UI helpers
-  const match$   = writable<MatchLocal | undefined>(undefined)
-  const goals$   = writable<GoalLocal[]>([])
-  const lineups$ = writable<LineupLocal[]>([])
-  const players$ = writable<Record<string, PlayerLocal>>({})
+  // Reactive state (migrated from writable stores)
+  let match = $state<MatchLocal | undefined>(undefined)
+  let goals = $state<GoalLocal[]>([])
+  let lineups = $state<LineupLocal[]>([])
+  let players = $state<Record<string, PlayerLocal>>({})
+  
   const teamMap: Record<TeamColor, TeamAB> = { red: 'A', black: 'B' }
-  // ---------- UI state
+  
+  // UI state
   let teamForAdd = $state<TeamAB>('A') // Red by default
   let goalHalf   = $state<Half>(1)     // Half selector only for GOALS
 
-  // ---------- helpers (whole-game lineups; no half)
-  const nameOf = (id: string) => ($players$[id]?.name) ?? id
+  // Helpers (whole-game lineups; no half)
+  const nameOf = (id: string) => (players[id]?.name) ?? id
 
   const teamPlayers = (team: TeamAB) =>
-    $lineups$.filter(l => l.team === team && !l.deletedAtLocal).map(l => l.playerId)
+    lineups.filter(l => l.team === team && !l.deletedAtLocal).map(l => l.playerId)
 
   function lineupFor(goal: GoalLocal) {
     // scorer/assist options come from whole-game lineup for that team
     return teamPlayers(goal.team).map(id => ({ id, name: nameOf(id) }))
   }
 
-  // ---------- actions (lineup ops always write with half=1 under the hood)
-
-  // ---------- 1) Seed a snapshot so first render has data
+  // Seed initial snapshot so first render has data
   const ready: Promise<void> = browser
     ? (async () => {
         const id = data.id
@@ -59,22 +58,22 @@
           db.lineups_local.where('matchId').equals(id).toArray(),
           db.players_local.toArray()
         ])
-        match$.set(m)
-        goals$.set(g)
-        lineups$.set(l)
-        players$.set(Object.fromEntries(p.map(x => [x.id, x])))
+        match = m
+        goals = g
+        lineups = l
+        players = Object.fromEntries(p.map(x => [x.id, x]))
       })()
     : Promise.resolve()
 
-  // ---------- 2) Keep snapshot in sync with live queries
+  // Keep state in sync with live queries
   $effect(() => {
     if (!browser) return
     const id = data.id
 
-    const u1 = observeLocalMatch(id).subscribe(match$.set)
-    const u2 = observeLocalGoalsForMatch(id).subscribe(goals$.set)
-    const u3 = observeLocalLineupsForMatch(id).subscribe(lineups$.set)
-    const u4 = observeLocalActivePlayersMap().subscribe(players$.set)
+    const u1 = observeLocalMatch(id).subscribe(m => match = m)
+    const u2 = observeLocalGoalsForMatch(id).subscribe(g => goals = g)
+    const u3 = observeLocalLineupsForMatch(id).subscribe(l => lineups = l)
+    const u4 = observeLocalActivePlayersMap().subscribe(p => players = p)
 
     return () => { u1(); u2(); u3(); u4() }
   })
@@ -84,10 +83,10 @@
   <header class="flex items-center justify-between">
     <Heading level={1} underline className="text-white">
       {$t('match_day.match.numbered', {
-        values: { num: $match$?.orderNo ?? '?' }
+        values: { num: match?.orderNo ?? '?' }
       })}
     </Heading>
-    <a href="/" class="self-start md:self-auto btn btn-outline text-sm active:scale-95 mt-auto">
+    <a href="/" class="self-start md:self-auto btn btn-utility text-sm active:scale-95 mt-auto">
       {$t('common.back')}
     </a>
   </header>
@@ -95,12 +94,13 @@
     <GoalsEditor
       matchId={data.id}
       half={goalHalf}
-      goals={$goals$}
-      lineups={$lineups$}
+      {goals}
+      {lineups}
       lineupFor={lineupFor}
     />
     <!-- Team builder (whole game) -->
-    <LineupBuilder matchId={data.id} players={$players$} lineups={$lineups$} />
+    <LineupBuilder matchId={data.id} {players} {lineups} />
 
   {/await}
 </section>
+

@@ -92,9 +92,9 @@
 
   function pillClass(pid: string) {
     const team = membershipById[pid]
-    if (team === 'A') return 'w-full rounded border px-3 py-2 bg-red-800 text-white border-red-700 text-left'
-    if (team === 'B') return 'w-full rounded border px-3 py-2 bg-black text-white border-black text-right'
-    return 'w-full rounded border px-3 py-2 bg-white/5 text-white/50 border-white/10 text-center'
+    if (team === 'A') return 'w-1/2 rounded border px-3 py-2 bg-red-800 text-white border-red-700 text-center'
+    if (team === 'B') return 'w-1/2 rounded border px-3 py-2 bg-white text-black border-black text-center'
+    return 'w-1/2 rounded border px-3 py-2 bg-white/5 text-white/50 border-white/10 text-center'
   }
 
   function rowClass(pid: string) {
@@ -119,7 +119,7 @@ const blackBtnClass = (disabled: boolean) => [
 const benchBtnClass = (benched: boolean) =>
   'btn btn-sm border ' + (benched
     ? 'bg-transparent text-white/20 border-white/8 cursor-default'
-    : 'bg-white/5 text-white/70 border-white/15 hover:bg-white/10')
+    : 'bg-white/5 text-white/70 border-white/15 hover:!bg-white/85')
 
   $effect(() => {
     if (totalRedPlayers + totalBlackPlayers === roster.length) collapsed = true
