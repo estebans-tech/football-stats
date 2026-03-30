@@ -1,7 +1,9 @@
 <script lang="ts">
     import { t, locale } from 'svelte-i18n'
-    import Card from '$lib/components/Card.svelte'
     import { BarChart2 } from 'lucide-svelte'
+    import Card from '$lib/components/Card.svelte'
+    import SessionListSkeleton from '$lib/components/session/SessionListSkeleton.svelte'
+    import SessionListEmpty from './SessionListEmpty.svelte'
     import { formatDate} from '$lib/utils/utils'
     import { getSessionList } from '$lib/db/queries'
     import type { SessionListItem } from '$lib/types/views'
@@ -9,6 +11,7 @@
     const INITIAL_COUNT = 3
     let sessions = $state<SessionListItem[]>([])
     let showAll = $state(false)
+    let loading = $state(true)
 
     const latest = $derived(sessions[0] ?? null)
     const previous = $derived(sessions.slice(1))
@@ -18,7 +21,9 @@
 
     // Load from Dexie on mount
     async function load() {
+      loading = true
       sessions = await getSessionList()
+      loading = false 
     }
 
     $effect(() => {
@@ -27,11 +32,11 @@
 </script>
 
 <section class="py-6">
-  {#if sessions.length === 0}
-    <p class="text-muted-foreground text-white py-8 text-center text-sm">
-      {$t('session.list.empty')}
-    </p>
-  {:else}
+  {#if loading}
+    <SessionListSkeleton />
+  {:else if sessions.length === 0}
+    <SessionListEmpty /> 
+ {:else}
 
   <!-- Latest matchday -->
   {#if latest}

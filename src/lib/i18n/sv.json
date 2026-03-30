@@ -59,7 +59,8 @@
 		"status": { "locked": "Låst" },
 		"list": {
 			"title": "Matchdagar",
-			"empty": "Inga matchdagar ännu.",
+			"empty_title": "Inga matchdagar ännu.",
+			"empty_description": "När första speldagen skapas kommer den att visas här.",
 			"open": "Öppna",
 			"delete": "Ta bort",
 			"lock": "Lås",

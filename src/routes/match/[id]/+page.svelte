@@ -26,8 +26,6 @@
     return { id: params.id }; // <-- makes PageData = { id: string }
   }
 
-  // export let data: PageData
-
   type Props = { data: PageData, isEditor: boolean }
   let { data }: Props = $props()
 
@@ -35,7 +33,6 @@
 
 
   // SSR-safe fallbacks: deklarera alltid stores på top level
-
   const lineupsStore: Readable<LineupLocal[]> =
     browser ? observeLocalLineupsForMatch(data.id) : readable<LineupLocal[]>([])
   const playersMap: Readable<Record<string, PlayerLocal>> =

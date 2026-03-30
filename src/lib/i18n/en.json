@@ -59,7 +59,8 @@
 		"status": { "locked": "Locked" },
 		"list": {
 			"title": "Matchdays",
-			"empty": "No matchdays yet.",
+			"empty_title": "No matchdays yet.",
+			"empty_description": "When the first matchday is created, it will appear here.",
 			"lock": "Lock",
 			"unlock": "Unlock",
 			"open": "Open",

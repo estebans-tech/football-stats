@@ -5,6 +5,7 @@
   import SessionList from '$lib/components/session/SessionList.svelte'
   import SessionListAdmin from '$lib/components/session/SessionListAdmin.svelte'
   import SeasonSummary from '$lib/components/SeasonSummary.svelte'
+  import SeasonSummarySkeleton from '$lib/components/session/SeasonSummarySkeleton.svelte'
   import PageContainer from '$lib/components/PageContainer.svelte'
   import { canEdit, isAdmin, isAuthenticated } from '$lib/auth/client'
   import { ensureAnonData } from '$lib/sync/public'
@@ -14,23 +15,26 @@
 
   const canAddMatch = $derived(isAdmin() || canEdit())
   let summary = $state<SeasonSummaryData | null>(null)
+  let loading = $state(true)
 
   onMount(async () => {
     if (!isAuthenticated()) {
       await ensureAnonData() // default metaKey & TTL 15 min
       summary = await getSeasonSummary()
     }
+    loading =  false
   })
 </script>
 
-{#if !canAddMatch && summary}
+{#if loading}
+   <SeasonSummarySkeleton />
+{:else if !canAddMatch && summary}
   <SeasonSummary data={summary} />
 {/if}
 
 <PageContainer>
   {#if canAddMatch}
     <SessionCreate />
-
     <SessionListAdmin />
   {:else}
     <SessionList />

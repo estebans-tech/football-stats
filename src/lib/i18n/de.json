@@ -59,7 +59,8 @@
 		"status": { "locked": "Gesperrt" },
 		"list": {
 			"title": "Spieltage",
-			"empty": "Noch keine Spieltage.",
+			"empty_title": "Noch keine Spieltage.",
+			"empty_description": "Wenn der erste Spieltag erstellt wird, erscheint er hier.",
 			"open": "Öffnen",
 			"delete": "Löschen",
 			"lock": "Sperren",
