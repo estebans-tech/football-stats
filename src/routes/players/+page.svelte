@@ -39,19 +39,18 @@
     setTimeout(() => { if (flashId === id) flashId = null }, 1200)
   }
 </script>
-
-<div class="mx-auto max-w-3xl space-y-4">
-  <header class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-    <Heading level={1} underline>
+<div class="mx-auto w-full max-w-screen-sm px-4 md:max-w-2xl md:px-6 lg:max-w-3xl">
+  <header class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-6">
+    <Heading level={1} underline className="text-white">
       {$t('players.title')}
     </Heading>
-    </header>
+  </header>
 
   <!-- Add form as separate component -->
   <AddPlayerForm onCreated={handleCreated} />
 
-  <div class="flex gap-2 justify-end">
-    <label class="inline-flex items-center gap-2 text-sm">
+  <div class="flex gap-4 justify-end py-4">
+    <label class="inline-flex items-center gap-2 text-sm text-gray-200">
       <input
         type="checkbox"
         checked={hideArchived}
@@ -59,7 +58,7 @@
       />
       <span>{$t('players.hide_archived')}</span>
     </label>
-    <label class="inline-flex items-center gap-2 text-sm">
+    <label class="inline-flex items-center gap-2 text-sm text-gray-200">
       <input
         type="checkbox"
         checked={hideActive}
@@ -70,22 +69,23 @@
   </div>
 
   <!-- List (PlayerRow renders its own <ul><li>, so don't wrap with <ul> here) -->
-  <div class="space-y-0 mt-6">
+  <div class="rounded-xl border border-white/10 bg-white/5 p-4 my-8 bg-white/10">
     {#each visible as p (p.id)}
       <div class={p.id === flashId ? 'ring-2 ring-blue-500 rounded-xl' : ''}>
         <PlayerRow player={p as PlayerLocal} />
       </div>
     {/each}
     {#if visible.length === 0}
-      <div class="text-sm text-gray-500 border rounded-xl p-4">{$t('players.list.empty')}</div>
+      <div class="text-sm text-gray-300 border border-white/10 rounded-xl p-4">{$t('players.list.empty')}</div>
     {/if}
   </div>
 
   <!-- Footer counts -->
-  <div class="pt-2 text-sm text-right text-gray-700">
+  <div class="pt-2 text-sm text-right text-gray-300">
     <span class="mr-4">{$t('players.counts.active')}: {counts.active}</span>
     <span class="mr-4">{$t('players.actions.inactive')}: {counts.inactive}</span>
     <span class="mr-4">{$t('players.counts.archived')}: {counts.archived}</span>
     <span class="opacity-70">{$t('players.counts.total')}: {counts.total}</span>
   </div>
 </div>
+

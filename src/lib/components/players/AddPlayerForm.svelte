@@ -31,13 +31,13 @@
   <form class="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-start"
         onsubmit={(e) => { e.preventDefault(); submit(); }}>
     <input
-      class="w-full rounded-md border border-gray-300 px-3 py-2"
+      class="w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-white placeholder:text-gray-400"
       placeholder={$t('players.form.name')}
       required
       bind:value={name}
     />
     <input
-      class="w-full rounded-md border border-gray-300 px-3 py-2"
+      class="w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-white placeholder:text-gray-400"
       placeholder={$t('players.form.nickname')}
       bind:value={nickname}
     />
@@ -46,7 +46,7 @@
     </button>
   
     {#if err}
-      <div class="sm:col-span-3 text-sm text-red-600">{err}</div>
+      <div class="sm:col-span-3 text-sm text-red-400">{err}</div>
     {/if}
   </form>
-  
+
