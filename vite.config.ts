@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
     SvelteKitPWA({
       registerType: 'autoUpdate',
-      injectRegister: false,
+      injectRegister: 'auto',
       devOptions: {
         enabled: true,       // så du kan testa “Add to Home Screen” lokalt
         type: 'module',

@@ -23,6 +23,9 @@ importers:
       svelte-i18n:
         specifier: ^4.0.1
         version: 4.0.1(svelte@5.55.0)
+      workbox-window:
+        specifier: ^7.4.0
+        version: 7.4.0
     devDependencies:
       '@eslint/compat':
         specifier: ^1.2.5
