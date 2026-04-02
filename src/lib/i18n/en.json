@@ -114,7 +114,8 @@
 				"top_scorers": "Top scorers",
 				"top_assists": "Top assists",
 				"goal_involvements": "Goal involvements (G+A)",
-				"appearances": "Appearances"
+				"appearances": "Appearances",
+				"top_points": "Top points"
 			},
 			"empty": {
 				"matches": "No matches yet.",

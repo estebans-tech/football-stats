@@ -114,7 +114,8 @@
 				"top_scorers": "Torschützen",
 				"top_assists": "Vorlagen",
 				"goal_involvements": "Torbeteiligungen (T+V)",
-				"appearances": "Einsätze"
+				"appearances": "Einsätze",
+				"top_points": "Meiste Punkte"
 			},
 			"empty": {
 				"matches": "Noch keine Spiele.",

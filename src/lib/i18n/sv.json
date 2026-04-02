@@ -113,7 +113,8 @@
 				"top_scorers": "Skytteliga",
 				"top_assists": "Assists",
 				"goal_involvements": "Målbidrag (M+A)",
-				"appearances": "Matcher spelade"
+				"appearances": "Matcher spelade",
+				"top_points": "Flest poäng"
 			},
 			"empty": {
 				"matches": "Inga matcher ännu.",
