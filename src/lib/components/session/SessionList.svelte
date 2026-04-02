@@ -2,6 +2,8 @@
     import { t, locale } from 'svelte-i18n'
     import { BarChart2 } from 'lucide-svelte'
     import Card from '$lib/components/Card.svelte'
+    import Button from '$lib/components/Button.svelte'
+    import Link from '$lib/components/Link.svelte'
     import SessionListSkeleton from '$lib/components/session/SessionListSkeleton.svelte'
     import SessionListEmpty from './SessionListEmpty.svelte'
     import { formatDate} from '$lib/utils/utils'
@@ -15,7 +17,7 @@
 
     const latest = $derived(sessions[0] ?? null)
     const previous = $derived(sessions.slice(1))
-    const visible = $derived(showAll ? previous : previous.slice(0, INITIAL_COUNT))
+    const visible = $derived(showAll ? previous : previous.slice(0, INITIAL_COUNT - 1))
     const hasMore = $derived(!showAll && previous.length > INITIAL_COUNT)
     const fmt = $derived((iso: string) => formatDate(iso, $locale))
 
@@ -66,15 +68,9 @@
       </div>
 
       <footer class="flex justify-center">
-       <a 
-          href="/session/{latest.id}/statistics"
-          data-sveltekit-preload-data
-          class="inline-flex items-center gap-2 text-sm text-slate-200 hover:underline"
-          aria-label="{$t('session.list.statistics')}: {latest.date}"
-        >
-          <BarChart2 size={16} aria-hidden="true" />
-            {$t('session.list.statistics')}
-        </a>
+        <Link variant="ghost" intent="neutral" href="/session/{latest.id}/statistics">
+          <BarChart2 size={16} aria-hidden="true" /> {$t('session.list.statistics')}
+        </Link>
       </footer>
 
    </Card>
@@ -106,29 +102,23 @@
 
           <!-- Footer -->
           <footer class="flex justify-center">
-            <a 
-              href="/session/{session.id}/statistics"
-              data-sveltekit-preload-data
-              class="inline-flex items-center gap-2 text-sm text-slate-200 hover:underline"
-              aria-label="{$t('session.list.statistics')}: {session.date}"
-            >
-              <BarChart2 size={16} aria-hidden="true" />
-                {$t('session.list.statistics')}
-            </a>
+            <Link variant="ghost" intent="neutral" href="/session/{session.id}/statistics">
+              <BarChart2 size={16} aria-hidden="true" /> {$t('session.list.statistics')}
+            </Link>
           </footer>
+
         </Card>
       {/each}
     </div>
-
-    {#if hasMore}
-      <button
-        onclick={() => showAll = true}
-        class="mt-4 w-full py-3 text-sm font-medium text-red-700 hover:underline"
-      >
-        {$t('session.list.show_more')}
-      </button>
-    {/if}
   {/if}
+
+  {#if hasMore}
+    <footer class="text-center py-3">
+      <Button variant="ghost" intent="neutral" onclick={() => showAll = true}>
+        {$t('session.list.show_more')}
+      </Button>
+    </footer>
+   {/if}
 
   {/if}
   </section>

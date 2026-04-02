@@ -13,6 +13,7 @@
   import { canEdit, isAdmin } from '$lib/auth/client'
   import { formatDate } from '$lib/utils/utils'
   import Card from '$lib/components/Card.svelte'
+  import Link from '$lib/components/Link.svelte'
 
   const sessions    = observeLocalSessions()
   const matchCounts = observeLocalMatchCounts()
@@ -202,15 +203,10 @@
 
         <!-- Footer -->
         <footer class="flex justify-center mt-3 border-t border-white/8 pt-3">
-         <a 
-            href="/session/{s.id}/statistics"
-            data-sveltekit-preload-data
-            class="inline-flex items-center gap-2 text-sm text-red-400 hover:underline"
-            aria-label="{$t('session.common.stats')}: {s.date}"
-          >
-            <BarChart2 size={16} aria-hidden="true" />
-            {$t('session.common.stats')}
-          </a>
+
+        <Link variant="ghost" intent="danger" href="/session/{s.id}/statistics">
+          <BarChart2 size={16} aria-hidden="true" /> {$t('session.common.stats')}
+        </Link>
         </footer>
       </Card>
     {/each}
