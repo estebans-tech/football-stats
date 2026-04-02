@@ -5,6 +5,8 @@
   import LineupBuilder from '$lib/components/match/LineupBuilder.svelte'
   import GoalsEditor from '$lib/components/match/GoalsEditor.svelte'
   import Heading from '$lib/components/Heading.svelte'
+  import Link from '$lib/components/Link.svelte'
+  import CopyTeamButton from '$lib/components/match/CopyTeamButton.svelte'
   import { db } from '$lib/db/dexie'
 
   import { observeLocalMatch } from '$lib/data/matches'
@@ -86,10 +88,13 @@
         values: { num: match?.orderNo ?? '?' }
       })}
     </Heading>
-    <a href="/" class="self-start md:self-auto btn btn-utility text-sm active:scale-95 mt-auto">
+  <div class="flex gap-2">
+    <Link variant="utility" href="/">
       {$t('common.back')}
-    </a>
+    </Link>
+  </div>
   </header>
+
   {#await ready}{:then}
     <GoalsEditor
       matchId={data.id}
@@ -98,6 +103,8 @@
       {lineups}
       lineupFor={lineupFor}
     />
+   
+    <CopyTeamButton {match} {lineups} />
     <!-- Team builder (whole game) -->
     <LineupBuilder matchId={data.id} {players} {lineups} />
 

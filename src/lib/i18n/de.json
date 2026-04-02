@@ -156,7 +156,12 @@
 			"actions": {
 				"copy_h1_h2": "Kopiere H{from} → H{to}",
 				"copy_team": "Kopiere {from} → {to}",
-				"swap_teams": "Rot ↔ Schwarz"
+				"swap_teams": "Rot ↔ Schwarz",
+				"copy_prev_match": "Team kopieren"
+			},
+			"events": {
+				"copying": "Copying...",
+				"copied": "Kopiert!"
 			}
 		}
 	},

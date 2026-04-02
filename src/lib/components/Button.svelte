@@ -20,7 +20,7 @@
   const finalClassName = $derived(className ?? '')
 
   // Base classes
-  const baseClasses = 'inline-flex items-center justify-center font-medium transition-colors cursor-pointer'
+  const baseClasses = 'inline-flex items-center justify-center gap-2 font-medium transition-colors cursor-pointer'
 
   // Size variants
   const sizeClasses = $derived(() => {

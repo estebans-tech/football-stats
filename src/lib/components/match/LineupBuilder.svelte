@@ -3,6 +3,7 @@
   import type { PlayerLocal, LineupLocal, TeamAB, Half, ULID } from '$lib/types/domain'
   import { addLineup, deleteLineup, updateLineup } from '$lib/data/lineups'
 
+
   type Props = {
     matchId: string
     players: Record<string, PlayerLocal>

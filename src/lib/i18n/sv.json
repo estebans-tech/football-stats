@@ -155,7 +155,12 @@
 			"actions": {
 				"copy_h1_h2": "Kopiera H{from} → H{to}",
 				"copy_team": "Kopiera {from} → {to}",
-				"swap_teams": "Byt lag (Röd ↔ Svart)"
+				"swap_teams": "Byt lag (Röd ↔ Svart)",
+				"copy_prev_match": "Kopiera lag"
+			},
+			"events": {
+				"copying": "Kopierar...",
+				"copied": "Kopierat!"
 			}
 		},
 		"common": { "stats": "Statistik" }

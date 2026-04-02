@@ -1,6 +1,6 @@
 <script lang="ts">
   type Props = {
-    variant?: 'solid' | 'outline' | 'ghost'
+    variant?: 'solid' | 'outline' | 'ghost' | 'utility'
     intent?: 'primary' | 'success' | 'danger' | 'neutral'
     size?: 'sm' | 'md' | 'lg'
     href: string
@@ -76,6 +76,10 @@
         default:
           return 'text-blue-600 hover:underline'
       }
+    }
+
+    if (finalVariant === 'utility') {
+      return 'border border-white/20 text-white hover:bg-white/10 rounded-xl' 
     }
 
     return ''

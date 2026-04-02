@@ -282,3 +282,51 @@ export async function setTeamForPlayerWholeGame(
     await Promise.allSettled(rest.map(r => deleteLineup(r.id)))
   }
 }
+
+/**
+ * Copy all lineups from the previous match (orderNo - 1) in the same session
+ * to the current match. Only copies if previous match exists and has lineups.
+ */
+export async function copyLineupsFromPreviousMatch(currentMatchId: ULID): Promise<number> {
+  const db = assertDb()
+
+  // 1. Get current match
+  const currentMatch: MatchLocal | undefined = await db.matches_local.get(currentMatchId)
+  if (!currentMatch) throw new Error('Current match not found')
+
+  // 2. Find previous match (same session, orderNo - 1)
+  const previousOrderNo = currentMatch.orderNo - 1
+  if (previousOrderNo < 1) return 0
+
+  const previousMatch = await db.matches_local
+    .where('sessionId')
+    .equals(currentMatch.sessionId)
+    .and(m => m.orderNo === previousOrderNo && m.deletedAt == null && m.op !== 'delete')
+    .first()
+
+  if (!previousMatch) return 0
+
+  // 3. Get all lineups from previous match
+  const previousLineups = await db.lineups_local
+    .where('matchId')
+    .equals(previousMatch.id)
+    .and(l => l.deletedAt == null && l.op !== 'delete')
+    .toArray()
+
+  if (previousLineups.length === 0) return 0
+
+  // 4. Copy lineups to current match
+  await Promise.all(
+    previousLineups.map(lineup =>
+      addLineup({
+        matchId: currentMatchId,
+        half: lineup.half,
+        team: lineup.team,
+        playerId: lineup.playerId
+      })
+    )
+  )
+
+  return previousLineups.length
+}
+
