@@ -8,6 +8,7 @@
   import { profile } from '$lib/auth/store'
   import { writeProfileToLS } from '$lib/auth/profileStorage' 
   import { syncGames } from '$lib/sync/games'
+  import { theme } from '$lib/theme/store'
   import { t } from 'svelte-i18n'
   import { page } from '$app/state'
 
@@ -55,6 +56,9 @@
   }
 
   onMount(() => {
+    // Initialize theme (sets .light-mode class if needed)
+    theme.init()
+    
     const unsub = profile.subscribe((p) => writeProfileToLS(p ?? null));
     return () => unsub();
   })

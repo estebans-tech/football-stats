@@ -19,7 +19,8 @@
     }))
   )
   
-  let dropdownEl: HTMLDivElement
+  let dropdownEl = $state<HTMLElement | null>(null)
+
   const handleClickOutside = (e: MouseEvent) => {
     if (open && dropdownEl && !dropdownEl.contains(e.target as Node)) {
       open = false

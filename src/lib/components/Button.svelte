@@ -1,5 +1,6 @@
 <script lang="ts">
   import { theme } from '$lib/theme/store'
+  import type { Snippet } from 'svelte'
 
   type Props = {
     variant?: 'solid' | 'outline' | 'ghost' | 'utility'
@@ -9,9 +10,10 @@
     disabled?: boolean
     type?: 'button' | 'submit' | 'reset'
     class?: string
+    children?: Snippet
   }
 
-  let { variant, intent, size, onclick, disabled, type, class: className }: Props = $props()
+  let { variant, intent, size, onclick, disabled, type, class: className, children }: Props = $props()
 
   // Apply defaults using $derived
   const finalVariant = $derived(variant ?? 'solid')
@@ -111,6 +113,6 @@
   onclick={onclick}
   class={combinedClasses}
 >
-  <slot />
+  {@render children?.()}
 </button>
 
