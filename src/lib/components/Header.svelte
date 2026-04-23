@@ -1,6 +1,7 @@
 <script lang="ts">
   import { afterNavigate } from '$app/navigation'
   import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte'
+  import ThemeToggle from '$lib/components/ThemeToggle.svelte'
   import { t } from 'svelte-i18n'
   import { Menu, Users, RefreshCw, LogOut, Settings } from 'lucide-svelte'
   import type { Role } from '$lib/types/auth'
@@ -36,6 +37,8 @@
 
     <!-- Desktop actions -->
     <nav class="hidden sm:flex items-center gap-2">
+      <!-- Theme toggle - visible for all users -->
+      <ThemeToggle />
       {#if role === 'anon'}
         <!-- Redeem button for anonymous users -->
         <a 
@@ -63,7 +66,7 @@
 
         {#if role === 'admin'}
           <a 
-            href="/settings" 
+            href="/admin/settings" 
             class="inline-flex items-center justify-center size-10 rounded-lg hover:bg-white/10 transition-colors"
             aria-label={$t('header.nav.settings')}>
             <Settings size={20} />
@@ -124,7 +127,7 @@
 
           {#if role === 'admin'}
             <a 
-              href="/settings" 
+              href="/admin/settings" 
               class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors">
               <Settings size={20} />
               <span class="text-sm font-medium">{$t('header.nav.settings')}</span>

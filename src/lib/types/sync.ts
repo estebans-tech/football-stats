@@ -22,3 +22,10 @@ export type PublicPullResult = {
   pulled: number
   nextWatermark?: string
 }
+
+export type ImportResult = {
+  imported: number
+  errors: string[]
+}
+
+
