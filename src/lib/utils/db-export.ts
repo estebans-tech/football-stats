@@ -75,6 +75,7 @@ export async function importDb(file: File): Promise<ImportResult> {
         errors.push(`Missing table in export: ${name}`)
         continue
       }
+      await db.table(name).clear()     
       await db.table(name).bulkPut(rows)
       imported += rows.length
     }

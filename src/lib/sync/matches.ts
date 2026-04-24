@@ -200,7 +200,16 @@ export async function pushMatchCreates(
     .upsert(payload, { onConflict: 'id' })
     .select('id, created_at, updated_at')
 
-  if (error) throw error
+  if (error) {
+    console.error('[pushMatchCreates] upsert failed:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      payload
+    })
+    throw error
+  }
   return data as Array<{ id: ULID, created_at: string, updated_at: string }>
 }
 
@@ -222,7 +231,17 @@ export async function pushMatchUpdates(
     .upsert(payload, { onConflict: 'id' })
     .select('id, created_at, updated_at')
 
-  if (error) throw error
+  if (error) {
+    console.error('[pushMatchUpdates] upsert failed:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      payload
+    })
+    throw error
+  }
+
   return data as Array<{ id: ULID, created_at: string, updated_at: string }>
 }
 
